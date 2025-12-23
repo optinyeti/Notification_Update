@@ -1,0 +1,236 @@
+@model IEnumerable<PopupTemplate>
+@{
+    ViewData["Title"] = "Templates Management";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Templates Management</h1>
+            <p class="text-gray-600 mt-2">Manage and import popup templates</p>
+        </div>
+        @if (User.IsInRole("SuperAdmin"))
+        {
+            <form asp-action="ImportDefaultTemplates" method="post" onsubmit="return confirm('This will import all default templates. Continue?')">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2">
+                    <i class="bi bi-download"></i>
+                    Import Default Templates
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <!-- Templates Count -->
+    <div class="bg-white rounded-lg shadow border p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <div class="text-sm font-medium text-gray-500">Total Templates</div>
+                <div class="text-3xl font-bold text-gray-900 mt-1">@Model.Count()</div>
+            </div>
+            <div>
+                <div class="text-sm font-medium text-gray-500">Email Collectors</div>
+                <div class="text-3xl font-bold text-blue-600 mt-1">@Model.Count(t => t.Type == PopupType.EmailCollector)</div>
+            </div>
+            <div>
+                <div class="text-sm font-medium text-gray-500">Advertising</div>
+                <div class="text-3xl font-bold text-purple-600 mt-1">@Model.Count(t => t.Type == PopupType.Advertising)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach (var template in Model.OrderBy(t => t.SortOrder))
+        {
+            <div class="bg-white rounded-lg shadow border overflow-hidden hover:shadow-lg transition">
+                <!-- Preview -->
+                <div class="h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    @if (!string.IsNullOrEmpty(template.PreviewImageUrl))
+                    {
+                        <img src="@template.PreviewImageUrl" alt="@template.Name" class="w-full h-full object-cover" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-@GetTemplateIcon(template.Type) text-6xl text-gray-400"></i>
+                    }
+                </div>
+                
+                <!-- Info -->
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">@template.Name</h3>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full @GetTypeColor(template.Type)">
+                            @template.Type
+                        </span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-3">@template.Description</p>
+                    
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                        <span><i class="bi bi-folder me-1"></i>@template.Category</span>
+                        <span><i class="bi bi-sort-numeric-down me-1"></i>Order: @template.SortOrder</span>
+                    </div>
+                    
+                    <!-- Actions -->
+                    @if (User.IsInRole("SuperAdmin"))
+                    {
+                        <div class="flex gap-2">
+                            <button onclick="viewTemplate(@template.Id)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-sm font-medium">
+                                <i class="bi bi-eye me-1"></i>View
+                            </button>
+                            <form asp-action="DeleteTemplate" method="post" class="flex-1" onsubmit="return confirm('Delete this template?')">
+                                <input type="hidden" name="id" value="@template.Id" />
+                                <button type="submit" class="w-full bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded text-sm font-medium">
+                                    <i class="bi bi-trash me-1"></i>Delete
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="bg-white rounded-lg shadow border p-12 text-center">
+            <i class="bi bi-inbox text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Templates Found</h3>
+            <p class="text-gray-500 mb-6">Import default templates to get started</p>
+            @if (User.IsInRole("SuperAdmin"))
+            {
+                <form asp-action="ImportDefaultTemplates" method="post" style="display:inline;">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
+                        <i class="bi bi-download me-2"></i>Import Default Templates
+                    </button>
+                </form>
+            }
+        </div>
+    }
+</div>
+
+<!-- Template Details Modal -->
+<div id="templateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeModal(event)">
+    <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900">Template Details</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="bi bi-x-lg text-2xl"></i>
+                </button>
+            </div>
+            <div id="templateDetails"></div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetTemplateIcon(PopupType type)
+    {
+        return type switch
+        {
+            PopupType.EmailCollector => "envelope-fill",
+            PopupType.Advertising => "megaphone-fill",
+            PopupType.Message => "bell-fill",
+            PopupType.Lightbox => "window-fullscreen",
+            PopupType.Inline => "layout-text-window",
+            PopupType.SpinWheel => "arrow-repeat",
+            PopupType.VideoPopup => "play-circle-fill",
+            PopupType.Coupon => "gift-fill",
+            _ => "window"
+        };
+    }
+    
+    string GetTypeColor(PopupType type)
+    {
+        return type switch
+        {
+            PopupType.EmailCollector => "bg-blue-100 text-blue-800",
+            PopupType.Advertising => "bg-purple-100 text-purple-800",
+            PopupType.Message => "bg-yellow-100 text-yellow-800",
+            PopupType.Lightbox => "bg-indigo-100 text-indigo-800",
+            PopupType.Inline => "bg-teal-100 text-teal-800",
+            PopupType.SpinWheel => "bg-pink-100 text-pink-800",
+            PopupType.VideoPopup => "bg-red-100 text-red-800",
+            PopupType.Coupon => "bg-orange-100 text-orange-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+}
+
+<script>
+    function viewTemplate(id) {
+        const templates = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        const template = templates.find(t => t.id === id);
+        
+        if (template) {
+            const detailsHtml = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <div class="text-gray-900">${template.name}</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <div class="text-gray-900">${template.description}</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <div class="text-gray-900">${template.type}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <div class="text-gray-900">${template.category}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Trigger</label>
+                            <div class="text-gray-900">${template.defaultTrigger}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+                            <div class="text-gray-900">${template.defaultFrequency}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                        <pre class="bg-gray-50 p-3 rounded text-xs overflow-x-auto">${template.content}</pre>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('templateDetails').innerHTML = detailsHtml;
+            document.getElementById('templateModal').classList.remove('hidden');
+            document.getElementById('templateModal').classList.add('flex');
+        }
+    }
+    
+    function closeModal(event) {
+        if (!event || event.target.id === 'templateModal') {
+            document.getElementById('templateModal').classList.add('hidden');
+            document.getElementById('templateModal').classList.remove('flex');
+        }
+    }
+</script>
+
+<style>
+    .max-w-7xl { max-width: 80rem; }
+    .max-w-2xl { max-width: 42rem; }
+</style>

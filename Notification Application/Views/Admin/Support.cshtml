@@ -1,0 +1,69 @@
+@model IEnumerable<SupportTicket>
+@{
+    ViewData["Title"] = "Support Tickets";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Support Tickets</h1>
+            <p class="text-gray-600 mt-2">View and manage all support tickets</p>
+        </div>
+        <a asp-action="CreateSupportTicket" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+            <i class="fas fa-plus mr-2"></i>Create New Ticket
+        </a>
+    </div>
+
+    <!-- Ticket List -->
+    <div class="bg-white rounded-lg shadow border">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach (var ticket in Model)
+                    {
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">@ticket.Subject</div>
+                                <div class="text-sm text-gray-500">Ticket #@ticket.Id</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full @GetStatusClass(ticket.Status)">
+                                    @ticket.Status
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@ticket.Priority</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@ticket.UpdatedAt?.ToString("MMM dd, yyyy")</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a asp-action="SupportTicket" asp-route-id="@ticket.Id" class="text-blue-600 hover:text-blue-900">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusClass(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.Open => "bg-green-100 text-green-800",
+            TicketStatus.InProgress => "bg-blue-100 text-blue-800",
+            TicketStatus.Resolved => "bg-gray-100 text-gray-800",
+            TicketStatus.Closed => "bg-red-100 text-red-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+}

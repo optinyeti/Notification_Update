@@ -1,0 +1,1282 @@
+@{
+    ViewData["Title"] = "Playbooks - Choose Your Campaign Type";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .playbooks-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .main-title {
+            font-size: 48px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #64748b;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .playbook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .playbook-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            border: 2px solid #e2e8f0;
+        }
+
+        .playbook-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
+        }
+
+        .playbook-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-use-playbook {
+            flex: 1;
+            background: #84cc16;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-use-playbook:hover {
+            background: #65a30d;
+            color: white;
+        }
+
+        .btn-preview {
+            flex: 1;
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-preview:hover {
+            background: #475569;
+            color: white;
+        }
+
+        .playbook-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .playbook-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .playbook-description {
+            font-size: 15px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .playbook-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 32px;
+            transition: color 0.3s;
+        }
+
+        .back-button:hover {
+            color: #3b82f6;
+        }
+
+        /* Color variations */
+        .icon-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .icon-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .icon-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .icon-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .icon-pink { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+        .icon-teal { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+        .icon-yellow { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); }
+        .icon-red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .icon-indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+    </style>
+</head>
+<body>
+    <div class="playbooks-container">
+        <a href="/Popup/CreateCampaign" class="back-button">
+            <i class="bi bi-arrow-left"></i>
+            Back to Campaign Options
+        </a>
+
+        <div class="header-section">
+            <h1 class="main-title">Choose Your Playbook</h1>
+            <p class="subtitle">
+                Select from proven campaign playbooks designed by conversion experts. 
+                Each playbook includes pre-configured settings, best practices, and optimized templates.
+            </p>
+        </div>
+
+        <div class="playbook-grid">
+            <!-- Newsletter Signup -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-blue">
+                    <i class="bi bi-envelope-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Newsletter Signup</h3>
+                <p class="playbook-description">
+                    Grow your email list with high-converting signup forms. Perfect for building your audience.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-star-fill"></i>
+                        Most Popular
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        25K+ uses
+                    </span>
+                </div>
+                <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Welcome Discount -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-green">
+                    <i class="bi bi-gift-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Welcome Discount</h3>
+                <p class="playbook-description">
+                    Offer first-time visitors a special discount to boost conversions and build loyalty.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-graph-up"></i>
+                        High ROI
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        18K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Exit Intent -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-orange">
+                    <i class="bi bi-box-arrow-right text-white"></i>
+                </div>
+                <h3 class="playbook-title">Exit Intent</h3>
+                <p class="playbook-description">
+                    Capture leaving visitors with last-minute offers. Reduce bounce rate and recover sales.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-trophy"></i>
+                        Proven Results
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        22K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Flash Sale -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-red">
+                    <i class="bi bi-lightning-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Flash Sale Promotion</h3>
+                <p class="playbook-description">
+                    Create urgency with time-limited offers. Drive immediate action with countdown timers.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-clock"></i>
+                        Time-Sensitive
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        15K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Spin to Win -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-purple">
+                    <i class="bi bi-circle text-white"></i>
+                </div>
+                <h3 class="playbook-title">Spin to Win</h3>
+                <p class="playbook-description">
+                    Gamify your offers with an interactive spinning wheel. Boost engagement and conversions.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-controller"></i>
+                        Interactive
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        12K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Product Launch -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-pink">
+                    <i class="bi bi-rocket-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Product Launch</h3>
+                <p class="playbook-description">
+                    Announce new products with eye-catching visuals. Build anticipation and drive sales.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-megaphone"></i>
+                        Announcement
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        9K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=3" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Free Shipping -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-teal">
+                    <i class="bi bi-truck text-white"></i>
+                </div>
+                <h3 class="playbook-title">Free Shipping Offer</h3>
+                <p class="playbook-description">
+                    Promote free shipping thresholds. Increase average order value and reduce cart abandonment.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-cart-check"></i>
+                        E-commerce
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        14K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Webinar Registration -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-indigo">
+                    <i class="bi bi-camera-video-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Webinar Registration</h3>
+                <p class="playbook-description">
+                    Drive registrations for your webinars and events. Collect leads and build your audience.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-calendar-event"></i>
+                        Event
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        8K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Lead Magnet -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-yellow">
+                    <i class="bi bi-file-earmark-text-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Lead Magnet Download</h3>
+                <p class="playbook-description">
+                    Offer valuable content in exchange for email addresses. Build your email list effectively.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-download"></i>
+                        Content
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        11K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Survey/Feedback -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-blue">
+                    <i class="bi bi-clipboard-check-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Customer Feedback</h3>
+                <p class="playbook-description">
+                    Collect valuable customer insights with surveys. Improve your products and services.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-chat-dots"></i>
+                        Feedback
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        7K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Holiday Campaign -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-red">
+                    <i class="bi bi-balloon-heart-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Holiday Campaign</h3>
+                <p class="playbook-description">
+                    Seasonal campaigns for holidays. Drive sales during peak shopping seasons.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-calendar3"></i>
+                        Seasonal
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        10K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Abandoned Cart -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-purple">
+                    <i class="bi bi-cart-x-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Abandoned Cart Recovery</h3>
+                <p class="playbook-description">
+                    Win back customers who left items in their cart. Recover lost revenue effectively.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Recovery
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        13K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Black Friday -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-red">
+                    <i class="bi bi-tag-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Black Friday Sale</h3>
+                <p class="playbook-description">
+                    Maximize Black Friday sales with urgency-driven popups. Limited time offers that convert.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-fire"></i>
+                        Hot Deal
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        20K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Cyber Monday -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-blue">
+                    <i class="bi bi-laptop text-white"></i>
+                </div>
+                <h3 class="playbook-title">Cyber Monday</h3>
+                <p class="playbook-description">
+                    Drive online sales with exclusive Cyber Monday deals. Perfect for e-commerce stores.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-cart3"></i>
+                        Shopping
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        18K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Email Course -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-purple">
+                    <i class="bi bi-mortarboard-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Free Email Course</h3>
+                <p class="playbook-description">
+                    Promote your educational email series. Build authority and nurture leads over time.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-book"></i>
+                        Education
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        6K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Quiz Funnel -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-pink">
+                    <i class="bi bi-question-circle-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Quiz Funnel</h3>
+                <p class="playbook-description">
+                    Engage visitors with interactive quizzes. Segment your audience and personalize offers.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-puzzle"></i>
+                        Interactive
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        5K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Refer a Friend -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-green">
+                    <i class="bi bi-people-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Refer a Friend</h3>
+                <p class="playbook-description">
+                    Grow through referrals with reward-based sharing. Turn customers into brand advocates.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-share"></i>
+                        Viral
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        7K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- BOGO Deal -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-orange">
+                    <i class="bi bi-bag-plus-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Buy One Get One</h3>
+                <p class="playbook-description">
+                    Promote BOGO offers to increase order value. Clear call-to-action drives conversions.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-gift"></i>
+                        Promotion
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        8K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- VIP Access -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-yellow">
+                    <i class="bi bi-star-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">VIP Exclusive Access</h3>
+                <p class="playbook-description">
+                    Reward loyal customers with exclusive early access. Build premium membership base.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-gem"></i>
+                        Premium
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        4K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Pre-Order -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-indigo">
+                    <i class="bi bi-calendar-check-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Pre-Order Campaign</h3>
+                <p class="playbook-description">
+                    Accept pre-orders for upcoming products. Build excitement and secure early revenue.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-clock-history"></i>
+                        Coming Soon
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        5K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Limited Stock -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-red">
+                    <i class="bi bi-exclamation-triangle-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Limited Stock Alert</h3>
+                <p class="playbook-description">
+                    Create urgency with low stock notifications. Drive immediate purchase decisions.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-hourglass"></i>
+                        Urgency
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        9K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Social Proof -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-teal">
+                    <i class="bi bi-chat-quote-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Social Proof</h3>
+                <p class="playbook-description">
+                    Display recent purchases and reviews. Build trust with real customer activity.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-shield-check"></i>
+                        Trust
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        11K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Birthday Special -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-pink">
+                    <i class="bi bi-cake2-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Birthday Discount</h3>
+                <p class="playbook-description">
+                    Celebrate customer birthdays with special offers. Personalized discounts that delight.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-heart"></i>
+                        Personal
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        6K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- App Download -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-blue">
+                    <i class="bi bi-phone-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Mobile App Promo</h3>
+                <p class="playbook-description">
+                    Drive mobile app downloads with exclusive app-only offers. Grow your mobile presence.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-download"></i>
+                        App
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        7K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Local Business -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-green">
+                    <i class="bi bi-geo-alt-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Local Business Promo</h3>
+                <p class="playbook-description">
+                    Target local customers with location-based offers. Drive foot traffic to your store.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-pin-map"></i>
+                        Local
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        5K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Upsell -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-purple">
+                    <i class="bi bi-arrow-up-circle-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Upsell Offer</h3>
+                <p class="playbook-description">
+                    Increase order value with strategic upsells. Show complementary products at checkout.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        AOV Boost
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        10K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Cross-Sell -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-orange">
+                    <i class="bi bi-intersect text-white"></i>
+                </div>
+                <h3 class="playbook-title">Cross-Sell Bundle</h3>
+                <p class="playbook-description">
+                    Recommend related products in bundles. "Frequently bought together" strategy.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-box-seam"></i>
+                        Bundle
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        8K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Seasonal Sale -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-yellow">
+                    <i class="bi bi-sun-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Summer Sale</h3>
+                <p class="playbook-description">
+                    Promote seasonal collections and clearance. Perfect for fashion and retail stores.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-brightness-high"></i>
+                        Seasonal
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        12K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Loyalty Program -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-indigo">
+                    <i class="bi bi-award-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Loyalty Program</h3>
+                <p class="playbook-description">
+                    Invite customers to join your rewards program. Increase retention and lifetime value.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-trophy"></i>
+                        Rewards
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        9K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Newsletter Archive -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-blue">
+                    <i class="bi bi-archive-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Newsletter Archive Access</h3>
+                <p class="playbook-description">
+                    Offer access to exclusive newsletter archives. Build email list with valuable content.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-journals"></i>
+                        Content
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        4K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Live Chat -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-green">
+                    <i class="bi bi-chat-left-dots-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Live Chat Support</h3>
+                <p class="playbook-description">
+                    Invite visitors to chat with support. Reduce friction and increase conversions.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-headset"></i>
+                        Support
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        10K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Contest Entry -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-pink">
+                    <i class="bi bi-trophy-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Contest & Giveaway</h3>
+                <p class="playbook-description">
+                    Run contests to grow your email list. Generate excitement and social shares.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-gift"></i>
+                        Giveaway
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        11K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Video Tutorial -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-red">
+                    <i class="bi bi-play-circle-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Video Tutorial</h3>
+                <p class="playbook-description">
+                    Share helpful video tutorials. Educate customers and build brand authority.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-camera-video"></i>
+                        Video
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        6K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Student Discount -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-purple">
+                    <i class="bi bi-backpack-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Student Discount</h3>
+                <p class="playbook-description">
+                    Offer special pricing for students. Tap into the student market effectively.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-mortarboard"></i>
+                        Education
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        5K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=4" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Subscription Box -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-teal">
+                    <i class="bi bi-box2-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Subscription Box</h3>
+                <p class="playbook-description">
+                    Promote recurring subscription offers. Build predictable monthly revenue.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Recurring
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        7K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+
+            <!-- Price Drop Alert -->
+            <div class="playbook-card">
+                <div class="playbook-icon icon-orange">
+                    <i class="bi bi-arrow-down-circle-fill text-white"></i>
+                </div>
+                <h3 class="playbook-title">Price Drop Alert</h3>
+                <p class="playbook-description">
+                    Notify customers of price reductions. Re-engage interested shoppers with deals.
+                </p>
+                <div class="playbook-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-tag"></i>
+                        Sale
+                    </span>
+                    <span class="meta-item">
+                        <i class="bi bi-people"></i>
+                        8K+ uses
+                    </span>
+                </div>
+                            <div class="playbook-buttons">
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
+                    <a href="#" class="btn-preview">Preview</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Setup Modal -->
+    <div class="modal fade" id="campaignSetupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-5 pb-5">
+                    <div class="text-center mb-4">
+                        <div id="modalPlaybookPreview" class="mb-3"></div>
+                        <h3 class="fw-bold mb-3">What do you want to call your popup campaign?</h3>
+                    </div>
+                    
+                    <form id="campaignSetupForm">
+                        <input type="hidden" id="selectedPlaybookType" name="popupType">
+                        
+                        <div class="mb-4">
+                            <input type="text" class="form-control form-control-lg" id="campaignName" 
+                                   name="name" placeholder="Name your campaign" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="fw-semibold mb-3">Which website(s) do you want to load this campaign on?</h5>
+                            <select class="form-select form-select-lg" id="websiteSelect" name="website" required>
+                                <option value="" selected disabled>Choose one or more sites</option>
+                                <option value="current">Current Domain (localhost:5117)</option>
+                                <option value="add-new">+ Add New Website</option>
+                            </select>
+                        </div>
+                        
+                        <div id="newWebsiteInput" class="mb-4" style="display: none;">
+                            <input type="url" class="form-control" id="newWebsiteUrl" 
+                                   placeholder="https://yourwebsite.com">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-semibold">
+                            Start Building
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Campaign Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="previewContent" class="text-center p-4">
+                        <!-- Preview content will be dynamically inserted here -->
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="useFromPreview">Use This Playbook</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Store playbook data for each card
+        const playbookData = {};
+        
+        // Initialize playbook data from cards
+        document.querySelectorAll('.playbook-card').forEach((card, index) => {
+            const title = card.querySelector('.playbook-title').textContent;
+            const description = card.querySelector('.playbook-description').textContent.trim();
+            const useBtn = card.querySelector('.btn-use-playbook');
+            const type = new URLSearchParams(useBtn.href.split('?')[1]).get('type');
+            
+            playbookData[index] = { title, description, type };
+        });
+
+        // Handle Preview button clicks
+        document.querySelectorAll('.btn-preview').forEach((btn, index) => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const playbook = playbookData[index];
+                showPreview(playbook);
+            });
+        });
+
+        // Handle Use Playbook button clicks
+        document.querySelectorAll('.btn-use-playbook').forEach((btn, index) => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const playbook = playbookData[index];
+                showCampaignSetup(playbook);
+            });
+        });
+
+        // Show preview modal
+        function showPreview(playbook) {
+            const previewContent = document.getElementById('previewContent');
+            previewContent.innerHTML = `
+                <div class="p-4">
+                    <h4 class="fw-bold mb-3">${playbook.title}</h4>
+                    <p class="text-muted mb-4">${playbook.description}</p>
+                    <div class="popup-preview-box border rounded p-4" style="background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                        <div class="mb-3">
+                            <img src="https://via.placeholder.com/500x300/e0e7ff/4c1d95?text=${encodeURIComponent(playbook.title)}" 
+                                 class="img-fluid rounded" alt="Preview">
+                        </div>
+                        <h5 class="fw-bold">${playbook.title} Preview</h5>
+                        <p class="text-muted small">This is a sample preview of your popup campaign. The actual design will be customizable in the editor.</p>
+                    </div>
+                </div>
+            `;
+            
+            // Store playbook info for "Use This Playbook" button
+            document.getElementById('useFromPreview').onclick = function() {
+                const previewModalEl = document.getElementById('previewModal');
+                const previewModal = bootstrap.Modal.getInstance(previewModalEl);
+                previewModal.hide();
+                showCampaignSetup(playbook);
+            };
+            
+            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            previewModal.show();
+        }
+
+        // Show campaign setup modal
+        function showCampaignSetup(playbook) {
+            document.getElementById('selectedPlaybookType').value = playbook.type;
+            document.getElementById('campaignName').value = playbook.title;
+            
+            // Show playbook info in modal
+            document.getElementById('modalPlaybookPreview').innerHTML = `
+                <div class="d-inline-block px-3 py-2 bg-light rounded">
+                    <small class="text-muted">Selected Playbook:</small>
+                    <strong class="ms-2">${playbook.title}</strong>
+                </div>
+            `;
+            
+            const setupModal = new bootstrap.Modal(document.getElementById('campaignSetupModal'));
+            setupModal.show();
+        }
+
+        // Handle website select change
+        document.getElementById('websiteSelect').addEventListener('change', function() {
+            const newWebsiteInput = document.getElementById('newWebsiteInput');
+            if (this.value === 'add-new') {
+                newWebsiteInput.style.display = 'block';
+                document.getElementById('newWebsiteUrl').required = true;
+            } else {
+                newWebsiteInput.style.display = 'none';
+                document.getElementById('newWebsiteUrl').required = false;
+            }
+        });
+
+        // Handle campaign setup form submission
+        document.getElementById('campaignSetupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const campaignName = formData.get('name');
+            const popupType = formData.get('popupType');
+            const website = formData.get('website');
+            
+            // If adding new website, get the URL
+            if (website === 'add-new') {
+                const newWebsite = document.getElementById('newWebsiteUrl').value;
+                // Here you would typically save the new website to the database
+                console.log('New website:', newWebsite);
+            }
+            
+            // Redirect to Designer page with campaign info
+            window.location.href = `/Popup/Designer?name=${encodeURIComponent(campaignName)}&type=${popupType}`;
+        });
+
+        // Back button functionality
+        document.getElementById('backButton')?.addEventListener('click', function() {
+            window.location.href = '/Popup/CreateCampaign';
+        });
+    </script>
+</body>
+</html>

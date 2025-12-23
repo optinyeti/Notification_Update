@@ -1,0 +1,206 @@
+@model IEnumerable<SubscriptionPlan>
+@{
+    ViewData["Title"] = "Choose Your Plan";
+}
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+                Choose Your Plan
+            </h1>
+            <p class="mt-4 text-xl text-gray-600">
+                Select the perfect plan for your business needs
+            </p>
+        </div>
+
+        <!-- Billing Toggle -->
+        <div class="flex justify-center mb-8">
+            <div class="bg-gray-100 p-1 rounded-lg inline-flex">
+                <button id="monthlyBtn" class="px-6 py-2 rounded-md text-sm font-medium transition-all bg-white text-gray-900 shadow">
+                    Monthly
+                </button>
+                <button id="yearlyBtn" class="px-6 py-2 rounded-md text-sm font-medium transition-all text-gray-600">
+                    Yearly <span class="ml-1 text-green-600 font-semibold">Save 20%</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Plans Grid -->
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-@Model.Count() max-w-6xl mx-auto">
+            @foreach (var plan in Model)
+            {
+                var isPopular = plan.Name.Contains("Professional") || plan.Name.Contains("Pro");
+                
+                <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all hover:scale-105 @(isPopular ? "ring-4 ring-blue-500" : "")">
+                    @if (isPopular)
+                    {
+                        <div class="absolute top-0 right-0 bg-blue-500 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
+                            POPULAR
+                        </div>
+                    }
+
+                    <div class="p-8">
+                        <!-- Plan Name -->
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                            @plan.Name
+                        </h3>
+                        <p class="text-gray-600 mb-6">
+                            @plan.Description
+                        </p>
+
+                        <!-- Pricing -->
+                        <div class="mb-6">
+                            <div class="monthly-price">
+                                <span class="text-5xl font-extrabold text-gray-900">$@plan.MonthlyPrice</span>
+                                <span class="text-gray-600 ml-2">/month</span>
+                            </div>
+                            <div class="yearly-price hidden">
+                                <span class="text-5xl font-extrabold text-gray-900">$@((plan.YearlyPrice / 12).ToString("F2"))</span>
+                                <span class="text-gray-600 ml-2">/month</span>
+                                <div class="text-sm text-green-600 mt-1">
+                                    Billed $@plan.YearlyPrice yearly
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CTA Button -->
+                        <form asp-action="CreateCheckoutSession" asp-controller="Payment" method="post" class="mb-6">
+                            <input type="hidden" name="planId" value="@plan.Id" />
+                            <input type="hidden" name="billingPeriod" value="monthly" class="billing-period-input" />
+                            
+                            @if (plan.MonthlyPrice == 0)
+                            {
+                                <button type="submit" class="w-full bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition">
+                                    Get Started Free
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="w-full @(isPopular ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-800 hover:bg-gray-900") text-white font-semibold py-3 px-6 rounded-lg transition">
+                                    Subscribe Now
+                                </button>
+                            }
+                        </form>
+
+                        <!-- Features -->
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700">
+                                    <strong>@(plan.MaxPopups == -1 ? "Unlimited" : plan.MaxPopups)</strong> Popups
+                                </span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700">
+                                    <strong>@(plan.MaxPopupViews == -1 ? "Unlimited" : $"{plan.MaxPopupViews:N0}")</strong> Views/month
+                                </span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-gray-700">
+                                    <strong>@(plan.MaxUsers == -1 ? "Unlimited" : plan.MaxUsers)</strong> Team Members
+                                </span>
+                            </li>
+                            @if (plan.HasAdvancedTargeting)
+                            {
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-gray-700">Advanced Targeting</span>
+                                </li>
+                            }
+                            @if (plan.HasAnalytics)
+                            {
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-gray-700">Analytics & Reports</span>
+                                </li>
+                            }
+                            @if (plan.HasAPIAccess)
+                            {
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-gray-700">API Access</span>
+                                </li>
+                            }
+                            @if (plan.HasPrioritySupport)
+                            {
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-gray-700">Priority Support</span>
+                                </li>
+                            }
+                            @if (plan.HasWhiteLabel)
+                            {
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-gray-700">White Label</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- FAQ or Additional Info -->
+        <div class="mt-16 text-center">
+            <p class="text-gray-600">
+                All plans include a 14-day free trial. No credit card required.
+            </p>
+            <p class="text-gray-600 mt-2">
+                Need a custom plan? <a href="/Home/Contact" class="text-blue-600 hover:underline">Contact us</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const monthlyBtn = document.getElementById('monthlyBtn');
+        const yearlyBtn = document.getElementById('yearlyBtn');
+        const monthlyPrices = document.querySelectorAll('.monthly-price');
+        const yearlyPrices = document.querySelectorAll('.yearly-price');
+        const billingInputs = document.querySelectorAll('.billing-period-input');
+
+        monthlyBtn.addEventListener('click', () => {
+            monthlyBtn.classList.add('bg-white', 'text-gray-900', 'shadow');
+            monthlyBtn.classList.remove('text-gray-600');
+            yearlyBtn.classList.remove('bg-white', 'text-gray-900', 'shadow');
+            yearlyBtn.classList.add('text-gray-600');
+            
+            monthlyPrices.forEach(el => el.classList.remove('hidden'));
+            yearlyPrices.forEach(el => el.classList.add('hidden'));
+            billingInputs.forEach(input => input.value = 'monthly');
+        });
+
+        yearlyBtn.addEventListener('click', () => {
+            yearlyBtn.classList.add('bg-white', 'text-gray-900', 'shadow');
+            yearlyBtn.classList.remove('text-gray-600');
+            monthlyBtn.classList.remove('bg-white', 'text-gray-900', 'shadow');
+            monthlyBtn.classList.add('text-gray-600');
+            
+            monthlyPrices.forEach(el => el.classList.add('hidden'));
+            yearlyPrices.forEach(el => el.classList.remove('hidden'));
+            billingInputs.forEach(input => input.value = 'yearly');
+        });
+    </script>
+}

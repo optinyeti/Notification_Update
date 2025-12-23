@@ -1,0 +1,239 @@
+@model TenantSettingsViewModel
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Settings";
+    var configuredHost = Configuration["AppSettings:ProductionUrl"];
+    if (string.IsNullOrWhiteSpace(configuredHost))
+    {
+        configuredHost = Configuration["AppSettings:BaseUrl"];
+    }
+    var defaultHost = !string.IsNullOrWhiteSpace(configuredHost) ? configuredHost : $"{Context.Request.Scheme}://{Context.Request.Host}";
+}
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
+        <p class="text-gray-600 mt-2">Manage your tenant settings and preferences</p>
+    </div>
+
+    <!-- Tenant Tracking Code -->
+    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow border border-blue-200 mb-8">
+        <div class="p-6 border-b border-blue-200 bg-white bg-opacity-50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-code-square me-2 text-blue-600"></i>
+                        Your Tracking Code
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-1">Install this code once on your website to enable all your popup campaigns</p>
+                </div>
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Like GTM/GA4</span>
+            </div>
+        </div>
+        <div class="p-6">
+            <p class="text-sm text-gray-700 mb-4">
+                <i class="bi bi-info-circle text-blue-600 me-1"></i>
+                Copy and paste this code into the <code class="px-2 py-1 bg-white rounded text-xs">&lt;head&gt;</code> section of your website. 
+                This single pixel will automatically display all your published popup campaigns based on their targeting rules.
+            </p>
+            
+            <div class="relative space-y-3">
+                <div class="flex items-center gap-2">
+                    <label asp-for="PublicHostUrl" class="text-sm text-gray-700">Public App URL</label>
+                    <input asp-for="PublicHostUrl" id="publicHost" type="text" value="@((Model.PublicHostUrl ?? defaultHost))" class="px-2 py-1 border border-gray-300 rounded text-sm w-full max-w-md font-mono" />
+                </div>
+                <div class="relative">
+                    <pre id="tenantTrackingCode" class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm border border-gray-700"><code id="trackingCodeContent"><script src="@defaultHost/Popup/GetTenantScript/@Model.Id"></script></code></pre>
+                    <button onclick="copyTenantCode()" class="absolute top-3 right-3 px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">
+                        <i class="bi bi-clipboard me-1"></i>
+                        <span id="copyBtnText">Copy Code</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="bg-white rounded-lg p-3 border border-blue-100">
+                    <div class="flex items-center text-sm">
+                        <i class="bi bi-check-circle text-green-600 me-2"></i>
+                        <span class="text-gray-700">One pixel for all campaigns</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-3 border border-blue-100">
+                    <div class="flex items-center text-sm">
+                        <i class="bi bi-lightning text-yellow-600 me-2"></i>
+                        <span class="text-gray-700">Automatic updates</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-3 border border-blue-100">
+                    <div class="flex items-center text-sm">
+                        <i class="bi bi-shield-check text-blue-600 me-2"></i>
+                        <span class="text-gray-700">Secure & fast</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Settings" method="post" class="space-y-8">
+        <input type="hidden" asp-for="Id" />
+
+        <!-- Tenant Information -->
+        <div class="bg-white rounded-lg shadow border">
+            <div class="p-6 border-b">
+                <h2 class="text-xl font-semibold text-gray-900">Tenant Information</h2>
+            </div>
+            <div class="p-6 space-y-6">
+                <div>
+                    <label asp-for="Name" class="block text-sm font-medium text-gray-700 mb-2">Tenant Name</label>
+                    <input asp-for="Name" type="text" class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <span asp-validation-for="Name" class="text-red-600 text-sm"></span>
+                </div>
+                
+                <div>
+                    <label asp-for="Domain" class="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+                    <input asp-for="Domain" type="text" class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" readonly>
+                    <p class="text-xs text-gray-500 mt-1">Domain cannot be changed.</p>
+                </div>
+                
+                <div>
+                    <label asp-for="Description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea asp-for="Description" rows="3" class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    <span asp-validation-for="Description" class="text-red-600 text-sm"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stripe Configuration -->
+        <div class="bg-white rounded-lg shadow border">
+            <div class="p-6 border-b bg-gradient-to-r from-purple-50 to-blue-50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                            <i class="bi bi-credit-card-2-front me-2 text-purple-600"></i>
+                            Stripe Payment Configuration
+                        </h2>
+                        <p class="text-sm text-gray-600 mt-1">Configure your Stripe API keys for subscription payments</p>
+                    </div>
+                    <a href="https://dashboard.stripe.com/apikeys" target="_blank" class="text-sm text-blue-600 hover:underline">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Get API Keys
+                    </a>
+                </div>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <div class="flex">
+                        <i class="bi bi-exclamation-triangle text-yellow-600 me-2 mt-0.5"></i>
+                        <div class="text-sm text-yellow-800">
+                            <strong>Security Note:</strong> Your Stripe keys are stored securely in the database. Use <strong>test keys</strong> (sk_test_...) for development and <strong>live keys</strong> (sk_live_...) for production.
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label asp-for="StripeSecretKey" class="block text-sm font-medium text-gray-700 mb-2">
+                        Secret Key <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input asp-for="StripeSecretKey" type="password" placeholder="sk_test_..." class="block w-full px-3 py-2 pr-24 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 font-mono text-sm">
+                        <button type="button" onclick="togglePasswordVisibility('StripeSecretKey')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700">
+                            <i class="bi bi-eye" id="StripeSecretKey-icon"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Your Stripe Secret Key (starts with sk_test_ or sk_live_)</p>
+                    <span asp-validation-for="StripeSecretKey" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="StripePublishableKey" class="block text-sm font-medium text-gray-700 mb-2">
+                        Publishable Key
+                    </label>
+                    <input asp-for="StripePublishableKey" type="text" placeholder="pk_test_..." class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 font-mono text-sm">
+                    <p class="text-xs text-gray-500 mt-1">Your Stripe Publishable Key (starts with pk_test_ or pk_live_)</p>
+                    <span asp-validation-for="StripePublishableKey" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="StripeWebhookSecret" class="block text-sm font-medium text-gray-700 mb-2">
+                        Webhook Secret
+                    </label>
+                    <div class="relative">
+                        <input asp-for="StripeWebhookSecret" type="password" placeholder="whsec_..." class="block w-full px-3 py-2 pr-24 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 font-mono text-sm">
+                        <button type="button" onclick="togglePasswordVisibility('StripeWebhookSecret')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700">
+                            <i class="bi bi-eye" id="StripeWebhookSecret-icon"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Your Stripe Webhook Signing Secret (starts with whsec_)</p>
+                    <span asp-validation-for="StripeWebhookSecret" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold text-blue-900 mb-2">
+                        <i class="bi bi-info-circle me-1"></i>Quick Setup Guide
+                    </h4>
+                    <ol class="text-sm text-blue-800 space-y-1 ml-4 list-decimal">
+                        <li>Get your API keys from <a href="https://dashboard.stripe.com/apikeys" target="_blank" class="underline">Stripe Dashboard</a></li>
+                        <li>Create products and prices in <a href="https://dashboard.stripe.com/products" target="_blank" class="underline">Stripe Products</a></li>
+                        <li>Set up webhook endpoint at <code class="bg-white px-1 rounded">/Payment/Webhook</code></li>
+                        <li>Update subscription plans with Stripe Price IDs in database</li>
+                        <li>Test with card: <code class="bg-white px-1 rounded">4242 4242 4242 4242</code></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end">
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                <i class="bi bi-check-circle me-1"></i>Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        const tenantId = @Model.Id;
+        const hostInput = document.getElementById('publicHost');
+        const codeEl = document.getElementById('trackingCodeContent');
+
+        function updateTrackingCode() {
+            const host = (hostInput.value || '').trim();
+            if (!host) return;
+            const normalized = host.endsWith('/') ? host.slice(0, -1) : host;
+            codeEl.textContent = `<script src="${normalized}/Popup/GetTenantScript/${tenantId}"><\/script>`;
+        }
+
+        hostInput.addEventListener('input', updateTrackingCode);
+        document.addEventListener('DOMContentLoaded', updateTrackingCode);
+
+        function copyTenantCode() {
+            const code = document.getElementById('trackingCodeContent').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyBtnText');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function togglePasswordVisibility(fieldId) {
+            const input = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + '-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+}

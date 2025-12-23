@@ -1,0 +1,370 @@
+@model Popup
+@{
+    ViewData["Title"] = "Live Preview - " + Model.Name;
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .preview-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .preview-header {
+            background: #1f2937;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .preview-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .preview-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-live {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .close-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            color: white;
+        }
+
+        .preview-body {
+            background: #f9fafb;
+            min-height: 500px;
+            padding: 40px;
+        }
+
+        .demo-page {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .demo-page h1 {
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .demo-page p {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .tracking-console {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1f2937;
+            color: #fff;
+            padding: 15px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+            z-index: 9999;
+        }
+
+        .tracking-console .log {
+            margin: 3px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tracking-console .log.success {
+            color: #10b981;
+        }
+
+        .tracking-console .log.error {
+            color: #ef4444;
+        }
+
+        .tracking-console .log.info {
+            color: #3b82f6;
+        }
+
+        .tracking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #374151;
+        }
+
+        .tracking-title {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .clear-btn {
+            background: #374151;
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .clear-btn:hover {
+            background: #4b5563;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <div>
+                <div class="preview-title">🔴 Live Preview - @Model.Name</div>
+                <div class="preview-info">
+                    <span class="preview-badge badge-live">
+                        <i class="bi bi-circle-fill" style="font-size: 8px;"></i>
+                        Analytics Tracking Active
+                    </span>
+                    <span class="preview-badge">
+                        ID: @Model.Id
+                    </span>
+                    <span class="preview-badge">
+                        Type: @Model.Type
+                    </span>
+                </div>
+            </div>
+            <a href="/Popup/Index" class="close-btn">
+                ← Back to Campaigns
+            </a>
+        </div>
+
+        <div class="preview-body">
+            <div class="demo-page">
+                <h1>Welcome to Our Demo Page!</h1>
+                <p>
+                    This is a live preview page with <strong>real analytics tracking enabled</strong>. 
+                    Your popup will appear based on its configured trigger (on page load, exit intent, scroll, etc.).
+                </p>
+                <p>
+                    All interactions (views, clicks, conversions) are being tracked and will appear in your analytics dashboard.
+                    Watch the tracking console below to see events in real-time!
+                </p>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
+                <p>
+                    Scroll down to trigger scroll-based popups, or try moving your mouse to the top of the page to trigger exit intent.
+                </p>
+
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="testManualTrigger()">🚀 Trigger Popup Manually</button>
+                    <button class="btn btn-secondary" onclick="resetFrequency()">🔄 Reset Frequency (Show Again)</button>
+                    <button class="btn btn-success" onclick="window.location.href='/Popup/Analytics/@Model.Id'">📊 View Analytics</button>
+                </div>
+
+                <p style="margin-top: 30px;">
+                    <strong>How it works:</strong>
+                </p>
+                <ul style="color: #6b7280; line-height: 1.8;">
+                    <li>The popup script is loaded on this page, just like it would be on a real website</li>
+                    <li>All triggers (page load, scroll, exit intent, etc.) are active</li>
+                    <li>Every view, click, and conversion is tracked to the database</li>
+                    <li>Check the tracking console below to see events as they happen</li>
+                    <li>Go to Analytics to see aggregated data and charts</li>
+                </ul>
+
+                <p style="margin-top: 50px; padding-top: 50px; border-top: 2px solid #e5e7eb;">
+                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+                    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tracking-console" id="trackingConsole">
+        <div class="tracking-header">
+            <span class="tracking-title">📡 Real-Time Tracking Console</span>
+            <button class="clear-btn" onclick="clearConsole()">Clear</button>
+        </div>
+        <div id="trackingLogs"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Load the actual popup with tracking -->
+    <script>
+        // Override console.log to also show in our tracking console
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (args[0] && args[0].includes('[TRACKING]')) {
+                addTrackingLog('success', args.join(' '));
+            } else if (args[0] && (args[0].includes('PopupManager') || args[0].includes('popup') || args[0].includes('campaign'))) {
+                addTrackingLog('info', args.join(' '));
+            }
+        };
+
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            if (args[0] && args[0].includes('[TRACKING]')) {
+                addTrackingLog('error', args.join(' '));
+            }
+        };
+
+        function addTrackingLog(type, message) {
+            const logsContainer = document.getElementById('trackingLogs');
+            const log = document.createElement('div');
+            log.className = 'log ' + type;
+            log.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logsContainer.insertBefore(log, logsContainer.firstChild);
+            
+            // Keep only last 50 logs
+            while (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('trackingLogs').innerHTML = '';
+            addTrackingLog('info', 'Console cleared');
+        }
+
+        function testManualTrigger() {
+            if (window.PopupManager && window.PopupManager.popups && window.PopupManager.popups.length > 0) {
+                const popup = window.PopupManager.popups[0];
+                window.PopupManager.showPopup(popup);
+                addTrackingLog('info', 'Manual trigger activated for popup: ' + popup.name);
+            } else {
+                addTrackingLog('error', 'No popups loaded yet');
+            }
+        }
+
+        function resetFrequency() {
+            localStorage.removeItem('notificationapp_shown_popups');
+            addTrackingLog('info', 'Frequency reset - popup will show again on next page load');
+            setTimeout(() => location.reload(), 1000);
+        }
+
+        // Initialize
+        addTrackingLog('info', 'Live Preview initialized - Loading popup script...');
+        addTrackingLog('info', 'Popup ID: @Model.Id, Tenant ID: @Model.TenantId, Trigger: @Model.Trigger');
+    </script>
+
+    <!-- Load the actual tenant script with tracking -->
+    <script src="/Popup/GetTenantScript/@Model.TenantId" async></script>
+</body>
+</html>

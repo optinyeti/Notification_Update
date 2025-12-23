@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Pixel Tracking Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            color: #2563eb;
+        }
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #10b981;
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #1e293b;
+        }
+        .console-output {
+            background: #1e293b;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .console-line {
+            margin: 4px 0;
+        }
+        .console-line.error {
+            color: #ef4444;
+        }
+        .console-line.success {
+            color: #10b981;
+        }
+        .console-line.info {
+            color: #3b82f6;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button.secondary {
+            background: #64748b;
+        }
+        button.secondary:hover {
+            background: #475569;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2563eb;
+            margin: 10px 0 5px 0;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .content {
+            min-height: 200vh;
+            padding: 20px 0;
+        }
+        .scroll-marker {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 40px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Global Pixel Tracking Test</h1>
+        <p>Testing event-based tracking with single global pixel</p>
+        <div class="status">✓ Global Pixel Loaded</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Tracking Statistics</h2>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Events in Queue</div>
+                <div class="stat-value" id="queue-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Events Sent</div>
+                <div class="stat-value" id="sent-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Impressions</div>
+                <div class="stat-value" id="impression-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Clicks</div>
+                <div class="stat-value" id="click-count">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Manual Testing</h2>
+        <p>Click buttons to trigger tracking events manually:</p>
+        <button onclick="testImpression()">📈 Test Impression Event</button>
+        <button onclick="testClick()">👆 Test Click Event</button>
+        <button onclick="testConversion()">✅ Test Conversion Event</button>
+        <button onclick="testClose()">❌ Test Close Event</button>
+        <button class="secondary" onclick="viewQueue()">📋 View Queue</button>
+        <button class="secondary" onclick="clearConsole()">🗑️ Clear Console</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📺 Console Output</h2>
+        <div class="console-output" id="console"></div>
+    </div>
+
+    <div class="content">
+        <div class="test-section">
+            <h2>📄 Page Content</h2>
+            <p>Scroll down to test scroll-based triggers (if configured)...</p>
+        </div>
+
+        <div class="scroll-marker">
+            <strong>25% Scroll Marker</strong> - You've scrolled 25% of the page
+        </div>
+
+        <div class="scroll-marker">
+            <strong>50% Scroll Marker</strong> - You've scrolled 50% of the page
+        </div>
+
+        <div class="scroll-marker">
+            <strong>75% Scroll Marker</strong> - You've scrolled 75% of the page
+        </div>
+
+        <div class="test-section">
+            <h2>🎉 End of Page</h2>
+            <p>Try moving your mouse to the top of the browser to test exit intent (if configured).</p>
+        </div>
+    </div>
+
+    <!-- Global Pixel - Replace 1 with your actual tenantId -->
+    <script src="http://localhost:5117/Popup/GetTenantScript/1"></script>
+
+    <!-- Test Interface Script -->
+    <script>
+        let sentCount = 0;
+        let impressionCount = 0;
+        let clickCount = 0;
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            line.textContent = `[${timestamp}] ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function updateStats() {
+            if (window.PopupManager) {
+                document.getElementById('queue-count').textContent = window.PopupManager.trackingQueue?.length || 0;
+            }
+            document.getElementById('sent-count').textContent = sentCount;
+            document.getElementById('impression-count').textContent = impressionCount;
+            document.getElementById('click-count').textContent = clickCount;
+        }
+
+        function testImpression() {
+            if (!window.PopupManager) {
+                log('❌ PopupManager not loaded yet!', 'error');
+                return;
+            }
+            window.PopupManager.track('impression', 999, {
+                test: true,
+                source: 'manual_test'
+            });
+            impressionCount++;
+            updateStats();
+            log('✓ Impression event tracked (campaignId: 999)', 'success');
+        }
+
+        function testClick() {
+            if (!window.PopupManager) {
+                log('❌ PopupManager not loaded yet!', 'error');
+                return;
+            }
+            window.PopupManager.track('click', 999, {
+                test: true,
+                buttonText: 'Test Button',
+                source: 'manual_test'
+            });
+            clickCount++;
+            updateStats();
+            log('✓ Click event tracked (campaignId: 999)', 'success');
+        }
+
+        function testConversion() {
+            if (!window.PopupManager) {
+                log('❌ PopupManager not loaded yet!', 'error');
+                return;
+            }
+            window.PopupManager.track('conversion', 999, {
+                test: true,
+                source: 'manual_test'
+            }, {
+                email: 'test@example.com',
+                name: 'Test User'
+            });
+            updateStats();
+            log('✓ Conversion event tracked (campaignId: 999)', 'success');
+        }
+
+        function testClose() {
+            if (!window.PopupManager) {
+                log('❌ PopupManager not loaded yet!', 'error');
+                return;
+            }
+            window.PopupManager.track('close', 999, {
+                test: true,
+                userInitiated: true,
+                source: 'manual_test'
+            });
+            updateStats();
+            log('✓ Close event tracked (campaignId: 999)', 'success');
+        }
+
+        function viewQueue() {
+            if (!window.PopupManager) {
+                log('❌ PopupManager not loaded yet!', 'error');
+                return;
+            }
+            const queue = window.PopupManager.trackingQueue || [];
+            log(`📋 Queue has ${queue.length} events:`, 'info');
+            queue.forEach((event, i) => {
+                log(`  ${i + 1}. ${event.eventType} - Campaign ${event.campaignId}`, 'info');
+            });
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+            log('Console cleared', 'info');
+        }
+
+        // Intercept fetch to log tracking requests
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const url = args[0];
+            if (url.includes('/api/tracking/')) {
+                const body = args[1]?.body ? JSON.parse(args[1].body) : {};
+                if (url.includes('/batch')) {
+                    log(`📤 Batch sent: ${body.events?.length || 0} events`, 'success');
+                    sentCount += body.events?.length || 0;
+                } else {
+                    log(`📤 Event sent: ${body.eventType} (Campaign ${body.campaignId})`, 'success');
+                    sentCount++;
+                }
+                updateStats();
+            }
+            return originalFetch.apply(this, args);
+        };
+
+        // Initial logs
+        setTimeout(() => {
+            log('🚀 Global Pixel Tracking Test Started', 'success');
+            log('📍 Endpoint: http://localhost:5117', 'info');
+            log('🎯 TenantId: 1', 'info');
+            log('⏱️ Batch interval: 5 seconds', 'info');
+            log('---', 'info');
+            
+            if (window.PopupManager) {
+                log('✓ PopupManager loaded successfully', 'success');
+                log(`✓ Tracking to: ${window.PopupManager.trackingEndpoint}`, 'info');
+                const popupCount = window.PopupManager.popups?.length || 0;
+                log(`✓ ${popupCount} campaigns loaded`, 'info');
+            } else {
+                log('⏳ Waiting for PopupManager...', 'info');
+            }
+        }, 1000);
+
+        // Update stats every second
+        setInterval(updateStats, 1000);
+
+        // Log when PopupManager initializes
+        setTimeout(() => {
+            if (window.PopupManager && window.PopupManager.popups) {
+                log('---', 'info');
+                log('📋 Loaded Campaigns:', 'info');
+                window.PopupManager.popups.forEach(popup => {
+                    log(`  • ${popup.name} (ID: ${popup.id}) - Trigger: ${popup.trigger}`, 'info');
+                });
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

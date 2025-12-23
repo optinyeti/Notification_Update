@@ -1,0 +1,258 @@
+@{
+    ViewData["Title"] = "Pricing - Choose Your Plan";
+}
+
+<div class="bg-gradient-to-br from-blue-600 to-purple-700 text-white py-20">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h1 class="text-4xl font-bold mb-6">Simple, Transparent Pricing</h1>
+        <p class="text-xl text-blue-100 mb-8">Choose the perfect plan for your business. Start free and upgrade as you grow.</p>
+        
+        <div class="bg-white/10 rounded-lg p-4 inline-block">
+            <p class="text-white">?? <strong>Limited Time:</strong> Get 2 months free on annual plans!</p>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        
+        <!-- Free Plan -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border">
+            <div class="p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Starter</h3>
+                <div class="mb-6">
+                    <span class="text-4xl font-bold text-gray-900">$0</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <p class="text-gray-600 mb-6">Perfect for small websites and testing</p>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>3 active popups</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>1,000 monthly views</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Basic templates</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Email support</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>WYSIWYG editor</span>
+                    </li>
+                </ul>
+                
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <button class="w-full bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold" disabled>
+                        Current Plan
+                    </button>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="block w-full bg-gray-600 text-white text-center px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition">
+                        Get Started Free
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden border-2 border-blue-500 relative">
+            <div class="absolute top-0 left-0 right-0 bg-blue-500 text-white text-center py-2 text-sm font-semibold">
+                Most Popular
+            </div>
+            <div class="p-8 pt-12">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Professional</h3>
+                <div class="mb-6">
+                    <span class="text-4xl font-bold text-gray-900">$29</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <p class="text-gray-600 mb-6">Great for growing businesses</p>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>25 active popups</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>50,000 monthly views</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Premium templates</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Advanced targeting</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>A/B testing</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Priority support</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Analytics dashboard</span>
+                    </li>
+                </ul>
+                
+                <button class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    Start Free Trial
+                </button>
+            </div>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border">
+            <div class="p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Enterprise</h3>
+                <div class="mb-6">
+                    <span class="text-4xl font-bold text-gray-900">$99</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <p class="text-gray-600 mb-6">For large organizations</p>
+                
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Unlimited popups</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Unlimited monthly views</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Custom templates</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>White-label solution</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>API access</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Dedicated support</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Custom integrations</span>
+                    </li>
+                </ul>
+                
+                <a asp-controller="Home" asp-action="Contact" class="block w-full bg-purple-600 text-white text-center px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    Contact Sales
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Comparison -->
+    <div class="bg-gray-50 rounded-xl p-8 mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Compare All Features</h2>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-4 px-4 font-semibold text-gray-900">Feature</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-900">Starter</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-900">Professional</th>
+                        <th class="text-center py-4 px-4 font-semibold text-gray-900">Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr>
+                        <td class="py-4 px-4 font-medium">Active Popups</td>
+                        <td class="text-center py-4 px-4">3</td>
+                        <td class="text-center py-4 px-4">25</td>
+                        <td class="text-center py-4 px-4">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-4 font-medium">Monthly Views</td>
+                        <td class="text-center py-4 px-4">1,000</td>
+                        <td class="text-center py-4 px-4">50,000</td>
+                        <td class="text-center py-4 px-4">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-4 font-medium">WYSIWYG Editor</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-4 font-medium">Advanced Targeting</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-times text-gray-400"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-4 font-medium">A/B Testing</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-times text-gray-400"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-4 font-medium">API Access</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-times text-gray-400"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-times text-gray-400"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-4 font-medium">White Label</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-times text-gray-400"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-times text-gray-400"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check text-green-500"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="text-center">
+        <h2 class="text-3xl font-bold text-gray-900 mb-12">Frequently Asked Questions</h2>
+        
+        <div class="max-w-3xl mx-auto space-y-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 text-left">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Can I change plans anytime?</h3>
+                <p class="text-gray-600">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and you'll be prorated accordingly.</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-lg p-6 text-left">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">What happens if I exceed my monthly view limit?</h3>
+                <p class="text-gray-600">Your popups will continue to work, but you'll be charged $5 per 1,000 additional views or you can upgrade to a higher plan.</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-lg p-6 text-left">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Do you offer refunds?</h3>
+                <p class="text-gray-600">Yes, we offer a 30-day money-back guarantee. If you're not satisfied, contact us for a full refund.</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-lg p-6 text-left">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Is there a setup fee?</h3>
+                <p class="text-gray-600">No setup fees ever. Just pay your monthly or annual subscription and you're ready to go.</p>
+            </div>
+        </div>
+        
+        <div class="mt-12">
+            <p class="text-gray-600 mb-4">Still have questions?</p>
+            <a asp-controller="Home" asp-action="Contact" class="text-blue-600 hover:text-blue-800 font-semibold">Contact our sales team</a>
+        </div>
+    </div>
+</div>

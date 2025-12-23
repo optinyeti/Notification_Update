@@ -1,0 +1,71 @@
+@model SupportTicket
+@{
+    ViewData["Title"] = "Support Ticket";
+}
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <a asp-action="Support" class="text-blue-600 hover:underline mb-4 block"><i class="fas fa-arrow-left mr-2"></i>Back to Tickets</a>
+        <h1 class="text-3xl font-bold text-gray-900">@Model.Subject</h1>
+        <p class="text-gray-600 mt-2">Ticket #@Model.Id</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Messages -->
+        <div class="lg:col-span-2 space-y-6">
+            @foreach (var message in Model.Messages.OrderBy(m => m.CreatedAt))
+            {
+                <div class="flex @(message.IsFromSupport ? "justify-start" : "justify-end")">
+                    <div class="max-w-lg">
+                        <div class="p-4 rounded-lg @(message.IsFromSupport ? "bg-gray-200 text-gray-800" : "bg-blue-600 text-white")">
+                            <p>@message.Message</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 @(message.IsFromSupport ? "text-left" : "text-right")">
+                            @message.CreatedBy?.FirstName @message.CreatedBy?.LastName - @message.CreatedAt.ToString("MMM dd, hh:mm tt")
+                        </p>
+                    </div>
+                </div>
+            }
+
+            <!-- Reply Form -->
+            <div class="bg-white rounded-lg shadow border p-6">
+                <h3 class="text-lg font-semibold mb-4">Add a Reply</h3>
+                <form asp-action="AddTicketMessage" method="post">
+                    <input type="hidden" name="ticketId" value="@Model.Id" />
+                    <textarea name="message" rows="4" class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Type your message..."></textarea>
+                    <div class="mt-4 flex justify-end">
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Send Reply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Ticket Details -->
+        <div class="bg-white rounded-lg shadow border p-6 h-fit">
+            <h3 class="text-lg font-semibold mb-4">Ticket Details</h3>
+            <div class="space-y-4 text-sm">
+                <div>
+                    <p class="font-medium text-gray-500">Status</p>
+                    <p class="font-semibold text-gray-900">@Model.Status</p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-500">Priority</p>
+                    <p class="font-semibold text-gray-900">@Model.Priority</p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-500">Category</p>
+                    <p class="font-semibold text-gray-900">@Model.Category</p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-500">Created</p>
+                    <p class="font-semibold text-gray-900">@Model.CreatedAt.ToString("MMM dd, yyyy")</p>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-500">Assigned To</p>
+                    <p class="font-semibold text-gray-900">@(Model.AssignedTo?.FirstName ?? "Unassigned")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

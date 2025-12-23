@@ -1,0 +1,188 @@
+@{
+    ViewData["Title"] = "Choose Popup Type";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Popup Manager Pro</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: 600; font-size: 1.25rem; }
+        .popup-type-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .popup-type-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: #007bff;
+        }
+        .icon-wrapper {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .card-text {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Simple Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/Popup">
+                <i class="bi bi-window"></i> Popup Manager Pro
+            </a>
+            <div class="ms-auto">
+                <a href="/Popup" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Popups
+                </a>
+            </div>
+        </div>
+    </nav>
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Create New Popup</h1>
+        <p class="lead">Select the type of popup you want to create</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Email Collector -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "EmailCollector" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-envelope-fill" style="font-size: 3rem; color: #007bff;"></i>
+                    </div>
+                    <h5 class="card-title">Email Collector</h5>
+                    <p class="card-text">Capture visitor emails and grow your subscriber list</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advertising -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "Advertising" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-megaphone-fill" style="font-size: 3rem; color: #28a745;"></i>
+                    </div>
+                    <h5 class="card-title">Advertising</h5>
+                    <p class="card-text">Promote special offers and announcements</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lightbox -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "Lightbox" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-image-fill" style="font-size: 3rem; color: #6c757d;"></i>
+                    </div>
+                    <h5 class="card-title">Lightbox</h5>
+                    <p class="card-text">Full-screen overlay for images or content</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spin Wheel -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "SpinWheel" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-arrow-repeat" style="font-size: 3rem; color: #ffc107;"></i>
+                    </div>
+                    <h5 class="card-title">Spin Wheel</h5>
+                    <p class="card-text">Interactive gamification to engage visitors</p>
+                    <span class="badge bg-warning text-dark">Premium</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Popup -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "VideoPopup" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-play-circle-fill" style="font-size: 3rem; color: #dc3545;"></i>
+                    </div>
+                    <h5 class="card-title">Video Popup</h5>
+                    <p class="card-text">Embed YouTube or Vimeo videos in popups</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coupon -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "Coupon" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-gift-fill" style="font-size: 3rem; color: #fd7e14;"></i>
+                    </div>
+                    <h5 class="card-title">Coupon</h5>
+                    <p class="card-text">Share discount codes and special offers</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "Inline" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-file-text-fill" style="font-size: 3rem; color: #17a2b8;"></i>
+                    </div>
+                    <h5 class="card-title">Inline</h5>
+                    <p class="card-text">Embed content directly in your pages</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 popup-type-card" onclick="location.href='@Url.Action("SelectTemplate", new { type = "Message" })'">
+                <div class="card-body text-center">
+                    <div class="icon-wrapper mb-3">
+                        <i class="bi bi-chat-dots-fill" style="font-size: 3rem; color: #6f42c1;"></i>
+                    </div>
+                    <h5 class="card-title">Message</h5>
+                    <p class="card-text">Simple notification banners and alerts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Popups
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

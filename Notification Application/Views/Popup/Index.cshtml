@@ -1,0 +1,308 @@
+@model IEnumerable<Popup>
+@{
+    ViewData["Title"] = "Campaigns";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Campaigns</h1>
+            <p class="text-gray-600 mt-2">Manage all your campaigns from one place</p>
+        </div>
+        <a asp-action="CreateCampaign" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
+            <i class="fas fa-plus"></i>Create New Campaign
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow border mb-6">
+        <div class="p-6 border-b">
+            <div class="flex flex-wrap gap-4">
+                <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>All Types</option>
+                    <option>Email Collector</option>
+                    <option>Advertising</option>
+                    <option>Lightbox</option>
+                    <option>Inline</option>
+                    <option>Spin Wheel</option>
+                    <option>Video Popup</option>
+                    <option>Coupon</option>
+                    <option>Message</option>
+                </select>
+                
+                <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>All Status</option>
+                    <option>Published</option>
+                    <option>Draft</option>
+                    <option>Paused</option>
+                    <option>Archived</option>
+                </select>
+                
+                <input type="search" placeholder="Search popups..." class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-64">
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Grid -->
+    @if (Model.Any())
+    {
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            @foreach (var popup in Model)
+            {
+                <div class="bg-white rounded-lg shadow border hover:shadow-lg transition">
+                    <div class="p-6">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-gray-100 p-2 rounded-lg">
+                                    <i class="fas fa-@GetPopupIcon(popup.Type) text-gray-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">@popup.Name</h3>
+                                    <p class="text-sm text-gray-500">@popup.Type</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 rounded-full text-xs font-medium @GetStatusClass(popup.Status)">
+                                @popup.Status
+                            </span>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid grid-cols-3 gap-4 mb-4 text-center">
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">@popup.Views</p>
+                                <p class="text-xs text-gray-500">Views</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">@popup.Clicks</p>
+                                <p class="text-xs text-gray-500">Clicks</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">@popup.Conversions</p>
+                                <p class="text-xs text-gray-500">Conversions</p>
+                            </div>
+                        </div>
+
+                        <!-- Conversion Rate -->
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-600">Conversion Rate</span>
+                                <span class="font-medium">@(popup.Views > 0 ? $"{(popup.Conversions / (double)popup.Views * 100):F1}%" : "0%")</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: @(popup.Views > 0 ? popup.Conversions / (double)popup.Views * 100 : 0)%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex space-x-2">
+                            <a asp-action="Designer" asp-route-id="@popup.Id" class="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                                <i class="fas fa-edit mr-1"></i>Design
+                            </a>
+                            <a asp-action="Analytics" asp-route-id="@popup.Id" class="flex-1 bg-purple-600 text-white text-center py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium">
+                                <i class="fas fa-chart-bar mr-1"></i>Analytics
+                            </a>
+                            <div class="dropdown">
+                                <button class="bg-gray-600 text-white p-2 rounded-lg hover:bg-gray-700 transition dropdown-toggle" 
+                                        type="button" 
+                                        id="popupActions@(popup.Id)" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="popupActions@(popup.Id)">
+                                    <li>
+                                        <a asp-action="Preview" asp-route-id="@popup.Id" target="_blank" class="dropdown-item">
+                                            <i class="fas fa-eye me-2"></i>Design Preview
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-action="LivePreview" asp-route-id="@popup.Id" target="_blank" class="dropdown-item">
+                                            <i class="fas fa-broadcast-tower me-2 text-success"></i>Live Preview (Track Analytics)
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        @if (popup.Status == PopupStatus.Published)
+                                        {
+                                            <form asp-action="Unpublish" asp-route-id="@popup.Id" method="post" class="d-inline w-100">
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="fas fa-pause me-2"></i>Unpublish
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Publish" asp-route-id="@popup.Id" method="post" class="d-inline w-100">
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="fas fa-play me-2"></i>Publish
+                                                </button>
+                                            </form>
+                                        }
+                                    </li>
+                                    <li>
+                                        <button onclick="showEmbedModal(@popup.Id, @popup.TenantId)" class="dropdown-item">
+                                            <i class="fas fa-code me-2"></i>Get Code
+                                        </button>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-action="Delete" asp-route-id="@popup.Id" method="post" class="d-inline w-100" onsubmit="return confirm('Are you sure you want to delete this popup?')">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-trash me-2"></i>Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-12">
+            <i class="fas fa-window-restore text-gray-300 text-6xl mb-6"></i>
+            <h3 class="text-xl font-medium text-gray-500 mb-4">No popups found</h3>
+            <p class="text-gray-400 mb-6">Create your first popup to get started</p>
+            <a asp-action="Create" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+                <i class="fas fa-plus mr-2"></i>Create Your First Popup
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Embed Code Modal -->
+<div id="embedModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeEmbedModal(event)">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between p-6 border-b">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900">Installation Code</h3>
+                <p class="text-sm text-gray-600 mt-1">Choose how to install your popup</p>
+            </div>
+            <button onclick="closeEmbedModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <!-- Recommended: Tenant Code -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="flex items-start mb-3">
+                    <i class="fas fa-star text-blue-600 mr-2 mt-1"></i>
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900 mb-1">Recommended: Tenant-Wide Tracking</h4>
+                        <p class="text-sm text-gray-600 mb-3">Install one code for all your campaigns (like GTM/GA4). All published campaigns automatically appear.</p>
+                    </div>
+                </div>
+                <div class="bg-gray-900 text-gray-100 p-4 rounded-lg mb-3 overflow-x-auto">
+                    <code id="modalTenantCode" class="text-sm"></code>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="copyModalTenantCode()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-medium">
+                        <i class="fas fa-clipboard mr-1"></i>Copy Tenant Code
+                    </button>
+                    <a href="@Url.Action("Settings", "Admin")" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 text-sm font-medium">
+                        <i class="fas fa-gear mr-1"></i>View in Settings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Individual Campaign Code -->
+            <details class="border border-gray-200 rounded-lg">
+                <summary class="px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-600 font-medium">
+                    <i class="fas fa-chevron-right mr-2"></i>Individual Campaign Code (Legacy)
+                </summary>
+                <div class="px-4 pb-4">
+                    <p class="text-sm text-gray-600 mb-3 mt-2">Use this if you only want this specific campaign (not recommended):</p>
+                    <div class="bg-gray-100 text-gray-800 p-4 rounded-lg mb-3 overflow-x-auto">
+                        <code id="modalCampaignCode" class="text-sm"></code>
+                    </div>
+                    <button onclick="copyModalCampaignCode()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm font-medium">
+                        <i class="fas fa-clipboard mr-1"></i>Copy Campaign Code
+                    </button>
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const host = '@(ViewBag.PublicHost ?? ($"{Context.Request.Scheme}://{Context.Request.Host}"))';
+        
+        function showEmbedModal(popupId, tenantId) {
+            const modal = document.getElementById('embedModal');
+            const tenantCode = document.getElementById('modalTenantCode');
+            const campaignCode = document.getElementById('modalCampaignCode');
+            
+            tenantCode.textContent = `<script src="${host}/Popup/GetTenantScript/${tenantId}"><\/script>`;
+            campaignCode.textContent = `<script src="${host}/Popup/GetScript/${popupId}"><\/script>`;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        function closeEmbedModal(event) {
+            if (!event || event.target.id === 'embedModal') {
+                const modal = document.getElementById('embedModal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+        
+        function copyModalTenantCode() {
+            const code = document.getElementById('modalTenantCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Tenant tracking code copied!');
+            });
+        }
+        
+        function copyModalCampaignCode() {
+            const code = document.getElementById('modalCampaignCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Campaign code copied!');
+            });
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+    </script>
+}
+
+@functions {
+    string GetPopupIcon(PopupType type)
+    {
+        return type switch
+        {
+            PopupType.EmailCollector => "envelope",
+            PopupType.Advertising => "bullhorn",
+            PopupType.Lightbox => "expand",
+            PopupType.Inline => "align-left",
+            PopupType.SpinWheel => "gamepad",
+            PopupType.VideoPopup => "play",
+            PopupType.Coupon => "tag",
+            PopupType.Message => "info-circle",
+            _ => "window-restore"
+        };
+    }
+    
+    string GetStatusClass(PopupStatus status)
+    {
+        return status switch
+        {
+            PopupStatus.Published => "bg-green-100 text-green-800",
+            PopupStatus.Draft => "bg-yellow-100 text-yellow-800",
+            PopupStatus.Paused => "bg-orange-100 text-orange-800",
+            PopupStatus.Archived => "bg-red-100 text-red-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+}

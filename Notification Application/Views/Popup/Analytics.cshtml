@@ -1,0 +1,468 @@
+@model Notification_Application.Models.PopupAnalyticsViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - @Model.Popup.Name</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .analytics-container {
+            max-width: 1400px;
+            margin: 40px auto;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: white;
+            border-bottom: 2px solid #f0f0f0;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+        .card-header h4 {
+            margin: 0;
+            color: #333;
+            font-weight: 700;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .stat-card .icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        .stat-card .icon.views {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .stat-card .icon.clicks {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .stat-card .icon.conversions {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .stat-card .icon.rate {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        .stat-card .icon.mobile {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        .stat-card .icon.desktop {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            color: white;
+        }
+        .stat-card h6 {
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        .stat-card .change {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .stat-card .change.positive {
+            color: #43e97b;
+        }
+        .stat-card .change.negative {
+            color: #f5576c;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            padding: 20px;
+        }
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-outline-secondary {
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .popup-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .popup-info h2 {
+            margin: 0;
+            font-weight: 700;
+        }
+        .popup-info .badge {
+            font-size: 14px;
+            padding: 8px 15px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/Home/Dashboard">
+                <i class="bi bi-bell-fill text-primary"></i> Popup Manager
+            </a>
+            <div class="ms-auto">
+                <a href="/Popup/Edit/@Model.Popup.Id" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Edit
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container analytics-container" style="margin-top: 80px;">
+        <!-- Popup Info Header -->
+        <div class="popup-info">
+            <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div>
+                    <h2><i class="bi bi-graph-up"></i> Analytics: @Model.Popup.Name</h2>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark">@Model.Popup.Type</span>
+                        @if (Model.Popup.Status == PopupStatus.Published)
+                        {
+                            <span class="badge bg-success">Published</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">@Model.Popup.Status</span>
+                        }
+                    </div>
+                </div>
+                <div class="text-end">
+                    <p class="mb-1"><small>Date Range</small></p>
+                    <p class="mb-0 fw-bold">@Model.StartDate.ToString("MMM dd, yyyy") - @Model.EndDate.ToString("MMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="stat-card">
+                    <div class="icon views">
+                        <i class="bi bi-eye-fill"></i>
+                    </div>
+                    <h6>Total Views</h6>
+                    <p class="value">@Model.Analytics.Sum(a => a.Views).ToString("N0")</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="stat-card">
+                    <div class="icon clicks">
+                        <i class="bi bi-cursor-fill"></i>
+                    </div>
+                    <h6>Total Clicks</h6>
+                    <p class="value">@Model.Analytics.Sum(a => a.Clicks).ToString("N0")</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="stat-card">
+                    <div class="icon conversions">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h6>Conversions</h6>
+                    <p class="value">@Model.Analytics.Sum(a => a.Conversions).ToString("N0")</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="stat-card">
+                    <div class="icon rate">
+                        <i class="bi bi-percent"></i>
+                    </div>
+                    <h6>Conversion Rate</h6>
+                    @{
+                        var totalViews = Model.Analytics.Sum(a => a.Views);
+                        var totalConversions = Model.Analytics.Sum(a => a.Conversions);
+                        var conversionRate = totalViews > 0 ? (totalConversions * 100.0 / totalViews) : 0;
+                    }
+                    <p class="value">@conversionRate.ToString("F2")%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Breakdown -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="icon mobile">
+                        <i class="bi bi-phone-fill"></i>
+                    </div>
+                    <h6>Mobile Views</h6>
+                    <p class="value">@Model.Analytics.Sum(a => a.MobileViews).ToString("N0")</p>
+                    @{
+                        var mobilePercentage = totalViews > 0 ? (Model.Analytics.Sum(a => a.MobileViews) * 100.0 / totalViews) : 0;
+                    }
+                    <p class="text-muted mb-0">@mobilePercentage.ToString("F1")% of total views</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="icon desktop">
+                        <i class="bi bi-display-fill"></i>
+                    </div>
+                    <h6>Desktop Views</h6>
+                    <p class="value">@Model.Analytics.Sum(a => a.DesktopViews).ToString("N0")</p>
+                    @{
+                        var desktopPercentage = totalViews > 0 ? (Model.Analytics.Sum(a => a.DesktopViews) * 100.0 / totalViews) : 0;
+                    }
+                    <p class="text-muted mb-0">@desktopPercentage.ToString("F1")% of total views</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="bi bi-graph-up-arrow"></i> Performance Over Time</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="bi bi-pie-chart-fill"></i> Device Distribution</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="deviceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analytics Table -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-table"></i> Daily Analytics</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th class="text-end">Views</th>
+                                <th class="text-end">Clicks</th>
+                                <th class="text-end">Conversions</th>
+                                <th class="text-end">Rate</th>
+                                <th class="text-end">Mobile</th>
+                                <th class="text-end">Desktop</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var day in Model.Analytics.OrderByDescending(a => a.Date))
+                            {
+                                var dayRate = day.Views > 0 ? (day.Conversions * 100.0 / day.Views) : 0;
+                                <tr>
+                                    <td>@day.Date.ToString("MMM dd, yyyy")</td>
+                                    <td class="text-end">@day.Views.ToString("N0")</td>
+                                    <td class="text-end">@day.Clicks.ToString("N0")</td>
+                                    <td class="text-end">@day.Conversions.ToString("N0")</td>
+                                    <td class="text-end">
+                                        <span class="badge @(dayRate >= conversionRate ? "bg-success" : "bg-warning")">
+                                            @dayRate.ToString("F2")%
+                                        </span>
+                                    </td>
+                                    <td class="text-end">@day.MobileViews.ToString("N0")</td>
+                                    <td class="text-end">@day.DesktopViews.ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr class="fw-bold">
+                                <td>Total</td>
+                                <td class="text-end">@totalViews.ToString("N0")</td>
+                                <td class="text-end">@Model.Analytics.Sum(a => a.Clicks).ToString("N0")</td>
+                                <td class="text-end">@totalConversions.ToString("N0")</td>
+                                <td class="text-end">
+                                    <span class="badge bg-primary">@conversionRate.ToString("F2")%</span>
+                                </td>
+                                <td class="text-end">@Model.Analytics.Sum(a => a.MobileViews).ToString("N0")</td>
+                                <td class="text-end">@Model.Analytics.Sum(a => a.DesktopViews).ToString("N0")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Performance Over Time Chart
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        const performanceChart = new Chart(performanceCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Date.ToString("MMM dd")))),
+                datasets: [
+                    {
+                        label: 'Views',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Views))),
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Clicks',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Clicks))),
+                        borderColor: 'rgb(245, 87, 108)',
+                        backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Conversions',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Conversions))),
+                        borderColor: 'rgb(79, 172, 254)',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        // Device Distribution Chart
+        const deviceCtx = document.getElementById('deviceChart').getContext('2d');
+        const deviceChart = new Chart(deviceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Mobile', 'Desktop'],
+                datasets: [{
+                    data: [
+                        @Model.Analytics.Sum(a => a.MobileViews),
+                        @Model.Analytics.Sum(a => a.DesktopViews)
+                    ],
+                    backgroundColor: [
+                        'rgba(250, 112, 154, 0.8)',
+                        'rgba(48, 207, 208, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(250, 112, 154)',
+                        'rgb(48, 207, 208)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.toLocaleString();
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                label += ` (${percentage}%)`;
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

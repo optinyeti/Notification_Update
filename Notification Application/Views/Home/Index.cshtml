@@ -1,0 +1,904 @@
+﻿@{
+    ViewData["Title"] = "Smart Popup Management Made Simple";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-hero {
+            background: linear-gradient(180deg, #E6F4FF 0%, #FFFFFF 100%);
+        }
+        .gradient-blue {
+            background: linear-gradient(135deg, #3CA2FF 0%, #2159D4 100%);
+        }
+        .stats-bg {
+            background: #3A88CE;
+        }
+        .text-primary-blue {
+            color: #3082CC;
+        }
+        .bg-primary-blue {
+            background: #3082CC;
+        }
+        .shadow-custom {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .hover-lift {
+            transition: transform 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-700">
+    
+    <!-- NAVBAR -->
+    <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-bell text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800">PopupX</span>
+                </div>
+                
+                <!-- Nav Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-600 hover:text-blue-600">Features</a>
+                    <a href="#integrations" class="text-gray-600 hover:text-blue-600">Integrations</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-blue-600">Pricing</a>
+                    <a href="#testimonials" class="text-gray-600 hover:text-blue-600">Testimonials</a>
+                    <a href="#blogs" class="text-gray-600 hover:text-blue-600">Blog</a>
+                </div>
+                
+                <!-- Right Actions -->
+                <div class="flex items-center space-x-4">
+                    <select class="text-sm border border-gray-300 rounded-lg px-3 py-2">
+                        <option>English</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                    </select>
+                    <a href="/Account/Login" class="text-gray-600 hover:text-blue-600 font-medium">Login</a>
+                    <a href="/Account/Register" class="bg-primary-blue text-white px-6 py-2.5 rounded-full font-medium hover:bg-blue-700 shadow-md">
+                        Start Free Trial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="gradient-hero pt-32 pb-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Social Proof -->
+            <div class="flex items-center justify-center mb-8 space-x-3">
+                <div class="flex -space-x-2">
+                    <img src="https://i.pravatar.cc/40?img=1" alt="User" class="w-10 h-10 rounded-full border-2 border-white">
+                    <img src="https://i.pravatar.cc/40?img=2" alt="User" class="w-10 h-10 rounded-full border-2 border-white">
+                    <img src="https://i.pravatar.cc/40?img=3" alt="User" class="w-10 h-10 rounded-full border-2 border-white">
+                    <img src="https://i.pravatar.cc/40?img=4" alt="User" class="w-10 h-10 rounded-full border-2 border-white">
+                </div>
+                <div class="flex items-center bg-white px-4 py-2 rounded-full shadow-md">
+                    <span class="text-yellow-400 text-sm">★★★★★</span>
+                    <span class="ml-2 text-sm font-medium">4.9/5 from 1000+ reviews</span>
+                </div>
+            </div>
+
+            <!-- Headline -->
+            <div class="text-center mb-12">
+                <h1 class="text-6xl md:text-7xl font-black text-gray-800 mb-4">
+                    SMART <span class="text-primary-blue">POPUP MANAGEMENT</span>
+                </h1>
+                <h1 class="text-6xl md:text-7xl font-black text-gray-800 mb-6">
+                    MADE SIMPLE
+                </h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-10 leading-relaxed">
+                    Create stunning popups in minutes with our drag-and-drop builder. No coding required. 
+                    Boost conversions, capture leads, and grow your business effortlessly.
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="flex items-center justify-center space-x-4 mb-16">
+                    <a href="/Account/Register" class="bg-primary-blue text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-blue-700 shadow-lg">
+                        Get Started Free
+                    </a>
+                    <a href="#demo" class="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold text-lg border-2 border-blue-600 hover:bg-blue-50 shadow-lg">
+                        Watch Demo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dashboard Mockup -->
+            <div class="relative max-w-5xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-2xl p-8">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                        <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                        <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 h-80 rounded-xl flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">📊</div>
+                            <p class="text-gray-500">Dashboard Preview</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Floating Cards -->
+                <div class="absolute -left-20 top-1/3 bg-white rounded-xl shadow-xl p-6 w-64 hidden lg:block">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-semibold text-gray-700">Conversion Rate</span>
+                        <span class="text-green-500 text-sm">+24%</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800">45.2%</div>
+                    <div class="mt-4 h-16 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg"></div>
+                </div>
+                
+                <div class="absolute -right-20 top-1/2 bg-white rounded-xl shadow-xl p-6 w-64 hidden lg:block">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-semibold text-gray-700">Total Views</span>
+                        <span class="text-blue-500 text-sm">↗</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800">24.5K</div>
+                    <div class="mt-4 flex items-end space-x-2 h-16">
+                        <div class="bg-blue-200 rounded w-8 h-8"></div>
+                        <div class="bg-blue-300 rounded w-8 h-12"></div>
+                        <div class="bg-blue-400 rounded w-8 h-16"></div>
+                        <div class="bg-blue-500 rounded w-8 h-10"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURE ICON ROW -->
+    <section class="py-16 bg-white px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-magic text-blue-600 text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-700">Easy Builder</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-mobile-alt text-purple-600 text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-700">Mobile Ready</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-700">Analytics</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-bolt text-yellow-600 text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-700">Lightning Fast</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-palette text-red-600 text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-700">Customizable</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-plug text-indigo-600 text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-700">Integrations</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LANGUAGES STRIP -->
+    <section class="py-16 bg-gradient-to-b from-white to-blue-50 px-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-12">
+                We support <span class="text-primary-blue">30+</span> languages
+            </h2>
+            <div class="flex flex-wrap justify-center items-center gap-8">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇺🇸</span>
+                    <span class="font-medium">English</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇪🇸</span>
+                    <span class="font-medium">Spanish</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇫🇷</span>
+                    <span class="font-medium">French</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇩🇪</span>
+                    <span class="font-medium">German</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇮🇹</span>
+                    <span class="font-medium">Italian</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇵🇹</span>
+                    <span class="font-medium">Portuguese</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇯🇵</span>
+                    <span class="font-medium">Japanese</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🇨🇳</span>
+                    <span class="font-medium">Chinese</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Everything You Need for Popup Success -->
+    <section id="features" class="py-20 bg-white px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-bold text-center text-gray-800 mb-4">
+                Everything You Need for Popup
+            </h2>
+            <h2 class="text-5xl font-bold text-center text-primary-blue mb-16">
+                Success
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-custom hover-lift">
+                    <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-magic text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Drag & Drop Builder</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Create beautiful popups in minutes with our intuitive drag-and-drop interface. 
+                        No coding skills required - just point, click, and customize.
+                    </p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl shadow-custom hover-lift">
+                    <div class="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-bar text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Advanced Analytics</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Track every interaction with detailed analytics. Understand visitor behavior 
+                        and optimize your popups for maximum conversions.
+                    </p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl shadow-custom hover-lift">
+                    <div class="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-bullseye text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Smart Targeting</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Show the right message to the right visitor at the right time. 
+                        Advanced targeting rules based on behavior, location, and more.
+                    </p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-yellow-50 to-white p-8 rounded-2xl shadow-custom hover-lift">
+                    <div class="w-14 h-14 bg-yellow-600 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Mobile Optimized</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Every popup is fully responsive and optimized for all devices. 
+                        Provide seamless experience across desktop, tablet, and mobile.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Powerful Tools for Better Results -->
+    <section class="py-20 bg-gradient-to-b from-white to-blue-50 px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-bold text-center text-gray-800 mb-16">
+                Powerful Tools for Better Results
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-3xl font-bold text-gray-800 mb-8">All-in-One Smart Features</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <span class="text-gray-700">Real-time performance tracking and reporting</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <span class="text-gray-700">A/B testing to optimize conversion rates</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <span class="text-gray-700">Exit intent technology to reduce bounce rates</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <span class="text-gray-700">Customizable templates for every use case</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <span class="text-gray-700">Smart scheduling and frequency capping</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <span class="text-gray-700">Seamless integrations with popular tools</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-2xl p-8">
+                    <div class="bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-xl p-6 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-semibold">Campaign Performance</span>
+                            <span class="bg-white bg-opacity-25 px-3 py-1 rounded-full text-xs">Live</span>
+                        </div>
+                        <div class="text-4xl font-bold mb-2">8,429</div>
+                        <div class="text-sm opacity-90">Total Conversions This Month</div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Email Popups</span>
+                            <div class="flex-1 mx-4 bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <span class="text-sm font-semibold">75%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Exit Intent</span>
+                            <div class="flex-1 mx-4 bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                            <span class="text-sm font-semibold">60%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Spin Wheel</span>
+                            <div class="flex-1 mx-4 bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <span class="text-sm font-semibold">85%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" class="py-20 bg-white px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-bold text-center text-gray-800 mb-16">
+                Loved By Businesses Worldwide
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-custom">
+                    <div class="flex items-center mb-6">
+                        <img src="https://i.pravatar.cc/60?img=5" alt="User" class="w-14 h-14 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-bold text-gray-800">Sarah Johnson</h4>
+                            <p class="text-sm text-gray-600">Marketing Director</p>
+                        </div>
+                    </div>
+                    <div class="text-yellow-400 mb-4">★★★★★</div>
+                    <p class="text-gray-700 leading-relaxed">
+                        "PopupX transformed our lead generation! We saw a 45% increase in email signups 
+                        within the first month. The drag-and-drop builder makes it so easy."
+                    </p>
+                </div>
+                
+                <!-- Video Card -->
+                <div class="bg-gradient-to-br from-purple-600 to-blue-600 p-8 rounded-2xl shadow-custom relative overflow-hidden">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-20 h-20 bg-white bg-opacity-90 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition">
+                            <i class="fas fa-play text-purple-600 text-2xl ml-1"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-8 left-8 text-white">
+                        <p class="text-sm font-semibold">Watch Success Story</p>
+                        <p class="text-xs opacity-80">2:30 min</p>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl shadow-custom">
+                    <div class="flex items-center mb-6">
+                        <img src="https://i.pravatar.cc/60?img=7" alt="User" class="w-14 h-14 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-bold text-gray-800">Michael Chen</h4>
+                            <p class="text-sm text-gray-600">E-commerce Owner</p>
+                        </div>
+                    </div>
+                    <div class="text-yellow-400 mb-4">★★★★★</div>
+                    <p class="text-gray-700 leading-relaxed">
+                        "The analytics are incredible! I can see exactly which popups convert best 
+                        and optimize accordingly. Revenue is up 30% thanks to PopupX."
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Carousel Controls -->
+            <div class="flex items-center justify-center space-x-4">
+                <button class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300">
+                    <i class="fas fa-chevron-left text-gray-600"></i>
+                </button>
+                <div class="flex space-x-2">
+                    <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                    <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                </div>
+                <button class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300">
+                    <i class="fas fa-chevron-right text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTEGRATIONS -->
+    <section id="integrations" class="py-20 bg-gradient-to-b from-white to-blue-50 px-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-5xl font-bold text-gray-800 mb-16">
+                Connect With Your Favorite Tools
+            </h2>
+            
+            <div class="relative max-w-4xl mx-auto mb-12">
+                <!-- Central Logo -->
+                <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                    <div class="w-32 h-32 gradient-blue rounded-full flex items-center justify-center shadow-2xl">
+                        <i class="fas fa-bell text-white text-4xl"></i>
+                    </div>
+                </div>
+                
+                <!-- Integration Boxes -->
+                <div class="grid grid-cols-2 gap-8 relative" style="min-height: 400px;">
+                    <!-- Top Left -->
+                    <div class="absolute top-0 left-0 bg-white p-6 rounded-xl shadow-lg border-2 border-blue-200 w-48">
+                        <div class="text-blue-600 text-3xl mb-2">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800">Mailchimp</h4>
+                        <p class="text-xs text-gray-600">Email Marketing</p>
+                    </div>
+                    
+                    <!-- Top Right -->
+                    <div class="absolute top-0 right-0 bg-white p-6 rounded-xl shadow-lg border-2 border-blue-200 w-48">
+                        <div class="text-green-600 text-3xl mb-2">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800">ConvertKit</h4>
+                        <p class="text-xs text-gray-600">Creator Platform</p>
+                    </div>
+                    
+                    <!-- Bottom Left -->
+                    <div class="absolute bottom-0 left-0 bg-white p-6 rounded-xl shadow-lg border-2 border-blue-200 w-48">
+                        <div class="text-purple-600 text-3xl mb-2">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800">Data Warehouse</h4>
+                        <p class="text-xs text-gray-600">Analytics Storage</p>
+                    </div>
+                    
+                    <!-- Bottom Right -->
+                    <div class="absolute bottom-0 right-0 bg-white p-6 rounded-xl shadow-lg border-2 border-blue-200 w-48">
+                        <div class="text-red-600 text-3xl mb-2">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800">Paywall API</h4>
+                        <p class="text-xs text-gray-600">Payment Gateway</p>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="#" class="inline-block bg-primary-blue text-white px-8 py-4 rounded-full font-semibold hover:bg-blue-700 shadow-lg mt-12">
+                View All Integrations
+            </a>
+        </div>
+    </section>
+
+    <!-- STATS BAND -->
+    <section class="stats-bg py-16 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 text-center text-white">
+                <div>
+                    <div class="text-5xl font-black mb-2">1M+</div>
+                    <p class="text-sm opacity-90">Popups Created</p>
+                </div>
+                <div>
+                    <div class="text-5xl font-black mb-2">5,000+</div>
+                    <p class="text-sm opacity-90">Active Users</p>
+                </div>
+                <div>
+                    <div class="text-5xl font-black mb-2">35%</div>
+                    <p class="text-sm opacity-90">Avg. Conversion Boost</p>
+                </div>
+                <div>
+                    <div class="text-5xl font-black mb-2">99.9%</div>
+                    <p class="text-sm opacity-90">Uptime Guarantee</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing" class="py-20 bg-white px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-bold text-center text-gray-800 mb-4">Pricing & Plans</h2>
+            <p class="text-center text-gray-600 mb-16">Choose the perfect plan for your business</p>
+            
+            <div class="grid md:grid-cols-4 gap-6">
+                <!-- BASIC -->
+                <div class="bg-white border-2 border-gray-200 rounded-2xl p-8 hover-lift">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">BASIC</h3>
+                    <div class="mb-6">
+                        <span class="text-5xl font-black text-gray-800">$7</span>
+                        <span class="text-gray-600">/mo</span>
+                    </div>
+                    <a href="/Account/Register" class="block w-full bg-gray-200 text-gray-800 text-center py-3 rounded-full font-semibold mb-6 hover:bg-gray-300">
+                        Get Started
+                    </a>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>5,000 popup views/mo</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>5 active popups</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>Basic templates</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>Email support</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- PLUS -->
+                <div class="bg-white border-2 border-blue-300 rounded-2xl p-8 hover-lift">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">PLUS</h3>
+                    <div class="mb-6">
+                        <span class="text-5xl font-black text-gray-800">$17</span>
+                        <span class="text-gray-600">/mo</span>
+                    </div>
+                    <a href="/Account/Register" class="block w-full bg-blue-600 text-white text-center py-3 rounded-full font-semibold mb-6 hover:bg-blue-700">
+                        Get Started
+                    </a>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>25,000 popup views/mo</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>15 active popups</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>All templates</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>Priority support</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>Remove branding</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- PRO (Featured) -->
+                <div class="gradient-blue text-white rounded-2xl p-8 hover-lift relative overflow-hidden">
+                    <div class="absolute top-4 right-4 bg-yellow-400 text-gray-800 px-3 py-1 rounded-full text-xs font-bold">
+                        POPULAR
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">PRO</h3>
+                    <div class="mb-6">
+                        <span class="text-5xl font-black">$25</span>
+                        <span class="opacity-90">/mo</span>
+                    </div>
+                    <a href="/Account/Register" class="block w-full bg-white text-blue-600 text-center py-3 rounded-full font-semibold mb-6 hover:bg-gray-100">
+                        Get Started
+                    </a>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-check mr-2 mt-1"></i>
+                            <span>100,000 popup views/mo</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check mr-2 mt-1"></i>
+                            <span>Unlimited popups</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check mr-2 mt-1"></i>
+                            <span>Advanced analytics</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check mr-2 mt-1"></i>
+                            <span>A/B testing</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check mr-2 mt-1"></i>
+                            <span>API access</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check mr-2 mt-1"></i>
+                            <span>24/7 support</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- GROWTH -->
+                <div class="bg-white border-2 border-gray-200 rounded-2xl p-8 hover-lift">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">GROWTH</h3>
+                    <div class="mb-6">
+                        <span class="text-5xl font-black text-gray-800">$37</span>
+                        <span class="text-gray-600">/mo</span>
+                    </div>
+                    <a href="/Account/Register" class="block w-full bg-gray-800 text-white text-center py-3 rounded-full font-semibold mb-6 hover:bg-gray-900">
+                        Get Started
+                    </a>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>500,000 popup views/mo</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>Unlimited everything</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>White label</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>Custom integrations</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                            <span>Dedicated manager</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Leads Flowing Nonstop -->
+    <section class="py-20 bg-gradient-to-b from-white to-blue-50 px-6">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-5xl font-bold text-gray-800 mb-16">
+                Leads Flowing Nonstop
+            </h2>
+            
+            <div class="relative">
+                <div class="text-9xl mb-8">🎯</div>
+                
+                <!-- Floating Labels -->
+                <div class="absolute top-10 left-20 bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg">
+                    Email Capture
+                </div>
+                <div class="absolute top-20 right-10 bg-purple-500 text-white px-6 py-3 rounded-full shadow-lg">
+                    Exit Intent
+                </div>
+                <div class="absolute bottom-20 left-40 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg">
+                    Spin to Win
+                </div>
+                <div class="absolute bottom-10 right-32 bg-pink-500 text-white px-6 py-3 rounded-full shadow-lg">
+                    Coupon Codes
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <section class="py-20 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="gradient-blue rounded-3xl p-16 text-center text-white shadow-2xl">
+                <h2 class="text-5xl font-bold mb-6">
+                    Ready to transform your popup strategy?
+                </h2>
+                <p class="text-xl mb-8 opacity-90">
+                    Join thousands of businesses boosting conversions with PopupX
+                </p>
+                <a href="/Account/Register" class="inline-block bg-white text-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-100 shadow-xl">
+                    Start Your Free Trial Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOGS -->
+    <section id="blogs" class="py-20 bg-white px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-bold text-center text-gray-800 mb-16">Our Blogs</h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl shadow-custom overflow-hidden hover-lift">
+                    <div class="h-48 bg-gradient-to-br from-blue-400 to-purple-500"></div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">December 15, 2024</div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">
+                            10 Popup Best Practices to Boost Conversions
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            Learn the proven strategies top marketers use to create high-converting popups...
+                        </p>
+                        <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">
+                            Read More →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-custom overflow-hidden hover-lift">
+                    <div class="h-48 bg-gradient-to-br from-green-400 to-teal-500"></div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">December 12, 2024</div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">
+                            How to Create Exit-Intent Popups That Actually Work
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            Stop losing visitors! Discover exit-intent strategies that recover abandoned carts...
+                        </p>
+                        <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">
+                            Read More →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-custom overflow-hidden hover-lift">
+                    <div class="h-48 bg-gradient-to-br from-pink-400 to-orange-500"></div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">December 8, 2024</div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">
+                            Mobile Popup Design: Complete Guide for 2024
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            Mobile traffic dominates. Learn how to design popups that convert on small screens...
+                        </p>
+                        <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">
+                            Read More →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section class="py-20 bg-gradient-to-b from-white to-blue-50 px-6">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">
+                Stay updated with popup trends
+            </h2>
+            <p class="text-gray-600 mb-8">
+                Get the latest tips, strategies, and insights delivered to your inbox
+            </p>
+            <div class="flex gap-4 max-w-lg mx-auto">
+                <input 
+                    type="email" 
+                    placeholder="Enter your email address" 
+                    class="flex-1 px-6 py-4 rounded-full border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                />
+                <button class="bg-primary-blue text-white px-8 py-4 rounded-full font-semibold hover:bg-blue-700 shadow-lg whitespace-nowrap">
+                    Subscribe
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-gray-300 py-16 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <!-- Brand -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bell text-white text-xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-white">PopupX</span>
+                    </div>
+                    <p class="text-sm mb-6 leading-relaxed">
+                        Create beautiful, high-converting popups in minutes. No coding required.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-400 transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-700 transition">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-pink-600 transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Links -->
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#features" class="hover:text-white transition">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="#testimonials" class="hover:text-white transition">Testimonials</a></li>
+                        <li><a href="#blogs" class="hover:text-white transition">Blog</a></li>
+                        <li><a href="/Home/About" class="hover:text-white transition">About Us</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Services -->
+                <div>
+                    <h4 class="text-white font-bold mb-4">Services</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Email Popups</a></li>
+                        <li><a href="#" class="hover:text-white transition">Exit Intent</a></li>
+                        <li><a href="#" class="hover:text-white transition">Spin Wheel</a></li>
+                        <li><a href="#" class="hover:text-white transition">Analytics</a></li>
+                        <li><a href="#integrations" class="hover:text-white transition">Integrations</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Get in Touch -->
+                <div>
+                    <h4 class="text-white font-bold mb-4">Get in Touch</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3"></i>
+                            <span>123 Popup Street, Suite 100<br>San Francisco, CA 94102</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-3"></i>
+                            <a href="mailto:support@popupx.com" class="hover:text-white transition">support@@popupx.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-3"></i>
+                            <a href="tel:+1234567890" class="hover:text-white transition">+1 (234) 567-890</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm">© 2024 PopupX. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="/Home/Privacy" class="text-sm hover:text-white transition">Privacy Policy</a>
+                    <a href="/Home/Terms" class="text-sm hover:text-white transition">Terms of Service</a>
+                    <a href="/Home/Cookie" class="text-sm hover:text-white transition">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

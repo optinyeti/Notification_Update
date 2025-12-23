@@ -1,0 +1,283 @@
+@{
+    ViewData["Title"] = "Create New Campaign";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .campaign-modal {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header-custom {
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header-custom h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body-custom {
+            padding: 48px 32px;
+        }
+
+        .main-heading {
+            font-size: 42px;
+            font-weight: 700;
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .description {
+            font-size: 16px;
+            color: #718096;
+            text-align: center;
+            line-height: 1.7;
+            margin-bottom: 48px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .option-card:hover {
+            border-color: #1e88e5;
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(30, 136, 229, 0.15);
+        }
+
+        .option-icon {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .option-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .icon-bg {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .option-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 16px;
+        }
+
+        .option-description {
+            font-size: 15px;
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        @@media (max-width: 992px) {
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Custom SVG Illustrations */
+        .playbook-icon {
+            fill: none;
+            stroke: #1e88e5;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .template-icon {
+            fill: none;
+            stroke: #1e88e5;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .canvas-icon {
+            fill: none;
+            stroke: #1e88e5;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="campaign-modal">
+            <!-- Header -->
+            <div class="modal-header-custom">
+                <h1>Create New Campaign</h1>
+                <button class="close-btn" onclick="window.location.href='/Admin/Index'">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body-custom">
+                <h2 class="main-heading">Ready, Set... Grow! Let's Get Started</h2>
+                
+                <p class="description">
+                    Create a newsletter signup, promote an upcoming sale, offer a discount to new website visitors, promote an ebook, 
+                    redirect visitors, share a coupon to visitors who are leaving your shop...and so much more! Find the perfect starting 
+                    point for your next big thing from our 700+ high-ROI templates below, or hire our specialists to create one for you.
+                </p>
+
+                <!-- Options -->
+                <div class="options-container">
+                    <!-- Playbooks -->
+                    <a href="/Popup/Playbooks" class="option-card">
+                        <div class="option-icon">
+                            <div class="icon-bg"></div>
+                            <svg viewBox="0 0 200 200">
+                                <!-- Checklist icon -->
+                                <rect class="playbook-icon" x="40" y="30" width="120" height="140" rx="8"/>
+                                <line class="playbook-icon" x1="60" y1="60" x2="80" y2="60"/>
+                                <line class="playbook-icon" x1="60" y1="85" x2="80" y2="85"/>
+                                <line class="playbook-icon" x1="60" y1="110" x2="80" y2="110"/>
+                                <line class="playbook-icon" x1="90" y1="60" x2="140" y2="60"/>
+                                <line class="playbook-icon" x1="90" y1="85" x2="140" y2="85"/>
+                                <line class="playbook-icon" x1="90" y1="110" x2="140" y2="110"/>
+                                <polyline class="playbook-icon" points="58,58 62,62 72,52" stroke-width="3"/>
+                                <circle class="playbook-icon" cx="65" cy="85" r="8"/>
+                                <circle class="playbook-icon" cx="65" cy="110" r="8"/>
+                                <!-- Hand pointer -->
+                                <path class="playbook-icon" d="M 120 140 L 120 155 L 130 165 L 145 165 L 155 155 L 150 145 L 145 145 L 145 135" stroke-width="3"/>
+                                <path class="playbook-icon" d="M 145 135 L 145 125 L 140 120 L 135 125 L 135 135" stroke-width="3"/>
+                            </svg>
+                        </div>
+                        <h3 class="option-title">Playbooks</h3>
+                        <p class="option-description">
+                            Proven pre-configured campaigns inspired by successful brands
+                        </p>
+                    </a>
+
+                    <!-- Templates -->
+                    <a href="/Popup/SelectTemplate" class="option-card">
+                        <div class="option-icon">
+                            <div class="icon-bg"></div>
+                            <svg viewBox="0 0 200 200">
+                                <!-- Multiple cards grid -->
+                                <rect class="template-icon" x="30" y="30" width="50" height="60" rx="4"/>
+                                <rect class="template-icon" x="90" y="30" width="50" height="60" rx="4"/>
+                                <rect class="template-icon" x="150" y="30" width="50" height="60" rx="4"/>
+                                <rect class="template-icon" x="30" y="100" width="50" height="60" rx="4"/>
+                                <rect class="template-icon" x="90" y="100" width="50" height="60" rx="4" stroke-width="4"/>
+                                <rect class="template-icon" x="150" y="100" width="50" height="60" rx="4"/>
+                                <!-- Hand pointer -->
+                                <path class="template-icon" d="M 90 165 L 90 180 L 100 190 L 115 190 L 125 180 L 120 170" stroke-width="3"/>
+                                <line class="template-icon" x1="115" y1="125" x2="115" y2="170" stroke-width="3"/>
+                            </svg>
+                        </div>
+                        <h3 class="option-title">Templates</h3>
+                        <p class="option-description">
+                            100's of high converting easy to customize templates
+                        </p>
+                    </a>
+
+                    <!-- Canvas -->
+                    <a href="/Popup/Create" class="option-card">
+                        <div class="option-icon">
+                            <div class="icon-bg"></div>
+                            <svg viewBox="0 0 200 200">
+                                <!-- Canvas/document with pen -->
+                                <rect class="canvas-icon" x="50" y="30" width="100" height="130" rx="8"/>
+                                <rect class="canvas-icon" x="70" y="50" width="30" height="25" rx="4"/>
+                                <rect class="canvas-icon" x="70" y="85" width="60" height="8" rx="2"/>
+                                <rect class="canvas-icon" x="70" y="100" width="60" height="8" rx="2"/>
+                                <rect class="canvas-icon" x="70" y="115" width="40" height="8" rx="2"/>
+                                <!-- Hand with pen -->
+                                <path class="canvas-icon" d="M 140 130 L 140 145 L 150 155 L 165 155 L 175 145 L 170 135" stroke-width="3"/>
+                                <line class="canvas-icon" x1="160" y1="90" x2="170" y2="135" stroke-width="3"/>
+                                <path class="canvas-icon" d="M 155 85 L 160 90 L 165 85" stroke-width="3"/>
+                            </svg>
+                        </div>
+                        <h3 class="option-title">Canvas</h3>
+                        <p class="option-description">
+                            Start with a blank template for full customization
+                        </p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

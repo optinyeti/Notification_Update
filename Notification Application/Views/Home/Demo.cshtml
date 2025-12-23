@@ -1,0 +1,137 @@
+@{
+    ViewData["Title"] = "Demo - See Popup Manager Pro in Action";
+}
+
+<div class="bg-gradient-to-br from-blue-600 to-purple-700 text-white py-20">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h1 class="text-4xl font-bold mb-6">See Popup Manager Pro in Action</h1>
+        <p class="text-xl text-blue-100 mb-8">Experience the power of our WYSIWYG popup editor and see how easy it is to create high-converting popups.</p>
+        
+        @if (User.Identity?.IsAuthenticated != true)
+        {
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a asp-controller="Account" asp-action="Register" class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    Start Free Trial
+                </a>
+                <a asp-controller="Home" asp-action="Contact" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">
+                    Schedule Live Demo
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-16">
+    <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Interactive Demo Features</h2>
+        <p class="text-xl text-gray-600">Explore the key features that make Popup Manager Pro the best choice for your business.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        <!-- Demo Video Placeholder -->
+        <div class="bg-gray-900 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+            <div class="text-center">
+                <i class="fas fa-play-circle text-white text-6xl mb-4"></i>
+                <p class="text-white text-lg">Interactive Demo Video</p>
+                <p class="text-gray-300 text-sm">Click to see our WYSIWYG editor in action</p>
+            </div>
+        </div>
+
+        <!-- Demo Features -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-paint-brush text-blue-600 mr-3"></i>
+                    WYSIWYG Editor
+                </h3>
+                <p class="text-gray-600">Drag and drop components, live preview, and real-time editing make popup creation effortless.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-crosshairs text-green-600 mr-3"></i>
+                    Smart Targeting
+                </h3>
+                <p class="text-gray-600">Target visitors based on behavior, location, device, and custom rules for maximum conversion.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-500">
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-chart-line text-purple-600 mr-3"></i>
+                    Advanced Analytics
+                </h3>
+                <p class="text-gray-600">Track performance with detailed analytics and optimize your popups for better results.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sample Popups Gallery -->
+    <div class="bg-gray-50 rounded-xl p-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Sample Popup Templates</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Email Collection Popup -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="bg-blue-600 text-white p-6">
+                    <h3 class="text-xl font-semibold mb-2">Get 20% Off!</h3>
+                    <p class="text-blue-100">Subscribe to our newsletter</p>
+                </div>
+                <div class="p-6">
+                    <input type="email" placeholder="Enter your email" class="w-full p-3 border border-gray-300 rounded-lg mb-4" disabled>
+                    <button class="w-full bg-green-500 text-white p-3 rounded-lg font-semibold" disabled>Claim Discount</button>
+                </div>
+                <div class="px-6 pb-6">
+                    <p class="text-center text-gray-500 text-sm">Email Collection Template</p>
+                </div>
+            </div>
+
+            <!-- Promotion Popup -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 text-center">
+                    <h3 class="text-2xl font-bold mb-2">Flash Sale!</h3>
+                    <p class="text-purple-100 mb-4">50% off everything</p>
+                    <button class="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold" disabled>Shop Now</button>
+                </div>
+                <div class="p-4">
+                    <p class="text-center text-gray-500 text-sm">Promotional Template</p>
+                </div>
+            </div>
+
+            <!-- Video Popup -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="bg-gray-900 p-6 text-center">
+                    <i class="fas fa-play-circle text-white text-4xl mb-4"></i>
+                    <h3 class="text-white text-xl font-semibold mb-2">Watch Our Story</h3>
+                    <p class="text-gray-300">See how we help businesses grow</p>
+                </div>
+                <div class="p-4">
+                    <p class="text-center text-gray-500 text-sm">Video Popup Template</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="text-center mt-16">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Ready to Create Your Own?</h2>
+        <p class="text-xl text-gray-600 mb-8">Join thousands of businesses using Popup Manager Pro to boost their conversions.</p>
+        
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Popup" asp-action="Create" class="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition inline-block">
+                <i class="fas fa-plus mr-2"></i>Create Your First Popup
+            </a>
+        }
+        else
+        {
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a asp-controller="Account" asp-action="Register" class="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    Start Free Trial
+                </a>
+                <a asp-controller="Home" asp-action="Contact" class="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition">
+                    Contact Sales
+                </a>
+            </div>
+        }
+    </div>
+</div>

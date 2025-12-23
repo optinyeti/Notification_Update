@@ -1,0 +1,195 @@
+<!-- This file contains the template HTML to be added to SelectTemplate.cshtml -->
+
+                <!-- Blank Template -->
+                <div class="template-card blank-card" onclick="location.href='/Popup/Designer?name=Blank&type=0'">
+                    <i class="bi bi-plus-circle blank-icon"></i>
+                    <h5 class="template-title">Start from Scratch</h5>
+                    <p class="template-description mb-0">Create a custom popup</p>
+                </div>
+
+                <!-- Newsletter Signup -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-envelope-fill template-icon"></i>
+                        <span class="template-badge badge-popular">Popular</span>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Newsletter Signup</div>
+                        <div class="template-description">Clean and simple email capture form</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Newsletter&type=0'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Discount -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-gift-fill template-icon"></i>
+                        <span class="template-badge badge-popular">Popular</span>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Welcome Discount</div>
+                        <div class="template-description">First-time visitor discount offer</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Welcome+Discount&type=6'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exit Intent -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-box-arrow-right template-icon"></i>
+                        <span class="template-badge badge-popular">Popular</span>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Exit Intent</div>
+                        <div class="template-description">Capture leaving visitors</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Exit+Intent&type=1'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Course -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-mortarboard-fill template-icon"></i>
+                        <span class="template-badge badge-new">New</span>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Free Email Course</div>
+                        <div class="template-description">Promote educational email series</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Email+Course&type=0'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lead Magnet -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-file-earmark-pdf-fill template-icon"></i>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Free PDF Download</div>
+                        <div class="template-description">Offer valuable content for emails</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Lead+Magnet&type=0'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash Sale -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-lightning-fill template-icon"></i>
+                        <span class="template-badge badge-new">New</span>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Flash Sale</div>
+                        <div class="template-description">Limited time offer with countdown</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Flash+Sale&type=1'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Launch -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-rocket-takeoff-fill template-icon"></i>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Product Launch</div>
+                        <div class="template-description">Announce new products</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Product+Launch&type=1'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Abandoned Cart -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-cart-x-fill template-icon"></i>
+                        <span class="template-badge badge-premium">Premium</span>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Cart Recovery</div>
+                        <div class="template-description">Win back abandoned carts</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Cart+Recovery&type=7'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Proof -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-chat-quote-fill template-icon"></i>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Social Proof</div>
+                        <div class="template-description">Display recent activity</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Social+Proof&type=7'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Webinar Registration -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-camera-video-fill template-icon"></i>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Webinar Signup</div>
+                        <div class="template-description">Register attendees for events</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Webinar&type=0'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contest Entry -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-trophy-fill template-icon"></i>
+                        <span class="template-badge badge-popular">Popular</span>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Contest & Giveaway</div>
+                        <div class="template-description">Run viral contests</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Contest&type=0'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survey Form -->
+                <div class="template-card">
+                    <div class="template-preview">
+                        <i class="bi bi-clipboard-check-fill template-icon"></i>
+                    </div>
+                    <div class="template-info">
+                        <div class="template-title">Customer Survey</div>
+                        <div class="template-description">Collect feedback</div>
+                        <div class="template-actions">
+                            <button class="btn-use-template" onclick="location.href='/Popup/Designer?name=Survey&type=0'">Use Template</button>
+                            <button class="btn-preview">Preview</button>
+                        </div>
+                    </div>
+                </div>

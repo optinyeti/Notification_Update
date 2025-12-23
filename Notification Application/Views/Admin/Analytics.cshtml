@@ -1,0 +1,126 @@
+@model AnalyticsViewModel
+@{
+    ViewData["Title"] = "Analytics";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Analytics</h1>
+        <p class="text-gray-600 mt-2">Detailed performance analytics for your popups</p>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="bg-white rounded-lg shadow border p-6 mb-8">
+        <div class="flex items-center space-x-4">
+            <label for="start-date" class="font-medium">Date Range:</label>
+            <input type="date" id="start-date" value="@Model.StartDate.ToString("yyyy-MM-dd")" class="border border-gray-300 rounded-lg px-3 py-2">
+            <span>to</span>
+            <input type="date" id="end-date" value="@Model.EndDate.ToString("yyyy-MM-dd")" class="border border-gray-300 rounded-lg px-3 py-2">
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Apply</button>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow border">
+            <h3 class="text-lg font-semibold text-gray-800">Total Views</h3>
+            <p class="text-3xl font-bold text-blue-600">@((Model.Summary as dynamic)?.TotalViews ?? 0)</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow border">
+            <h3 class="text-lg font-semibold text-gray-800">Total Clicks</h3>
+            <p class="text-3xl font-bold text-green-600">@((Model.Summary as dynamic)?.TotalClicks ?? 0)</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow border">
+            <h3 class="text-lg font-semibold text-gray-800">Total Conversions</h3>
+            <p class="text-3xl font-bold text-purple-600">@((Model.Summary as dynamic)?.TotalConversions ?? 0)</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow border">
+            <h3 class="text-lg font-semibold text-gray-800">Avg. Conversion Rate</h3>
+            <p class="text-3xl font-bold text-orange-600">@(((Model.Summary as dynamic)?.AverageConversionRate ?? 0.0).ToString("F1"))%</p>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow border">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Views & Conversions Over Time</h3>
+            <canvas id="viewsConversionsChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow border">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Device Breakdown</h3>
+            <canvas id="deviceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Popup Performance Table -->
+    <div class="bg-white rounded-lg shadow border">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold text-gray-900">Popup Performance</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Popup</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clicks</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conversions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conversion Rate</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach (var item in Model.PopupAnalytics)
+                    {
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@item.Popup?.Name</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.Views</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.Clicks</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.Conversions</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@item.ConversionRate.ToString("F1")%</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Views & Conversions Chart
+        var ctx1 = document.getElementById('viewsConversionsChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], // Replace with dynamic data
+                datasets: [{
+                    label: 'Views',
+                    data: [1200, 1900, 3000, 5000, 2300, 3200], // Replace with dynamic data
+                    borderColor: '#3b82f6',
+                    tension: 0.1
+                }, {
+                    label: 'Conversions',
+                    data: [120, 190, 300, 500, 230, 320], // Replace with dynamic data
+                    borderColor: '#8b5cf6',
+                    tension: 0.1
+                }]
+            }
+        });
+
+        // Device Chart
+        var ctx2 = document.getElementById('deviceChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Desktop', 'Mobile'],
+                datasets: [{
+                    data: [@((Model.Summary as dynamic)?.DesktopViews ?? 0), @((Model.Summary as dynamic)?.MobileViews ?? 0)],
+                    backgroundColor: ['#3b82f6', '#10b981']
+                }]
+            }
+        });
+    });
+</script>
+}
