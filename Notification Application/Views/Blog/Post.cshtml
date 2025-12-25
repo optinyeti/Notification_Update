@@ -1,0 +1,211 @@
+@model BlogPost
+@{
+    ViewData["Title"] = Model.Title;
+    var relatedPosts = ViewBag.RelatedPosts as IEnumerable<BlogPost> ?? new List<BlogPost>();
+}
+
+<article class="max-w-4xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <header class="mb-8">
+        <!-- Categories -->
+        @if (Model.Categories.Any())
+        {
+            <div class="flex flex-wrap gap-2 mb-4">
+                @foreach (var category in Model.Categories)
+                {
+                    <a asp-controller="Blog" asp-action="Category" asp-route-slug="@category.Slug" 
+                       class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full hover:bg-blue-200">
+                        @category.Name
+                    </a>
+                }
+            </div>
+        }
+
+        <!-- Title -->
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">@Model.Title</h1>
+
+        <!-- Meta Info -->
+        <div class="flex flex-wrap items-center gap-4 text-gray-600 mb-6">
+            <div class="flex items-center">
+                <i class="bi bi-person-circle text-xl me-2"></i>
+                <span>@(Model.Author?.FirstName ?? "Admin") @(Model.Author?.LastName ?? "")</span>
+            </div>
+            <div class="flex items-center">
+                <i class="bi bi-calendar3 me-2"></i>
+                <time datetime="@((Model.PublishedAt ?? Model.CreatedAt).ToString("yyyy-MM-dd"))">
+                    @((Model.PublishedAt ?? Model.CreatedAt).ToString("MMMM dd, yyyy"))
+                </time>
+            </div>
+            <div class="flex items-center">
+                <i class="bi bi-eye me-2"></i>
+                <span>@Model.ViewCount views</span>
+            </div>
+        </div>
+
+        <!-- Featured Image -->
+        @if (!string.IsNullOrEmpty(Model.FeaturedImage))
+        {
+            <img src="@Model.FeaturedImage" alt="@Model.Title" class="w-full h-96 object-cover rounded-lg shadow-lg mb-8">
+        }
+    </header>
+
+    <!-- Content -->
+    <div class="prose prose-lg max-w-none mb-12">
+        @Html.Raw(Model.Content)
+    </div>
+
+    <!-- Tags -->
+    @if (Model.Tags.Any())
+    {
+        <div class="border-t border-b py-6 mb-8">
+            <h3 class="text-sm font-semibold text-gray-600 mb-3">TAGS</h3>
+            <div class="flex flex-wrap gap-2">
+                @foreach (var tag in Model.Tags)
+                {
+                    <a asp-controller="Blog" asp-action="Tag" asp-route-slug="@tag.Slug" 
+                       class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-gray-200">
+                        #@tag.Name
+                    </a>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Share Buttons -->
+    <div class="border-b pb-8 mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 mb-3">SHARE THIS POST</h3>
+        <div class="flex gap-3">
+            <a href="https://twitter.com/intent/tweet?url=@(Context.Request.Scheme)://@(Context.Request.Host)@(Context.Request.Path)&text=@Uri.EscapeDataString(Model.Title)" 
+               target="_blank" 
+               class="flex items-center px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
+                <i class="fab fa-twitter me-2"></i>Twitter
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=@(Context.Request.Scheme)://@(Context.Request.Host)@(Context.Request.Path)" 
+               target="_blank" 
+               class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <i class="fab fa-facebook me-2"></i>Facebook
+            </a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=@(Context.Request.Scheme)://@(Context.Request.Host)@(Context.Request.Path)" 
+               target="_blank" 
+               class="flex items-center px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800">
+                <i class="fab fa-linkedin me-2"></i>LinkedIn
+            </a>
+        </div>
+    </div>
+
+    <!-- Author Bio -->
+    @if (Model.Author != null)
+    {
+        <div class="bg-gray-50 rounded-lg p-6 mb-12">
+            <div class="flex items-start">
+                <div class="flex-shrink-0 mr-4">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                        @Model.Author.FirstName?.Substring(0, 1)@Model.Author.LastName?.Substring(0, 1)
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">@Model.Author.FirstName @Model.Author.LastName</h3>
+                    <p class="text-gray-600 mt-1">Content author and contributor</p>
+                </div>
+            </div>
+        </div>
+    }
+</article>
+
+<!-- Related Posts -->
+@if (relatedPosts.Any())
+{
+    <section class="bg-gray-50 py-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Related Posts</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                @foreach (var post in relatedPosts.Where(p => p.Id != Model.Id).Take(3))
+                {
+                    <article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                        @if (!string.IsNullOrEmpty(post.FeaturedImage))
+                        {
+                            <a asp-action="Post" asp-route-slug="@post.Slug">
+                                <img src="@post.FeaturedImage" alt="@post.Title" class="w-full h-48 object-cover">
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-indigo-600"></div>
+                        }
+                        
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 hover:text-blue-600">
+                                <a asp-action="Post" asp-route-slug="@post.Slug">@post.Title</a>
+                            </h3>
+                            <div class="text-sm text-gray-500">
+                                @((post.PublishedAt ?? post.CreatedAt).ToString("MMM dd, yyyy"))
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Prose Styling -->
+<style>
+    .prose {
+        color: #374151;
+        line-height: 1.75;
+    }
+    .prose h2 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin-top: 2em;
+        margin-bottom: 1em;
+        color: #111827;
+    }
+    .prose h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 1.75em;
+        margin-bottom: 0.75em;
+        color: #111827;
+    }
+    .prose p {
+        margin-bottom: 1.25em;
+    }
+    .prose ul, .prose ol {
+        margin-bottom: 1.25em;
+        padding-left: 1.625em;
+    }
+    .prose li {
+        margin-bottom: 0.5em;
+    }
+    .prose img {
+        margin-top: 2em;
+        margin-bottom: 2em;
+        border-radius: 0.5rem;
+    }
+    .prose a {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+    .prose a:hover {
+        color: #1d4ed8;
+    }
+    .prose code {
+        background-color: #f3f4f6;
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+    }
+    .prose pre {
+        background-color: #1f2937;
+        color: #f9fafb;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        margin-bottom: 1.25em;
+    }
+    .prose pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+</style>

@@ -1,0 +1,113 @@
+@model IEnumerable<BlogPost>
+@{
+    ViewData["Title"] = "Blog";
+    var categories = ViewBag.Categories as IEnumerable<BlogCategory> ?? new List<BlogCategory>();
+}
+
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Our Blog</h1>
+        <p class="text-xl text-gray-600">Insights, tips, and updates from the Popup Manager Pro team</p>
+    </div>
+
+    <!-- Categories Filter -->
+    @if (categories.Any())
+    {
+        <div class="flex flex-wrap justify-center gap-2 mb-8">
+            <a asp-action="Index" class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700">
+                All Posts
+            </a>
+            @foreach (var category in categories)
+            {
+                <a asp-action="Category" asp-route-slug="@category.Slug" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">
+                    @category.Name
+                </a>
+            }
+        </div>
+    }
+
+    <!-- Blog Posts Grid -->
+    @if (Model.Any())
+    {
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @foreach (var post in Model)
+            {
+                <article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                    @if (!string.IsNullOrEmpty(post.FeaturedImage))
+                    {
+                        <a asp-action="Post" asp-route-slug="@post.Slug">
+                            <img src="@post.FeaturedImage" alt="@post.Title" class="w-full h-48 object-cover">
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center">
+                            <i class="fas fa-newspaper text-white text-5xl opacity-50"></i>
+                        </div>
+                    }
+                    
+                    <div class="p-6">
+                        <!-- Categories -->
+                        @if (post.Categories.Any())
+                        {
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                @foreach (var category in post.Categories.Take(2))
+                                {
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded">
+                                        @category.Name
+                                    </span>
+                                }
+                            </div>
+                        }
+
+                        <!-- Title -->
+                        <h2 class="text-xl font-bold text-gray-900 mb-3 hover:text-blue-600">
+                            <a asp-action="Post" asp-route-slug="@post.Slug">@post.Title</a>
+                        </h2>
+
+                        <!-- Excerpt -->
+                        @if (!string.IsNullOrEmpty(post.Excerpt))
+                        {
+                            <p class="text-gray-600 mb-4 line-clamp-3">@post.Excerpt</p>
+                        }
+
+                        <!-- Meta Info -->
+                        <div class="flex items-center justify-between text-sm text-gray-500 pt-4 border-t">
+                            <div class="flex items-center">
+                                <i class="bi bi-person-circle me-1"></i>
+                                <span>@(post.Author?.FirstName ?? "Admin")</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span><i class="bi bi-calendar3 me-1"></i>@((post.PublishedAt ?? post.CreatedAt).ToString("MMM dd"))</span>
+                                <span><i class="bi bi-eye me-1"></i>@post.ViewCount</span>
+                            </div>
+                        </div>
+
+                        <!-- Read More -->
+                        <a asp-action="Post" asp-route-slug="@post.Slug" class="inline-block mt-4 text-blue-600 hover:text-blue-800 font-medium">
+                            Read More <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-16">
+            <i class="bi bi-file-earmark-text text-6xl text-gray-300 mb-4 block"></i>
+            <h3 class="text-2xl font-semibold text-gray-600 mb-2">No blog posts yet</h3>
+            <p class="text-gray-500">Check back soon for new content!</p>
+        </div>
+    }
+</div>
+
+<style>
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

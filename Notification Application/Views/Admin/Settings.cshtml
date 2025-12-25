@@ -77,6 +77,7 @@
 
     <form asp-action="Settings" method="post" class="space-y-8">
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="PublicHostUrl" id="publicHostUrlField" />
 
         <!-- Tenant Information -->
         <div class="bg-white rounded-lg shadow border">
@@ -197,6 +198,7 @@
     <script>
         const tenantId = @Model.Id;
         const hostInput = document.getElementById('publicHost');
+        const hostField = document.getElementById('publicHostUrlField');
         const codeEl = document.getElementById('trackingCodeContent');
 
         function updateTrackingCode() {
@@ -204,10 +206,16 @@
             if (!host) return;
             const normalized = host.endsWith('/') ? host.slice(0, -1) : host;
             codeEl.textContent = `<script src="${normalized}/Popup/GetTenantScript/${tenantId}"><\/script>`;
+            // Sync the value to the hidden form field
+            hostField.value = normalized;
         }
 
         hostInput.addEventListener('input', updateTrackingCode);
-        document.addEventListener('DOMContentLoaded', updateTrackingCode);
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTrackingCode();
+            // Initialize the hidden field value
+            hostField.value = hostInput.value;
+        });
 
         function copyTenantCode() {
             const code = document.getElementById('trackingCodeContent').innerText;
