@@ -1,0 +1,55 @@
+<div class="slide-in-popup" style="position: fixed; bottom: 20px; right: 20px; max-width: 350px; background: white; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); padding: 20px; z-index: 9999; animation: slideInRight 0.5s ease-out;">
+    <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #999; cursor: pointer; font-size: 20px;">&times;</button>
+    
+    <div style="display: flex; gap: 15px;">
+        <div class="image-wrapper" style="flex-shrink: 0;">
+            <img src="https://via.placeholder.com/60" alt="Product" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
+        </div>
+        
+        <div style="flex: 1;">
+            <h4 style="margin: 0 0 8px 0; color: #333; font-size: 16px; font-weight: 600;">New Product Alert!</h4>
+            <p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">Check out our latest collection. Limited stock available!</p>
+            
+            <button class="view-btn" style="background: #007bff; color: white; border: none; padding: 8px 20px; border-radius: 5px; font-size: 14px; cursor: pointer; font-weight: 500; width: 100%;">View Now</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-popup {
+    transition: all 0.3s ease;
+}
+
+.slide-in-popup:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    transform: translateY(-2px);
+}
+
+.view-btn:hover {
+    background: #0056b3;
+}
+
+.close-btn:hover {
+    color: #007bff;
+}
+
+@media (max-width: 480px) {
+    .slide-in-popup {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
+</style>

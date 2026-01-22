@@ -13,169 +13,484 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
+            background: #ffffff;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 0;
         }
 
         .playbooks-container {
+            position: relative;
+            z-index: 1;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 60px 20px;
         }
 
         .header-section {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @@keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .main-title {
-            font-size: 48px;
-            font-weight: 800;
+            font-size: 56px;
+            font-weight: 900;
             color: #1e293b;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            letter-spacing: -1px;
         }
 
         .subtitle {
-            font-size: 18px;
-            color: #64748b;
+            font-size: 20px;
+            color: #475569;
             max-width: 800px;
             margin: 0 auto;
+            line-height: 1.7;
+            text-shadow: none;
         }
 
         .playbook-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 24px;
-            margin-top: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 32px;
+            margin-top: 50px;
         }
 
         .playbook-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            transition: all 0.3s ease;
-            border: 2px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 36px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out backwards;
         }
 
+        .playbook-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .playbook-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .playbook-card:nth-child(1) { animation-delay: 0.05s; }
+        .playbook-card:nth-child(2) { animation-delay: 0.1s; }
+        .playbook-card:nth-child(3) { animation-delay: 0.15s; }
+        .playbook-card:nth-child(4) { animation-delay: 0.2s; }
+        .playbook-card:nth-child(5) { animation-delay: 0.25s; }
+        .playbook-card:nth-child(6) { animation-delay: 0.3s; }
+
         .playbook-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-            border-color: #3b82f6;
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 
+                0 25px 60px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(59, 130, 246, 0.1),
+                0 0 80px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.2);
         }
 
         .playbook-buttons {
             display: flex;
             gap: 12px;
-            margin-top: 24px;
+            margin-top: 28px;
         }
 
         .btn-use-playbook {
             flex: 1;
-            background: #84cc16;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
             font-size: 15px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-use-playbook::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-use-playbook:hover::before {
+            left: 100%;
         }
 
         .btn-use-playbook:hover {
-            background: #65a30d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
             color: white;
+        }
+
+        .btn-use-playbook:active {
+            transform: translateY(0);
         }
 
         .btn-preview {
             flex: 1;
-            background: #64748b;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            background: rgba(100, 116, 139, 0.1);
+            color: #475569;
+            border: 2px solid #cbd5e1;
+            padding: 14px 28px;
+            border-radius: 12px;
             font-weight: 600;
             font-size: 15px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
         .btn-preview:hover {
-            background: #475569;
-            color: white;
+            background: rgba(100, 116, 139, 0.2);
+            border-color: #94a3b8;
+            color: #1e293b;
+            transform: translateY(-2px);
+        }
+
+        .btn-preview:active {
+            transform: translateY(0);
         }
 
         .playbook-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: 32px;
+            margin-bottom: 24px;
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.15),
+                inset 0 -2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .playbook-card:hover .playbook-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 
+                0 12px 32px rgba(0, 0, 0, 0.2),
+                inset 0 -2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .playbook-icon i {
+            position: relative;
+            z-index: 1;
         }
 
         .playbook-title {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             color: #1e293b;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            line-height: 1.3;
         }
 
         .playbook-description {
             font-size: 15px;
             color: #64748b;
-            line-height: 1.6;
-            margin-bottom: 16px;
+            line-height: 1.7;
+            margin-bottom: 20px;
         }
 
         .playbook-meta {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
             font-size: 13px;
             color: #94a3b8;
+            padding-top: 16px;
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
         }
 
         .meta-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .meta-item i {
+            font-size: 14px;
+            color: #64748b;
         }
 
         .back-button {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            color: #64748b;
+            gap: 10px;
+            color: #1e293b;
             text-decoration: none;
-            font-weight: 600;
-            margin-bottom: 32px;
-            transition: color 0.3s;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 2px solid rgba(226, 232, 240, 0.8);
         }
 
         .back-button:hover {
-            color: #3b82f6;
+            color: #0f172a;
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateX(-4px);
+            border-color: #cbd5e1;
         }
 
-        /* Color variations */
-        .icon-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
-        .icon-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
-        .icon-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .icon-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
-        .icon-pink { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
-        .icon-teal { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
-        .icon-yellow { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); }
-        .icon-red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-        .icon-indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+        /* Enhanced color variations with gradients */
+        .icon-blue { 
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        .icon-purple { 
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        .icon-green { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .icon-orange { 
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        }
+        .icon-pink { 
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+        }
+        .icon-teal { 
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+        }
+        .icon-yellow { 
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+        }
+        .icon-red { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .icon-indigo { 
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        /* Badge for popular items */
+        .popular-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+            z-index: 2;
+        }
+
+        /* Responsive design */
+        @@media (max-width: 768px) {
+            .main-title {
+                font-size: 38px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+            
+            .playbook-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        /* Modal enhancements */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 32px;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .modal-title {
+            font-weight: 800;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            padding: 14px 18px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .modal-footer .btn {
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-weight: 600;
+        }
+
+        .modal-footer .btn-primary {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            border: none;
+        }
+
+        /* Floating animation for icons */
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .playbook-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Shimmer effect on hover */
+        @@keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        .playbook-card:hover {
+            background: 
+                linear-gradient(90deg, 
+                    rgba(255, 255, 255, 0.98) 0%, 
+                    rgba(255, 255, 255, 1) 50%, 
+                    rgba(255, 255, 255, 0.98) 100%
+                );
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        /* Pulse animation for popular badges */
+        @@keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .popular-badge {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Glowing effect on buttons */
+        @@keyframes glow {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(59, 130, 246, 0.5);
+            }
+        }
+
+        .btn-use-playbook {
+            animation: glow 2s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -196,6 +511,7 @@
         <div class="playbook-grid">
             <!-- Newsletter Signup -->
             <div class="playbook-card">
+                <span class="popular-badge">⭐ Most Popular</span>
                 <div class="playbook-icon icon-blue">
                     <i class="bi bi-envelope-fill text-white"></i>
                 </div>
@@ -214,13 +530,18 @@
                     </span>
                 </div>
                 <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">
+                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
+                    </a>
+                    <a href="#" class="btn-preview">
+                        <i class="bi bi-eye"></i> Preview
+                    </a>
                 </div>
             </div>
 
             <!-- Welcome Discount -->
             <div class="playbook-card">
+                <span class="popular-badge" style="background: linear-gradient(135deg, #34d399 0%, #059669 100%);">💰 High ROI</span>
                 <div class="playbook-icon icon-green">
                     <i class="bi bi-gift-fill text-white"></i>
                 </div>
@@ -239,13 +560,18 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">
+                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
+                    </a>
+                    <a href="#" class="btn-preview">
+                        <i class="bi bi-eye"></i> Preview
+                    </a>
                 </div>
             </div>
 
             <!-- Exit Intent -->
             <div class="playbook-card">
+                <span class="popular-badge" style="background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);">🏆 Proven</span>
                 <div class="playbook-icon icon-orange">
                     <i class="bi bi-box-arrow-right text-white"></i>
                 </div>
@@ -264,13 +590,18 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">
+                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
+                    </a>
+                    <a href="#" class="btn-preview">
+                        <i class="bi bi-eye"></i> Preview
+                    </a>
                 </div>
             </div>
 
             <!-- Flash Sale -->
             <div class="playbook-card">
+                <span class="popular-badge" style="background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);">⚡ Urgent</span>
                 <div class="playbook-icon icon-red">
                     <i class="bi bi-lightning-fill text-white"></i>
                 </div>
@@ -289,8 +620,12 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">
+                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
+                    </a>
+                    <a href="#" class="btn-preview">
+                        <i class="bi bi-eye"></i> Preview
+                    </a>
                 </div>
             </div>
 
@@ -314,8 +649,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -339,8 +674,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=3" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=3" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -364,8 +699,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -389,8 +724,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -414,8 +749,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -439,8 +774,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -464,8 +799,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -489,13 +824,14 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
             <!-- Black Friday -->
             <div class="playbook-card">
+                <span class="popular-badge" style="background: linear-gradient(135deg, #1e1e1e 0%, #ef4444 100%);">🔥 Hot</span>
                 <div class="playbook-icon icon-red">
                     <i class="bi bi-tag-fill text-white"></i>
                 </div>
@@ -514,8 +850,12 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">
+                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
+                    </a>
+                    <a href="#" class="btn-preview">
+                        <i class="bi bi-eye"></i> Preview
+                    </a>
                 </div>
             </div>
 
@@ -539,8 +879,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -564,8 +904,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -589,8 +929,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -614,8 +954,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -639,8 +979,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -664,8 +1004,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -689,8 +1029,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -714,8 +1054,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -739,8 +1079,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -764,8 +1104,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -789,8 +1129,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -814,8 +1154,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -839,8 +1179,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -864,8 +1204,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -889,8 +1229,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -914,8 +1254,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -939,8 +1279,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -964,8 +1304,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -989,8 +1329,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=7" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -1014,8 +1354,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -1039,8 +1379,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=4" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=4" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -1064,8 +1404,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
 
@@ -1089,8 +1429,8 @@
                     </span>
                 </div>
                             <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">Use Playbook</a>
-                    <a href="#" class="btn-preview">Preview</a>
+                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
+                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
                 </div>
             </div>
         </div>

@@ -1,0 +1,80 @@
+<div class="social-popup" style="max-width: 450px; background: white; padding: 35px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.15);">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #999; cursor: pointer; font-size: 24px;">&times;</button>
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-left: -10px; border: 3px solid white;"></div>
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); margin-left: -10px; border: 3px solid white;"></div>
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); margin-left: -10px; border: 3px solid white;"></div>
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); margin-left: -10px; border: 3px solid white;"></div>
+        </div>
+        
+        <h2 style="font-size: 24px; margin-bottom: 10px; color: #333; font-weight: 600;">Join 50,000+ Happy Customers</h2>
+        <p style="color: #666; margin-bottom: 25px; font-size: 15px; line-height: 1.6;">See why thousands trust us every day</p>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+        <div style="display: flex; gap: 12px; margin-bottom: 15px;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); flex-shrink: 0;"></div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Sarah Johnson</div>
+                <div style="color: #ffa500; font-size: 14px; margin-bottom: 5px;">★★★★★</div>
+                <div style="font-size: 14px; color: #666; line-height: 1.5;">"Absolutely game-changing! Best decision I've made for my business."</div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; text-align: center;">
+        <div>
+            <div style="font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 5px;">50K+</div>
+            <div style="font-size: 13px; color: #666;">Users</div>
+        </div>
+        <div>
+            <div style="font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 5px;">4.9★</div>
+            <div style="font-size: 13px; color: #666;">Rating</div>
+        </div>
+        <div>
+            <div style="font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 5px;">99%</div>
+            <div style="font-size: 13px; color: #666;">Satisfaction</div>
+        </div>
+    </div>
+    
+    <form class="social-form">
+        <input type="email" placeholder="Enter your email" style="width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px;" required>
+        <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 600;">Join the Community</button>
+    </form>
+    
+    <p style="font-size: 12px; color: #999; margin-top: 15px; text-align: center;">✓ Free forever • No credit card required</p>
+</div>
+
+<style>
+.social-popup {
+    position: relative;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.social-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.social-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+}
+
+.close-btn:hover {
+    color: #667eea;
+}
+</style>

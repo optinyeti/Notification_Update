@@ -1,0 +1,173 @@
+@model IEnumerable<Notification_Application.Models.TemplateCategory>
+@{
+    ViewData["Title"] = "Select Template";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/template-gallery.css" />
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-palette me-2"></i>Template Gallery</h2>
+            <p class="text-muted">Browse and customize templates for your popups</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- Category Tabs -->
+                    <ul class="nav nav-pills mb-4" id="categoryTabs" role="tablist">
+                        @foreach (var category in Model)
+                        {
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link @(category == Model.First() ? "active" : "")" 
+                                        id="@category.Id-tab" 
+                                        data-bs-toggle="pill" 
+                                        data-bs-target="#@category.Id" 
+                                        type="button" 
+                                        role="tab" 
+                                        aria-controls="@category.Id" 
+                                        aria-selected="@(category == Model.First() ? "true" : "false")"
+                                        data-category="@category.Id">
+                                    @category.Label
+                                </button>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="categoryTabContent">
+                        @foreach (var category in Model)
+                        {
+                            <div class="tab-pane fade @(category == Model.First() ? "show active" : "")" 
+                                 id="@category.Id" 
+                                 role="tabpanel" 
+                                 aria-labelledby="@category.Id-tab">
+                                
+                                <!-- Loading Spinner -->
+                                <div class="text-center my-5 loading-spinner" id="loading-@category.Id">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Loading templates...</p>
+                                </div>
+
+                                <!-- Template Grid -->
+                                <div class="row template-grid g-4" id="grid-@category.Id" style="display: none;">
+                                    <!-- Templates will be loaded here dynamically -->
+                                </div>
+
+                                <!-- Empty State -->
+                                <div class="text-center my-5 empty-state" id="empty-@category.Id" style="display: none;">
+                                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No templates found in this category</p>
+                                    <button class="btn btn-primary" onclick="createNewTemplate('@category.Id')">
+                                        <i class="fas fa-plus me-2"></i>Create New Template
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template Card Template (Hidden) -->
+<template id="template-card-template">
+    <div class="col-md-4 col-lg-3">
+        <div class="card template-card h-100 shadow-sm">
+            <div class="template-preview">
+                <div class="template-preview-frame">
+                    <!-- Preview will be injected here -->
+                </div>
+                <div class="template-overlay">
+                    <button class="btn btn-light btn-sm me-2 preview-btn">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button class="btn btn-light btn-sm edit-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title template-title mb-2"></h6>
+                <small class="text-muted template-date"></small>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-sm btn-outline-primary use-btn">
+                        <i class="fas fa-check me-1"></i>Use This
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Template Editor Modal -->
+<div class="modal fade" id="templateEditorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-code me-2"></i>Template Editor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">HTML Code</h6>
+                        <textarea id="templateCode" class="form-control font-monospace" rows="20" style="font-size: 0.9rem;"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Live Preview</h6>
+                        <div id="templatePreview" class="border rounded p-3" style="min-height: 400px; background: #f8f9fa;">
+                            <!-- Preview will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="currentCategory">
+                <input type="hidden" id="currentTemplateName">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="saveTemplateBtn">
+                    <i class="fas fa-save me-1"></i>Save Template
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="templatePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-eye me-2"></i>Template Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="fullPreview" style="min-height: 400px;">
+                    <!-- Preview will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/template-manager.js"></script>
+}

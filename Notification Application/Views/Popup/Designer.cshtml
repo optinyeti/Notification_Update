@@ -110,20 +110,32 @@
             <div class="blocks-section">
                 <div class="section-label">Standard</div>
                 <div class="block-list">
+                    <div class="block-item" draggable="true" data-block-type="heading"><div class="block-icon"><i class="bi bi-type-h1"></i></div><div class="block-name">Heading</div></div>
                     <div class="block-item" draggable="true" data-block-type="text"><div class="block-icon"><i class="bi bi-fonts"></i></div><div class="block-name">Text</div></div>
                     <div class="block-item" draggable="true" data-block-type="button"><div class="block-icon"><i class="bi bi-hand-index"></i></div><div class="block-name">Button</div></div>
                     <div class="block-item" draggable="true" data-block-type="image"><div class="block-icon"><i class="bi bi-image"></i></div><div class="block-name">Image</div></div>
+                    <div class="block-item" draggable="true" data-block-type="icon"><div class="block-icon"><i class="bi bi-star-fill"></i></div><div class="block-name">Icon</div></div>
                     <div class="block-item" draggable="true" data-block-type="fields"><div class="block-icon"><i class="bi bi-list-task"></i></div><div class="block-name">Input Field</div></div>
+                    <div class="block-item" draggable="true" data-block-type="list"><div class="block-icon"><i class="bi bi-list-ul"></i></div><div class="block-name">List</div></div>
                     <div class="block-item" draggable="true" data-block-type="columns"><div class="block-icon"><i class="bi bi-layout-three-columns"></i></div><div class="block-name">Columns</div></div>
                     <div class="block-item" draggable="true" data-block-type="divider"><div class="block-icon"><i class="bi bi-dash-lg"></i></div><div class="block-name">Divider</div></div>
                     <div class="block-item" draggable="true" data-block-type="spacer"><div class="block-icon"><i class="bi bi-distribute-vertical"></i></div><div class="block-name">Spacer</div></div>
                     <div class="block-item" draggable="true" data-block-type="video"><div class="block-icon"><i class="bi bi-play-circle"></i></div><div class="block-name">Video</div></div>
+                    <div class="block-item" draggable="true" data-block-type="alert"><div class="block-icon"><i class="bi bi-info-circle-fill"></i></div><div class="block-name">Alert</div></div>
                 </div>
                 <div class="section-label">Smart Blocks</div>
                 <div class="block-list">
                     <div class="block-item" draggable="true" data-block-type="countdown"><div class="block-icon"><i class="bi bi-clock-history"></i></div><div class="block-name">Countdown</div></div>
+                    <div class="block-item" draggable="true" data-block-type="progress"><div class="block-icon"><i class="bi bi-bar-chart-fill"></i></div><div class="block-name">Progress Bar</div></div>
+                    <div class="block-item" draggable="true" data-block-type="rating"><div class="block-icon"><i class="bi bi-star-half"></i></div><div class="block-name">Star Rating</div></div>
+                    <div class="block-item" draggable="true" data-block-type="testimonial"><div class="block-icon"><i class="bi bi-quote"></i></div><div class="block-name">Testimonial</div></div>
+                    <div class="block-item" draggable="true" data-block-type="badge"><div class="block-icon"><i class="bi bi-award-fill"></i></div><div class="block-name">Badge</div></div>
+                    <div class="block-item" draggable="true" data-block-type="card"><div class="block-icon"><i class="bi bi-card-heading"></i></div><div class="block-name">Card</div></div>
                     <div class="block-item" draggable="true" data-block-type="social"><div class="block-icon"><i class="bi bi-share"></i></div><div class="block-name">Social</div></div>
                     <div class="block-item" draggable="true" data-block-type="coupon"><div class="block-icon"><i class="bi bi-tag"></i></div><div class="block-name">Coupon</div></div>
+                    <div class="block-item" draggable="true" data-block-type="form"><div class="block-icon"><i class="bi bi-input-cursor-text"></i></div><div class="block-name">Form</div></div>
+                    <div class="block-item" draggable="true" data-block-type="accordion"><div class="block-icon"><i class="bi bi-list-nested"></i></div><div class="block-name">Accordion</div></div>
+                    <div class="block-item" draggable="true" data-block-type="map"><div class="block-icon"><i class="bi bi-geo-alt-fill"></i></div><div class="block-name">Map</div></div>
                     <div class="block-item" draggable="true" data-block-type="html"><div class="block-icon"><i class="bi bi-code-square"></i></div><div class="block-name">HTML</div></div>
                 </div>
             </div>
@@ -419,21 +431,33 @@
                 console.log('Loading content:', contentStr);
                 
                 if (contentStr && contentStr !== '{}' && contentStr !== '') {
-                    const parsed = typeof contentStr === 'string' ? JSON.parse(contentStr) : contentStr;
-                    console.log('Parsed content:', parsed);
+                    // Check if content is plain HTML (from template) or JSON (from saved popup)
+                    let htmlContent = '';
                     
-                    if (parsed.html) {
-                        document.getElementById('dropzone').innerHTML = parsed.html;
+                    // If it looks like HTML (contains < tags), use it directly
+                    if (contentStr.includes('<') && contentStr.includes('>')) {
+                        htmlContent = contentStr;
+                        console.log('Loading HTML template content');
+                    } else {
+                        // Try to parse as JSON
+                        try {
+                            const parsed = typeof contentStr === 'string' ? JSON.parse(contentStr) : contentStr;
+                            console.log('Parsed content:', parsed);
+                            
+                            if (parsed.html) {
+                                htmlContent = parsed.html;
+                            }
+                        } catch (jsonError) {
+                            console.log('Content is not JSON, treating as plain text');
+                        }
+                    }
+                    
+                    // If we have HTML content, load it
+                    if (htmlContent) {
+                        document.getElementById('dropzone').innerHTML = htmlContent;
                         const emptyState = document.querySelector('.empty-state');
                         if (emptyState) emptyState.remove();
                         attachEventListeners();
-                    } else if (Array.isArray(parsed)) {
-                        // Handle block-based content
-                        console.log('Loading block-based content');
-                        const dropzone = document.getElementById('dropzone');
-                        dropzone.innerHTML = '';
-                        const emptyState = dropzone.querySelector('.empty-state');
-                        if (emptyState) emptyState.remove();
                     }
                 }
             } catch (e) {
@@ -489,14 +513,29 @@
             wrapper.dataset.componentType = type;
             let content = '';
             switch(type) {
+                case 'heading': content = '<h2 contenteditable="true" style="margin: 16px 0; font-size: 32px; font-weight: 700; color: #111827;">Edit Heading</h2>'; break;
                 case 'text': content = '<p contenteditable="true" style="margin: 16px 0; font-size: 16px; color: #374151;">Click to edit text</p>'; break;
                 case 'button': content = '<div style="text-align: center; margin: 16px 0;"><button style="background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">Click Me</button></div>'; break;
                 case 'image': content = '<div style="text-align: center; margin: 16px 0;"><img src="https://via.placeholder.com/400x200" style="max-width: 100%; border-radius: 8px;"></div>'; break;
+                case 'icon': content = '<div style="text-align: center; margin: 16px 0;"><i class="bi bi-star-fill" style="font-size: 48px; color: #f59e0b;"></i></div>'; break;
                 case 'fields': content = '<div style="margin: 16px 0;"><input type="email" placeholder="Enter your email" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px;"></div>'; break;
+                case 'list': content = '<ul style="margin: 16px 0; padding-left: 24px; color: #374151;"><li style="margin: 8px 0;">List item 1</li><li style="margin: 8px 0;">List item 2</li><li style="margin: 8px 0;">List item 3</li></ul>'; break;
+                case 'alert': content = '<div style="margin: 16px 0; padding: 16px; background: #dbeafe; border-left: 4px solid #2563eb; border-radius: 6px; color: #1e40af;"><strong>Info:</strong> This is an alert message</div>'; break;
                 case 'divider': content = '<hr style="margin: 24px 0; border: 0; border-top: 1px solid #e5e7eb;">'; break;
                 case 'spacer': content = '<div style="height: 32px;"></div>'; break;
                 case 'video': content = '<div style="margin: 16px 0;"><div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe></div></div>'; break;
-                case 'countdown': content = '<div style="text-align: center; margin: 16px 0; font-size: 32px; font-weight: 700; color: #2563eb;">00:59:59</div>'; break;
+                case 'countdown': content = '<div class="countdown-timer" data-target-date="" style="text-align: center; margin: 16px 0; font-size: 32px; font-weight: 700; color: #2563eb;" data-format="00:59:59">00:59:59</div>'; break;
+                case 'progress': content = '<div style="margin: 16px 0;"><div style="background: #e5e7eb; height: 24px; border-radius: 12px; overflow: hidden;"><div class="progress-fill" data-progress="70" style="width: 70%; height: 100%; background: linear-gradient(90deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600;">70%</div></div></div>'; break;
+                case 'rating': content = '<div style="text-align: center; margin: 16px 0; font-size: 28px; color: #f59e0b;"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></div>'; break;
+                case 'testimonial': content = '<div style="margin: 16px 0; padding: 24px; background: #f9fafb; border-radius: 12px; border-left: 4px solid #2563eb;"><p style="font-size: 16px; font-style: italic; color: #374151; margin-bottom: 16px;">"This is an amazing product! Highly recommended."</p><div style="display: flex; align-items: center; gap: 12px;"><img src="https://via.placeholder.com/48" style="width: 48px; height: 48px; border-radius: 50%;"><div><div style="font-weight: 600; color: #111827;">John Doe</div><div style="font-size: 14px; color: #6b7280;">Customer</div></div></div></div>'; break;
+                case 'badge': content = '<div style="text-align: center; margin: 16px 0;"><span style="display: inline-block; padding: 8px 16px; background: #2563eb; color: white; border-radius: 20px; font-size: 14px; font-weight: 600;">NEW</span></div>'; break;
+                case 'card': content = '<div style="margin: 16px 0; padding: 24px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"><h3 style="font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 12px;">Card Title</h3><p style="color: #6b7280; margin-bottom: 16px;">Card content goes here. You can add text, images, or other elements.</p><button style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">Learn More</button></div>'; break;
+                case 'social': content = '<div class="social-buttons" style="text-align: center; margin: 16px 0;"><a href="#" style="display: inline-block; width: 36px; height: 36px; line-height: 36px; background: #3b5998; color: white; border-radius: 50%; margin: 0 4px; text-decoration: none;"><i class="bi bi-facebook"></i></a><a href="#" style="display: inline-block; width: 36px; height: 36px; line-height: 36px; background: #1da1f2; color: white; border-radius: 50%; margin: 0 4px; text-decoration: none;"><i class="bi bi-twitter"></i></a><a href="#" style="display: inline-block; width: 36px; height: 36px; line-height: 36px; background: #0077b5; color: white; border-radius: 50%; margin: 0 4px; text-decoration: none;"><i class="bi bi-linkedin"></i></a></div>'; break;
+                case 'coupon': content = '<div class="coupon-code" data-code="SAVE20" style="text-align: center; margin: 16px 0;"><div style="background: #1e293b; color: white; padding: 16px 32px; border-radius: 8px; font-size: 24px; font-weight: 700; letter-spacing: 2px; display: inline-block;">SAVE20</div></div>'; break;
+                case 'form': content = '<form style="margin: 16px 0; padding: 24px; background: #f9fafb; border-radius: 12px;"><div style="margin-bottom: 16px;"><label style="display: block; margin-bottom: 6px; font-weight: 600; color: #374151;">Name</label><input type="text" placeholder="Your name" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;"></div><div style="margin-bottom: 16px;"><label style="display: block; margin-bottom: 6px; font-weight: 600; color: #374151;">Email</label><input type="email" placeholder="your@email.com" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;"></div><button type="submit" style="width: 100%; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;">Submit</button></form>'; break;
+                case 'accordion': content = '<div style="margin: 16px 0;"><div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;"><div style="padding: 16px; background: #f9fafb; font-weight: 600; cursor: pointer; border-bottom: 1px solid #e5e7eb;">Section 1 <i class="bi bi-chevron-down" style="float: right;"></i></div><div style="padding: 16px; display: none;">Content for section 1</div><div style="padding: 16px; background: #f9fafb; font-weight: 600; cursor: pointer; border-bottom: 1px solid #e5e7eb;">Section 2 <i class="bi bi-chevron-down" style="float: right;"></i></div><div style="padding: 16px; display: none;">Content for section 2</div></div></div>'; break;
+                case 'map': content = '<div style="margin: 16px 0;"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.2219901290355!2d-74.00369368400567!3d40.71312937933185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a316e8c5e27%3A0x21be8c84cf88ccf5!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1234567890" width="100%" height="300" style="border:0; border-radius: 8px;" allowfullscreen loading="lazy"></iframe></div>'; break;
+                case 'html': content = '<div class="custom-html" style="margin: 16px 0; padding: 16px; background: #f9fafb; border: 2px dashed #d1d5db; border-radius: 8px;"><p style="color: #6b7280; text-align: center; margin: 0;">Custom HTML Block</p></div>'; break;
                 case 'columns': content = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;"><div style="padding: 20px; background: #f3f4f6; border-radius: 8px;">Column 1</div><div style="padding: 20px; background: #f3f4f6; border-radius: 8px;">Column 2</div></div>'; break;
                 default: content = `<div style="padding: 16px; background: #f3f4f6; border-radius: 8px; margin: 16px 0; text-align: center;">${type} block</div>`;
             }
@@ -522,21 +561,686 @@
         function showProperties(type) {
             const panel = document.getElementById('propertiesPanel');
             let html = `<h4 style="margin-bottom: 20px; font-size: 16px; font-weight: 700;">${type.charAt(0).toUpperCase() + type.slice(1)} Properties</h4>`;
+            
             switch(type) {
                 case 'text':
-                    html += '<div class="property-group"><label class="property-label">Font Size (px)</label><input type="number" class="property-input" id="fontSize" value="16" onchange="updateStyle(\'fontSize\', this.value + \'px\')"></div><div class="property-group"><label class="property-label">Text Color</label><div class="color-picker-row"><input type="color" class="color-preview" value="#374151" onchange="updateStyle(\'color\', this.value)"></div></div><div class="property-group"><label class="property-label">Alignment</label><select class="property-select" onchange="updateStyle(\'textAlign\', this.value)"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>';
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Font Size (px)</label>
+                            <input type="number" class="property-input" id="fontSize" value="16" onchange="updateTextStyle('fontSize', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" id="textColor" value="#374151" onchange="updateTextStyle('color', this.value)">
+                                <input type="text" class="property-input" id="textColorHex" value="#374151" style="flex: 1;" onchange="document.getElementById('textColor').value = this.value; updateTextStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Weight</label>
+                            <select class="property-select" onchange="updateTextStyle('fontWeight', this.value)">
+                                <option value="400">Normal</option>
+                                <option value="500">Medium</option>
+                                <option value="600">Semi Bold</option>
+                                <option value="700">Bold</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Alignment</label>
+                            <select class="property-select" onchange="updateTextStyle('textAlign', this.value)">
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                                <option value="justify">Justify</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Margin (px)</label>
+                            <input type="text" class="property-input" placeholder="e.g., 16px 0" onchange="updateTextStyle('margin', this.value)">
+                        </div>
+                    `;
                     break;
+                    
                 case 'button':
-                    html += '<div class="property-group"><label class="property-label">Button Text</label><input type="text" class="property-input" value="Click Me" onchange="updateButtonText(this.value)"></div><div class="property-group"><label class="property-label">Background Color</label><div class="color-picker-row"><input type="color" class="color-preview" value="#2563eb" onchange="updateButtonStyle(\'background\', this.value)"></div></div><div class="property-group"><label class="property-label">Link URL</label><input type="url" class="property-input" placeholder="https://"></div>';
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Button Text</label>
+                            <input type="text" class="property-input" id="buttonText" value="Click Me" onchange="updateButtonText(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" id="btnBg" value="#2563eb" onchange="updateButtonStyle('background', this.value)">
+                                <input type="text" class="property-input" value="#2563eb" style="flex: 1;" onchange="document.getElementById('btnBg').value = this.value; updateButtonStyle('background', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" id="btnColor" value="#ffffff" onchange="updateButtonStyle('color', this.value)">
+                                <input type="text" class="property-input" value="#ffffff" style="flex: 1;" onchange="document.getElementById('btnColor').value = this.value; updateButtonStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Padding</label>
+                            <input type="text" class="property-input" value="12px 24px" onchange="updateButtonStyle('padding', this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Border Radius (px)</label>
+                            <input type="number" class="property-input" value="6" onchange="updateButtonStyle('borderRadius', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Link URL</label>
+                            <input type="url" class="property-input" id="buttonUrl" placeholder="https://" onchange="updateButtonUrl(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Size (px)</label>
+                            <input type="number" class="property-input" value="16" onchange="updateButtonStyle('fontSize', this.value + 'px')">
+                        </div>
+                    `;
                     break;
+                    
                 case 'image':
-                    html += '<div class="property-group"><label class="property-label">Image URL</label><input type="url" class="property-input" value="https://via.placeholder.com/400x200" onchange="updateImage(this.value)"></div>';
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Image URL</label>
+                            <input type="url" class="property-input" id="imageUrl" value="https://via.placeholder.com/400x200" onchange="updateImage(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Alt Text</label>
+                            <input type="text" class="property-input" placeholder="Image description" onchange="updateImageAlt(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Max Width (%)</label>
+                            <input type="number" class="property-input" value="100" min="10" max="100" onchange="updateImageStyle('maxWidth', this.value + '%')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Border Radius (px)</label>
+                            <input type="number" class="property-input" value="8" onchange="updateImageStyle('borderRadius', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Alignment</label>
+                            <select class="property-select" onchange="updateImageAlignment(this.value)">
+                                <option value="center">Center</option>
+                                <option value="left">Left</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Link URL (optional)</label>
+                            <input type="url" class="property-input" placeholder="https://" onchange="updateImageLink(this.value)">
+                        </div>
+                    `;
                     break;
+                    
+                case 'fields':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Field Type</label>
+                            <select class="property-select" onchange="updateFieldType(this.value)">
+                                <option value="email">Email</option>
+                                <option value="text">Text</option>
+                                <option value="tel">Phone</option>
+                                <option value="number">Number</option>
+                                <option value="textarea">Textarea</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Placeholder</label>
+                            <input type="text" class="property-input" value="Enter your email" onchange="updateFieldPlaceholder(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Border Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#d1d5db" onchange="updateFieldStyle('borderColor', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Border Radius (px)</label>
+                            <input type="number" class="property-input" value="6" onchange="updateFieldStyle('borderRadius', this.value + 'px')">
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="fieldRequired" onchange="updateFieldRequired(this.checked)">
+                            <label class="form-check-label" for="fieldRequired">Required field</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'divider':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#e5e7eb" onchange="updateDividerStyle('borderTopColor', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Thickness (px)</label>
+                            <input type="number" class="property-input" value="1" onchange="updateDividerStyle('borderTopWidth', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Style</label>
+                            <select class="property-select" onchange="updateDividerStyle('borderTopStyle', this.value)">
+                                <option value="solid">Solid</option>
+                                <option value="dashed">Dashed</option>
+                                <option value="dotted">Dotted</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Margin (px)</label>
+                            <input type="text" class="property-input" value="24px 0" onchange="updateDividerStyle('margin', this.value)">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'spacer':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Height (px)</label>
+                            <input type="number" class="property-input" value="32" onchange="updateSpacerHeight(this.value)">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'video':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Video Type</label>
+                            <select class="property-select" id="videoType" onchange="updateVideoType(this.value)">
+                                <option value="youtube">YouTube</option>
+                                <option value="vimeo">Vimeo</option>
+                                <option value="direct">Direct URL</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Video URL/ID</label>
+                            <input type="text" class="property-input" id="videoUrl" placeholder="e.g., dQw4w9WgXcQ" onchange="updateVideoUrl(this.value)">
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="videoAutoplay" onchange="updateVideoAutoplay(this.checked)">
+                            <label class="form-check-label" for="videoAutoplay">Autoplay</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="videoControls" checked onchange="updateVideoControls(this.checked)">
+                            <label class="form-check-label" for="videoControls">Show controls</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'countdown':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Target Date & Time</label>
+                            <input type="datetime-local" class="property-input" id="countdownTarget" onchange="updateCountdownTarget(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Size (px)</label>
+                            <input type="number" class="property-input" value="32" onchange="updateCountdownStyle('fontSize', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#2563eb" onchange="updateCountdownStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Display Format</label>
+                            <select class="property-select" onchange="updateCountdownFormat(this.value)">
+                                <option value="full">Days:Hours:Minutes:Seconds</option>
+                                <option value="short">Hours:Minutes:Seconds</option>
+                                <option value="minimal">Minutes:Seconds</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'social':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Facebook URL</label>
+                            <input type="url" class="property-input" id="facebookUrl" placeholder="https://facebook.com/..." onchange="updateSocialUrl('facebook', this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Twitter URL</label>
+                            <input type="url" class="property-input" id="twitterUrl" placeholder="https://twitter.com/..." onchange="updateSocialUrl('twitter', this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">LinkedIn URL</label>
+                            <input type="url" class="property-input" id="linkedinUrl" placeholder="https://linkedin.com/..." onchange="updateSocialUrl('linkedin', this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Instagram URL</label>
+                            <input type="url" class="property-input" id="instagramUrl" placeholder="https://instagram.com/..." onchange="updateSocialUrl('instagram', this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Button Size (px)</label>
+                            <input type="number" class="property-input" value="36" onchange="updateSocialSize(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Button Style</label>
+                            <select class="property-select" onchange="updateSocialStyle(this.value)">
+                                <option value="circle">Circle</option>
+                                <option value="square">Square</option>
+                                <option value="rounded">Rounded</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'coupon':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Coupon Code</label>
+                            <input type="text" class="property-input" id="couponCode" value="SAVE20" onchange="updateCouponCode(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#1e293b" onchange="updateCouponStyle('background', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#ffffff" onchange="updateCouponStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Size (px)</label>
+                            <input type="number" class="property-input" value="24" onchange="updateCouponStyle('fontSize', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Border Radius (px)</label>
+                            <input type="number" class="property-input" value="8" onchange="updateCouponStyle('borderRadius', this.value + 'px')">
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="couponCopy" checked onchange="updateCouponCopy(this.checked)">
+                            <label class="form-check-label" for="couponCopy">Enable click to copy</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'html':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">HTML Content</label>
+                            <textarea class="property-textarea" id="htmlContent" rows="10" placeholder="Enter your custom HTML here..." onchange="updateHtmlContent(this.value)"></textarea>
+                            <small style="color: #6b7280; font-size: 12px; margin-top: 4px; display: block;">
+                                Tip: You can use any HTML, CSS, and even JavaScript
+                            </small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="htmlSanitize" checked>
+                            <label class="form-check-label" for="htmlSanitize">Sanitize HTML (recommended)</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'heading':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Heading Level</label>
+                            <select class="property-select" onchange="updateHeadingLevel(this.value)">
+                                <option value="h1">H1</option>
+                                <option value="h2" selected>H2</option>
+                                <option value="h3">H3</option>
+                                <option value="h4">H4</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Size (px)</label>
+                            <input type="number" class="property-input" value="32" onchange="updateHeadingStyle('fontSize', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#111827" onchange="updateHeadingStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Weight</label>
+                            <select class="property-select" onchange="updateHeadingStyle('fontWeight', this.value)">
+                                <option value="600">Semi Bold</option>
+                                <option value="700" selected>Bold</option>
+                                <option value="800">Extra Bold</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Alignment</label>
+                            <select class="property-select" onchange="updateHeadingStyle('textAlign', this.value)">
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'icon':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Icon</label>
+                            <select class="property-select" onchange="updateIcon(this.value)">
+                                <option value="bi-star-fill">Star</option>
+                                <option value="bi-heart-fill">Heart</option>
+                                <option value="bi-check-circle-fill">Check Circle</option>
+                                <option value="bi-exclamation-circle-fill">Exclamation</option>
+                                <option value="bi-info-circle-fill">Info</option>
+                                <option value="bi-lightning-fill">Lightning</option>
+                                <option value="bi-gift-fill">Gift</option>
+                                <option value="bi-trophy-fill">Trophy</option>
+                                <option value="bi-fire">Fire</option>
+                                <option value="bi-rocket-takeoff">Rocket</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Size (px)</label>
+                            <input type="number" class="property-input" value="48" onchange="updateIconStyle('fontSize', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#f59e0b" onchange="updateIconStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Alignment</label>
+                            <select class="property-select" onchange="updateIconAlignment(this.value)">
+                                <option value="left">Left</option>
+                                <option value="center" selected>Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'list':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">List Type</label>
+                            <select class="property-select" onchange="updateListType(this.value)">
+                                <option value="ul">Bullet List</option>
+                                <option value="ol">Numbered List</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#374151" onchange="updateListStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Size (px)</label>
+                            <input type="number" class="property-input" value="16" onchange="updateListStyle('fontSize', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Line Height</label>
+                            <input type="number" class="property-input" value="1.6" step="0.1" onchange="updateListStyle('lineHeight', this.value)">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'alert':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Alert Type</label>
+                            <select class="property-select" onchange="updateAlertType(this.value)">
+                                <option value="info" selected>Info (Blue)</option>
+                                <option value="success">Success (Green)</option>
+                                <option value="warning">Warning (Yellow)</option>
+                                <option value="error">Error (Red)</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Message</label>
+                            <textarea class="property-textarea" rows="3" onchange="updateAlertMessage(this.value)">This is an alert message</textarea>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alertIcon" checked onchange="updateAlertIcon(this.checked)">
+                            <label class="form-check-label" for="alertIcon">Show icon</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'progress':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Progress Value (%)</label>
+                            <input type="number" class="property-input" value="70" min="0" max="100" onchange="updateProgressValue(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Bar Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#10b981" onchange="updateProgressColor(this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#e5e7eb" onchange="updateProgressBgColor(this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Height (px)</label>
+                            <input type="number" class="property-input" value="24" onchange="updateProgressHeight(this.value)">
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="progressLabel" checked onchange="updateProgressLabel(this.checked)">
+                            <label class="form-check-label" for="progressLabel">Show percentage label</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'rating':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Rating Value</label>
+                            <select class="property-select" onchange="updateRatingValue(this.value)">
+                                <option value="0">0 Stars</option>
+                                <option value="1">1 Star</option>
+                                <option value="2">2 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="4" selected>4 Stars</option>
+                                <option value="5">5 Stars</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Star Size (px)</label>
+                            <input type="number" class="property-input" value="28" onchange="updateRatingSize(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Star Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#f59e0b" onchange="updateRatingColor(this.value)">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'testimonial':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Quote Text</label>
+                            <textarea class="property-textarea" rows="3" onchange="updateTestimonialQuote(this.value)">This is an amazing product! Highly recommended.</textarea>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Author Name</label>
+                            <input type="text" class="property-input" value="John Doe" onchange="updateTestimonialAuthor(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Author Title</label>
+                            <input type="text" class="property-input" value="Customer" onchange="updateTestimonialTitle(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Author Image URL</label>
+                            <input type="url" class="property-input" value="https://via.placeholder.com/48" onchange="updateTestimonialImage(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#f9fafb" onchange="updateTestimonialBg(this.value)">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'badge':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Badge Text</label>
+                            <input type="text" class="property-input" value="NEW" onchange="updateBadgeText(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#2563eb" onchange="updateBadgeStyle('background', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#ffffff" onchange="updateBadgeStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Size</label>
+                            <select class="property-select" onchange="updateBadgeSize(this.value)">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'card':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Card Title</label>
+                            <input type="text" class="property-input" value="Card Title" onchange="updateCardTitle(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Card Content</label>
+                            <textarea class="property-textarea" rows="3" onchange="updateCardContent(this.value)">Card content goes here</textarea>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Button Text</label>
+                            <input type="text" class="property-input" value="Learn More" onchange="updateCardButtonText(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#ffffff" onchange="updateCardBg(this.value)">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cardShadow" checked onchange="updateCardShadow(this.checked)">
+                            <label class="form-check-label" for="cardShadow">Show shadow</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'form':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Form Fields</label>
+                            <p style="font-size: 13px; color: #6b7280;">Click on the form to edit field labels directly</p>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Submit Button Text</label>
+                            <input type="text" class="property-input" value="Submit" onchange="updateFormButtonText(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#f9fafb" onchange="updateFormBg(this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Submit Action URL</label>
+                            <input type="url" class="property-input" placeholder="https://..." onchange="updateFormAction(this.value)">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'accordion':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Border Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#e5e7eb" onchange="updateAccordionBorder(this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Header Background</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="#f9fafb" onchange="updateAccordionHeaderBg(this.value)">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="accordionMultiple" onchange="updateAccordionMultiple(this.checked)">
+                            <label class="form-check-label" for="accordionMultiple">Allow multiple open</label>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'map':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Location/Address</label>
+                            <input type="text" class="property-input" placeholder="Enter address or place" onchange="updateMapLocation(this.value)">
+                            <small style="color: #6b7280; font-size: 12px;">Enter a location to generate embed URL</small>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Height (px)</label>
+                            <input type="number" class="property-input" value="300" onchange="updateMapHeight(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Zoom Level</label>
+                            <select class="property-select" onchange="updateMapZoom(this.value)">
+                                <option value="10">Far (City)</option>
+                                <option value="13" selected>Medium (Neighborhood)</option>
+                                <option value="15">Close (Street)</option>
+                                <option value="18">Very Close (Building)</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'columns':
+                    html += `
+                        <div class="property-group">
+                            <label class="property-label">Number of Columns</label>
+                            <select class="property-select" onchange="updateColumnCount(this.value)">
+                                <option value="2" selected>2 Columns</option>
+                                <option value="3">3 Columns</option>
+                                <option value="4">4 Columns</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Gap (px)</label>
+                            <input type="number" class="property-input" value="16" onchange="updateColumnGap(this.value)">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Column Ratio</label>
+                            <select class="property-select" onchange="updateColumnRatio(this.value)">
+                                <option value="equal">Equal Width</option>
+                                <option value="2-1">2:1 Ratio</option>
+                                <option value="1-2">1:2 Ratio</option>
+                                <option value="3-1">3:1 Ratio</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                default:
+                    html += '<div class="empty-state" style="padding-top: 60px;"><i class="bi bi-sliders"></i><p>No properties available</p></div>';
             }
+            
             panel.innerHTML = html;
         }
 
-        function updateStyle(property, value) {
+        function updateTextStyle(property, value) {
             if (!selectedComponent) return;
             const elem = selectedComponent.querySelector('p');
             if (elem) elem.style[property] = value;
@@ -554,10 +1258,310 @@
             if (btn) btn.textContent = text;
         }
 
+        function updateButtonUrl(url) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('[style*="text-align: center"]');
+            if (container) {
+                const btn = container.querySelector('button');
+                if (btn && url) {
+                    const anchor = document.createElement('a');
+                    anchor.href = url;
+                    anchor.target = '_blank';
+                    anchor.style.cssText = 'text-decoration: none;';
+                    btn.parentNode.insertBefore(anchor, btn);
+                    anchor.appendChild(btn);
+                }
+            }
+        }
+
         function updateImage(url) {
             if (!selectedComponent) return;
             const img = selectedComponent.querySelector('img');
             if (img) img.src = url;
+        }
+
+        function updateImageAlt(alt) {
+            if (!selectedComponent) return;
+            const img = selectedComponent.querySelector('img');
+            if (img) img.alt = alt;
+        }
+
+        function updateImageStyle(property, value) {
+            if (!selectedComponent) return;
+            const img = selectedComponent.querySelector('img');
+            if (img) img.style[property] = value;
+        }
+
+        function updateImageAlignment(align) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) container.style.textAlign = align;
+        }
+
+        function updateImageLink(url) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            const img = container?.querySelector('img');
+            if (img && url) {
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.target = '_blank';
+                img.parentNode.insertBefore(anchor, img);
+                anchor.appendChild(img);
+            }
+        }
+
+        function updateFieldType(type) {
+            if (!selectedComponent) return;
+            const field = selectedComponent.querySelector('input, textarea');
+            if (field) {
+                if (type === 'textarea') {
+                    const textarea = document.createElement('textarea');
+                    textarea.placeholder = field.placeholder;
+                    textarea.style.cssText = field.style.cssText;
+                    textarea.className = field.className;
+                    field.parentNode.replaceChild(textarea, field);
+                } else {
+                    if (field.tagName === 'TEXTAREA') {
+                        const input = document.createElement('input');
+                        input.type = type;
+                        input.placeholder = field.placeholder;
+                        input.style.cssText = field.style.cssText;
+                        input.className = field.className;
+                        field.parentNode.replaceChild(input, field);
+                    } else {
+                        field.type = type;
+                    }
+                }
+            }
+        }
+
+        function updateFieldPlaceholder(placeholder) {
+            if (!selectedComponent) return;
+            const field = selectedComponent.querySelector('input, textarea');
+            if (field) field.placeholder = placeholder;
+        }
+
+        function updateFieldStyle(property, value) {
+            if (!selectedComponent) return;
+            const field = selectedComponent.querySelector('input, textarea');
+            if (field) field.style[property] = value;
+        }
+
+        function updateFieldRequired(required) {
+            if (!selectedComponent) return;
+            const field = selectedComponent.querySelector('input, textarea');
+            if (field) field.required = required;
+        }
+
+        function updateDividerStyle(property, value) {
+            if (!selectedComponent) return;
+            const hr = selectedComponent.querySelector('hr');
+            if (hr) hr.style[property] = value;
+        }
+
+        function updateSpacerHeight(height) {
+            if (!selectedComponent) return;
+            const spacer = selectedComponent.querySelector('div');
+            if (spacer) spacer.style.height = height + 'px';
+        }
+
+        function updateVideoType(type) {
+            if (!selectedComponent) return;
+            selectedComponent.dataset.videoType = type;
+        }
+
+        function updateVideoUrl(url) {
+            if (!selectedComponent) return;
+            const iframe = selectedComponent.querySelector('iframe');
+            const videoType = selectedComponent.dataset.videoType || 'youtube';
+            let embedUrl = '';
+            
+            if (videoType === 'youtube') {
+                embedUrl = url.includes('youtube.com') || url.includes('youtu.be') 
+                    ? url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')
+                    : `https://www.youtube.com/embed/${url}`;
+            } else if (videoType === 'vimeo') {
+                embedUrl = url.includes('vimeo.com')
+                    ? url.replace('vimeo.com/', 'player.vimeo.com/video/')
+                    : `https://player.vimeo.com/video/${url}`;
+            } else {
+                embedUrl = url;
+            }
+            
+            if (iframe) iframe.src = embedUrl;
+        }
+
+        function updateVideoAutoplay(autoplay) {
+            if (!selectedComponent) return;
+            const iframe = selectedComponent.querySelector('iframe');
+            if (iframe) {
+                const url = new URL(iframe.src);
+                if (autoplay) {
+                    url.searchParams.set('autoplay', '1');
+                } else {
+                    url.searchParams.delete('autoplay');
+                }
+                iframe.src = url.toString();
+            }
+        }
+
+        function updateVideoControls(controls) {
+            if (!selectedComponent) return;
+            const iframe = selectedComponent.querySelector('iframe');
+            if (iframe) {
+                const url = new URL(iframe.src);
+                if (!controls) {
+                    url.searchParams.set('controls', '0');
+                } else {
+                    url.searchParams.delete('controls');
+                }
+                iframe.src = url.toString();
+            }
+        }
+
+        function updateCountdownTarget(datetime) {
+            if (!selectedComponent) return;
+            const countdown = selectedComponent.querySelector('.countdown-timer');
+            if (countdown) countdown.dataset.targetDate = datetime;
+        }
+
+        function updateCountdownStyle(property, value) {
+            if (!selectedComponent) return;
+            const countdown = selectedComponent.querySelector('.countdown-timer, div');
+            if (countdown) countdown.style[property] = value;
+        }
+
+        function updateCountdownFormat(format) {
+            if (!selectedComponent) return;
+            const countdown = selectedComponent.querySelector('.countdown-timer, div');
+            if (countdown) countdown.dataset.format = format;
+        }
+
+        function updateSocialUrl(platform, url) {
+            if (!selectedComponent) return;
+            const socialContainer = selectedComponent.querySelector('.social-buttons, div');
+            if (!socialContainer) return;
+            
+            const iconMap = {
+                facebook: 'bi-facebook',
+                twitter: 'bi-twitter',
+                linkedin: 'bi-linkedin',
+                instagram: 'bi-instagram'
+            };
+            
+            let link = socialContainer.querySelector(`a i.${iconMap[platform]}`)?.parentElement;
+            if (!link && url) {
+                link = document.createElement('a');
+                link.href = url;
+                link.style.cssText = 'display: inline-block; width: 36px; height: 36px; line-height: 36px; background: #3b5998; color: white; border-radius: 50%; margin: 0 4px; text-decoration: none;';
+                link.innerHTML = `<i class="bi ${iconMap[platform]}"></i>`;
+                socialContainer.appendChild(link);
+            } else if (link) {
+                link.href = url;
+            }
+        }
+
+        function updateSocialSize(size) {
+            if (!selectedComponent) return;
+            const links = selectedComponent.querySelectorAll('.social-buttons a, div a');
+            links.forEach(link => {
+                link.style.width = size + 'px';
+                link.style.height = size + 'px';
+                link.style.lineHeight = size + 'px';
+            });
+        }
+
+        function updateSocialStyle(style) {
+            if (!selectedComponent) return;
+            const links = selectedComponent.querySelectorAll('.social-buttons a, div a');
+            const radiusMap = { circle: '50%', square: '0', rounded: '8px' };
+            links.forEach(link => link.style.borderRadius = radiusMap[style]);
+        }
+
+        function updateCouponCode(code) {
+            if (!selectedComponent) return;
+            const couponDiv = selectedComponent.querySelector('.coupon-code div, div div');
+            if (couponDiv) {
+                couponDiv.textContent = code;
+                const parent = selectedComponent.querySelector('.coupon-code, div');
+                if (parent) parent.dataset.code = code;
+            }
+        }
+
+        function updateCouponStyle(property, value) {
+            if (!selectedComponent) return;
+            const couponDiv = selectedComponent.querySelector('.coupon-code div, div div');
+            if (couponDiv) couponDiv.style[property] = value;
+        }
+
+        function updateCouponCopy(enable) {
+            if (!selectedComponent) return;
+            const coupon = selectedComponent.querySelector('.coupon-code, div');
+            if (coupon) {
+                if (enable) {
+                    coupon.style.cursor = 'pointer';
+                    coupon.onclick = function() {
+                        const code = this.dataset.code || this.textContent.trim();
+                        navigator.clipboard.writeText(code).then(() => {
+                            alert('Coupon code copied: ' + code);
+                        });
+                    };
+                } else {
+                    coupon.style.cursor = 'default';
+                    coupon.onclick = null;
+                }
+            }
+        }
+
+        function updateHtmlContent(html) {
+            if (!selectedComponent) return;
+            const htmlContainer = selectedComponent.querySelector('.custom-html, div');
+            if (htmlContainer) {
+                const sanitize = document.getElementById('htmlSanitize')?.checked;
+                htmlContainer.innerHTML = sanitize ? html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') : html;
+            }
+        }
+
+        function updateColumnCount(count) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) {
+                container.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
+                const currentCols = container.children.length;
+                if (count > currentCols) {
+                    for (let i = currentCols; i < count; i++) {
+                        const col = document.createElement('div');
+                        col.style.cssText = 'padding: 20px; background: #f3f4f6; border-radius: 8px;';
+                        col.textContent = `Column ${i + 1}`;
+                        container.appendChild(col);
+                    }
+                } else if (count < currentCols) {
+                    while (container.children.length > count) {
+                        container.removeChild(container.lastChild);
+                    }
+                }
+            }
+        }
+
+        function updateColumnGap(gap) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) container.style.gap = gap + 'px';
+        }
+
+        function updateColumnRatio(ratio) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) {
+                const ratioMap = {
+                    'equal': '1fr 1fr',
+                    '2-1': '2fr 1fr',
+                    '1-2': '1fr 2fr',
+                    '3-1': '3fr 1fr'
+                };
+                container.style.gridTemplateColumns = ratioMap[ratio];
+            }
         }
 
         function moveUp(id) {
@@ -575,6 +1579,304 @@
             if (component && confirm('Delete this component?')) {
                 component.remove();
                 document.getElementById('propertiesPanel').innerHTML = '<div class="empty-state" style="padding-top: 100px;"><i class="bi bi-sliders"></i><p>Select a block to edit properties</p></div>';
+            }
+        }
+
+        // New block update functions
+        function updateHeadingLevel(level) {
+            if (!selectedComponent) return;
+            const oldHeading = selectedComponent.querySelector('h1, h2, h3, h4');
+            if (oldHeading) {
+                const newHeading = document.createElement(level);
+                newHeading.innerHTML = oldHeading.innerHTML;
+                newHeading.style.cssText = oldHeading.style.cssText;
+                newHeading.contentEditable = 'true';
+                oldHeading.parentNode.replaceChild(newHeading, oldHeading);
+            }
+        }
+
+        function updateHeadingStyle(property, value) {
+            if (!selectedComponent) return;
+            const heading = selectedComponent.querySelector('h1, h2, h3, h4');
+            if (heading) heading.style[property] = value;
+        }
+
+        function updateIcon(iconClass) {
+            if (!selectedComponent) return;
+            const icon = selectedComponent.querySelector('i');
+            if (icon) {
+                icon.className = `bi ${iconClass}`;
+            }
+        }
+
+        function updateIconStyle(property, value) {
+            if (!selectedComponent) return;
+            const icon = selectedComponent.querySelector('i');
+            if (icon) icon.style[property] = value;
+        }
+
+        function updateIconAlignment(align) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) container.style.textAlign = align;
+        }
+
+        function updateListType(type) {
+            if (!selectedComponent) return;
+            const oldList = selectedComponent.querySelector('ul, ol');
+            if (oldList) {
+                const newList = document.createElement(type);
+                newList.innerHTML = oldList.innerHTML;
+                newList.style.cssText = oldList.style.cssText;
+                oldList.parentNode.replaceChild(newList, oldList);
+            }
+        }
+
+        function updateListStyle(property, value) {
+            if (!selectedComponent) return;
+            const list = selectedComponent.querySelector('ul, ol');
+            if (list) list.style[property] = value;
+        }
+
+        function updateAlertType(type) {
+            if (!selectedComponent) return;
+            const alert = selectedComponent.querySelector('div');
+            const colorMap = {
+                info: { bg: '#dbeafe', border: '#2563eb', text: '#1e40af' },
+                success: { bg: '#d1fae5', border: '#10b981', text: '#065f46' },
+                warning: { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' },
+                error: { bg: '#fee2e2', border: '#ef4444', text: '#991b1b' }
+            };
+            if (alert && colorMap[type]) {
+                alert.style.background = colorMap[type].bg;
+                alert.style.borderLeftColor = colorMap[type].border;
+                alert.style.color = colorMap[type].text;
+            }
+        }
+
+        function updateAlertMessage(message) {
+            if (!selectedComponent) return;
+            const alert = selectedComponent.querySelector('div');
+            if (alert) {
+                const hasIcon = alert.innerHTML.includes('<strong>');
+                if (hasIcon) {
+                    const match = alert.innerHTML.match(/<strong>.*?<\/strong>/);
+                    if (match) alert.innerHTML = match[0] + ' ' + message;
+                } else {
+                    alert.innerHTML = message;
+                }
+            }
+        }
+
+        function updateAlertIcon(show) {
+            if (!selectedComponent) return;
+            const alert = selectedComponent.querySelector('div');
+            if (alert) {
+                if (show && !alert.innerHTML.includes('<strong>')) {
+                    alert.innerHTML = '<strong>Info:</strong> ' + alert.textContent;
+                } else if (!show && alert.innerHTML.includes('<strong>')) {
+                    alert.innerHTML = alert.textContent.replace(/^\w+:\s*/, '');
+                }
+            }
+        }
+
+        function updateProgressValue(value) {
+            if (!selectedComponent) return;
+            const fill = selectedComponent.querySelector('.progress-fill, div div');
+            if (fill) {
+                fill.style.width = value + '%';
+                fill.textContent = value + '%';
+                fill.dataset.progress = value;
+            }
+        }
+
+        function updateProgressColor(color) {
+            if (!selectedComponent) return;
+            const fill = selectedComponent.querySelector('.progress-fill, div div');
+            if (fill) fill.style.background = `linear-gradient(90deg, ${color} 0%, ${color} 100%)`;
+        }
+
+        function updateProgressBgColor(color) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div > div');
+            if (container) container.style.background = color;
+        }
+
+        function updateProgressHeight(height) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div > div');
+            if (container) container.style.height = height + 'px';
+        }
+
+        function updateProgressLabel(show) {
+            if (!selectedComponent) return;
+            const fill = selectedComponent.querySelector('.progress-fill, div div');
+            if (fill) fill.textContent = show ? (fill.dataset.progress || '70') + '%' : '';
+        }
+
+        function updateRatingValue(value) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) {
+                const stars = container.querySelectorAll('i');
+                stars.forEach((star, index) => {
+                    star.className = index < value ? 'bi bi-star-fill' : 'bi bi-star';
+                });
+            }
+        }
+
+        function updateRatingSize(size) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) container.style.fontSize = size + 'px';
+        }
+
+        function updateRatingColor(color) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) container.style.color = color;
+        }
+
+        function updateTestimonialQuote(text) {
+            if (!selectedComponent) return;
+            const quote = selectedComponent.querySelector('p');
+            if (quote) quote.textContent = `"${text}"`;
+        }
+
+        function updateTestimonialAuthor(name) {
+            if (!selectedComponent) return;
+            const author = selectedComponent.querySelector('div > div > div:first-child');
+            if (author) author.textContent = name;
+        }
+
+        function updateTestimonialTitle(title) {
+            if (!selectedComponent) return;
+            const titleElem = selectedComponent.querySelector('div > div > div:last-child');
+            if (titleElem) titleElem.textContent = title;
+        }
+
+        function updateTestimonialImage(url) {
+            if (!selectedComponent) return;
+            const img = selectedComponent.querySelector('img');
+            if (img) img.src = url;
+        }
+
+        function updateTestimonialBg(color) {
+            if (!selectedComponent) return;
+            const container = selectedComponent.querySelector('div');
+            if (container) container.style.background = color;
+        }
+
+        function updateBadgeText(text) {
+            if (!selectedComponent) return;
+            const badge = selectedComponent.querySelector('span');
+            if (badge) badge.textContent = text;
+        }
+
+        function updateBadgeStyle(property, value) {
+            if (!selectedComponent) return;
+            const badge = selectedComponent.querySelector('span');
+            if (badge) badge.style[property] = value;
+        }
+
+        function updateBadgeSize(size) {
+            if (!selectedComponent) return;
+            const badge = selectedComponent.querySelector('span');
+            if (badge) {
+                const sizes = { small: '12px', medium: '14px', large: '16px' };
+                const padding = { small: '6px 12px', medium: '8px 16px', large: '10px 20px' };
+                badge.style.fontSize = sizes[size];
+                badge.style.padding = padding[size];
+            }
+        }
+
+        function updateCardTitle(title) {
+            if (!selectedComponent) return;
+            const h3 = selectedComponent.querySelector('h3');
+            if (h3) h3.textContent = title;
+        }
+
+        function updateCardContent(content) {
+            if (!selectedComponent) return;
+            const p = selectedComponent.querySelector('p');
+            if (p) p.textContent = content;
+        }
+
+        function updateCardButtonText(text) {
+            if (!selectedComponent) return;
+            const btn = selectedComponent.querySelector('button');
+            if (btn) btn.textContent = text;
+        }
+
+        function updateCardBg(color) {
+            if (!selectedComponent) return;
+            const card = selectedComponent.querySelector('div');
+            if (card) card.style.background = color;
+        }
+
+        function updateCardShadow(show) {
+            if (!selectedComponent) return;
+            const card = selectedComponent.querySelector('div');
+            if (card) card.style.boxShadow = show ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none';
+        }
+
+        function updateFormButtonText(text) {
+            if (!selectedComponent) return;
+            const btn = selectedComponent.querySelector('button[type="submit"]');
+            if (btn) btn.textContent = text;
+        }
+
+        function updateFormBg(color) {
+            if (!selectedComponent) return;
+            const form = selectedComponent.querySelector('form');
+            if (form) form.style.background = color;
+        }
+
+        function updateFormAction(url) {
+            if (!selectedComponent) return;
+            const form = selectedComponent.querySelector('form');
+            if (form) form.action = url;
+        }
+
+        function updateAccordionBorder(color) {
+            if (!selectedComponent) return;
+            const accordion = selectedComponent.querySelector('div > div');
+            if (accordion) accordion.style.borderColor = color;
+        }
+
+        function updateAccordionHeaderBg(color) {
+            if (!selectedComponent) return;
+            const headers = selectedComponent.querySelectorAll('div > div > div:nth-child(odd)');
+            headers.forEach(header => header.style.background = color);
+        }
+
+        function updateAccordionMultiple(allow) {
+            if (!selectedComponent) return;
+            selectedComponent.dataset.multipleOpen = allow;
+        }
+
+        function updateMapLocation(location) {
+            if (!selectedComponent) return;
+            const iframe = selectedComponent.querySelector('iframe');
+            if (iframe && location) {
+                const encodedLocation = encodeURIComponent(location);
+                iframe.src = `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodedLocation}`;
+            }
+        }
+
+        function updateMapHeight(height) {
+            if (!selectedComponent) return;
+            const iframe = selectedComponent.querySelector('iframe');
+            if (iframe) iframe.height = height;
+        }
+
+        function updateMapZoom(zoom) {
+            if (!selectedComponent) return;
+            const iframe = selectedComponent.querySelector('iframe');
+            if (iframe) {
+                const url = new URL(iframe.src);
+                url.searchParams.set('zoom', zoom);
+                iframe.src = url.toString();
             }
         }
 

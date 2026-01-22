@@ -1,0 +1,70 @@
+<div class="survey-popup" style="max-width: 500px; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 5px 30px rgba(0,0,0,0.2);">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #999; cursor: pointer; font-size: 24px;">&times;</button>
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div style="display: inline-block; width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <span style="font-size: 32px;">💬</span>
+        </div>
+        <h2 style="margin: 0 0 10px 0; color: #333; font-size: 24px; font-weight: 600;">How are we doing?</h2>
+        <p style="margin: 0; color: #666; font-size: 15px;">Your feedback helps us improve</p>
+    </div>
+    
+    <form class="survey-form">
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 10px; color: #555; font-weight: 500;">Rate your experience:</label>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <button type="button" class="rating-btn" data-rating="1" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 50%; background: white; cursor: pointer; font-size: 24px; transition: all 0.3s;">😞</button>
+                <button type="button" class="rating-btn" data-rating="2" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 50%; background: white; cursor: pointer; font-size: 24px; transition: all 0.3s;">😐</button>
+                <button type="button" class="rating-btn" data-rating="3" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 50%; background: white; cursor: pointer; font-size: 24px; transition: all 0.3s;">🙂</button>
+                <button type="button" class="rating-btn" data-rating="4" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 50%; background: white; cursor: pointer; font-size: 24px; transition: all 0.3s;">😊</button>
+                <button type="button" class="rating-btn" data-rating="5" style="width: 50px; height: 50px; border: 2px solid #ddd; border-radius: 50%; background: white; cursor: pointer; font-size: 24px; transition: all 0.3s;">😍</button>
+            </div>
+        </div>
+        
+        <textarea placeholder="Tell us more (optional)" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical; min-height: 80px; margin-bottom: 15px;"></textarea>
+        
+        <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 600;">Submit Feedback</button>
+    </form>
+</div>
+
+<style>
+.survey-popup {
+    position: relative;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rating-btn:hover, .rating-btn.selected {
+    border-color: #667eea;
+    background: #f0f4ff;
+    transform: scale(1.1);
+}
+
+.survey-form button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+}
+
+.close-btn:hover {
+    color: #667eea;
+}
+</style>
+
+<script>
+document.querySelectorAll('.rating-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+    });
+});
+</script>

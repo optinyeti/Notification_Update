@@ -1,0 +1,71 @@
+<div class="inline-signup" style="max-width: 800px; margin: 40px auto; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 50px 40px; border-radius: 15px; text-align: center;">
+    <h2 style="color: #2c3e50; margin-bottom: 15px; font-size: 32px; font-weight: bold;">Stay in the Loop</h2>
+    <p style="color: #5a6c7d; margin-bottom: 35px; font-size: 18px;">Subscribe to our newsletter and never miss out on exclusive offers and updates</p>
+    
+    <form class="signup-form" style="max-width: 500px; margin: 0 auto;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="email" placeholder="Your email address" style="flex: 1; min-width: 250px; padding: 18px 25px; border: none; border-radius: 50px; font-size: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);" required>
+            <button type="submit" style="padding: 18px 35px; background: #007bff; color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 10px rgba(0,123,255,0.3);">Subscribe</button>
+        </div>
+    </form>
+    
+    <div class="features" style="margin-top: 35px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 8px; color: #5a6c7d;">
+            <span style="font-size: 20px;">📧</span>
+            <span style="font-size: 14px;">Weekly Updates</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; color: #5a6c7d;">
+            <span style="font-size: 20px;">🎁</span>
+            <span style="font-size: 14px;">Exclusive Deals</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; color: #5a6c7d;">
+            <span style="font-size: 20px;">🔒</span>
+            <span style="font-size: 14px;">Privacy Protected</span>
+        </div>
+    </div>
+    
+    <p style="font-size: 13px; color: #7f8c9a; margin-top: 25px;">Join 10,000+ subscribers. Unsubscribe anytime.</p>
+</div>
+
+<style>
+.inline-signup {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.signup-form input:focus {
+    outline: none;
+    box-shadow: 0 4px 15px rgba(0,123,255,0.2);
+}
+
+.signup-form button:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,123,255,0.4);
+}
+
+@media (max-width: 600px) {
+    .inline-signup {
+        padding: 35px 25px;
+    }
+    
+    .signup-form > div {
+        flex-direction: column;
+    }
+    
+    .signup-form input,
+    .signup-form button {
+        width: 100%;
+    }
+}
+</style>

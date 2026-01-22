@@ -1,0 +1,47 @@
+<div class="popup-modal" style="max-width: 500px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.2);">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+    
+    <h2 style="margin-bottom: 15px; color: #333;">Subscribe to Our Newsletter</h2>
+    <p style="color: #666; margin-bottom: 20px;">Get the latest updates and exclusive offers delivered to your inbox.</p>
+    
+    <form class="popup-form">
+        <input type="email" placeholder="Enter your email" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;" required>
+        <button type="submit" style="width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: 600;">Subscribe Now</button>
+    </form>
+    
+    <p style="font-size: 12px; color: #999; margin-top: 15px; text-align: center;">We respect your privacy. Unsubscribe at any time.</p>
+</div>
+
+<style>
+.popup-modal {
+    position: relative;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.popup-form input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+}
+
+.popup-form button:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+}
+
+.close-btn:hover {
+    color: #007bff;
+}
+</style>

@@ -1,0 +1,45 @@
+<div class="minimal-popup" style="max-width: 450px; background: white; padding: 50px 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); text-align: center;">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #999; cursor: pointer; font-size: 24px;">&times;</button>
+    
+    <div style="margin-bottom: 25px;">
+        <svg width="60" height="60" viewBox="0 0 60 60" style="fill: #007bff;">
+            <circle cx="30" cy="30" r="28" fill="#e3f2fd"/>
+            <path d="M15 25 L30 35 L45 25 M15 25 L15 40 L45 40 L45 25" stroke="#007bff" stroke-width="3" fill="none"/>
+        </svg>
+    </div>
+    
+    <h2 style="font-size: 24px; margin-bottom: 10px; color: #333; font-weight: 600;">Stay Updated</h2>
+    <p style="color: #666; margin-bottom: 30px; font-size: 15px; line-height: 1.6;">Join our newsletter for exclusive content, tips, and early access to new features.</p>
+    
+    <form class="popup-form">
+        <input type="email" placeholder="you@example.com" style="width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; text-align: center;" required>
+        <button type="submit" style="width: 100%; padding: 14px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: 500;">Subscribe</button>
+    </form>
+    
+    <p style="font-size: 12px; color: #999; margin-top: 20px;">No spam, ever. Unsubscribe anytime.</p>
+</div>
+
+<style>
+.minimal-popup {
+    position: relative;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.popup-form input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.popup-form button:hover {
+    background: #0056b3;
+}
+
+.close-btn:hover {
+    color: #007bff;
+}
+</style>

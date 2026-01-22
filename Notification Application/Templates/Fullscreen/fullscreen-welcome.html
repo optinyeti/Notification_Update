@@ -1,0 +1,95 @@
+<div class="fullscreen-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 99999;">
+    <button class="close-btn" style="position: absolute; top: 30px; right: 30px; background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 24px; z-index: 100000;">&times;</button>
+    
+    <div class="welcome-content" style="text-align: center; color: white; max-width: 600px; padding: 40px;">
+        <div class="icon-wrapper" style="margin-bottom: 30px;">
+            <svg width="100" height="100" viewBox="0 0 100 100" style="fill: white; opacity: 0.9;">
+                <circle cx="50" cy="50" r="45" fill="rgba(255,255,255,0.2)"/>
+                <path d="M50 25 L70 45 L55 45 L55 75 L45 75 L45 45 L30 45 Z" fill="white"/>
+            </svg>
+        </div>
+        
+        <h1 style="font-size: 48px; margin-bottom: 20px; font-weight: bold;">Welcome to Our Store!</h1>
+        <p style="font-size: 20px; margin-bottom: 30px; opacity: 0.95;">Join thousands of happy customers and get exclusive deals</p>
+        
+        <div class="benefits" style="margin-bottom: 35px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 30px; flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">✓</div>
+                    <div style="font-size: 14px; opacity: 0.9;">Free Shipping</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">✓</div>
+                    <div style="font-size: 14px; opacity: 0.9;">30-Day Returns</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">✓</div>
+                    <div style="font-size: 14px; opacity: 0.9;">24/7 Support</div>
+                </div>
+            </div>
+        </div>
+        
+        <form class="signup-form" style="max-width: 400px; margin: 0 auto;">
+            <input type="email" placeholder="Enter your email" style="width: 100%; padding: 18px; margin-bottom: 15px; border: none; border-radius: 30px; font-size: 16px; text-align: center;" required>
+            <button type="submit" style="width: 100%; padding: 18px; background: white; color: #667eea; border: none; border-radius: 30px; font-size: 18px; cursor: pointer; font-weight: bold;">Get Started</button>
+        </form>
+        
+        <p style="font-size: 13px; margin-top: 25px; opacity: 0.8;">No credit card required • Cancel anytime</p>
+    </div>
+</div>
+
+<style>
+.fullscreen-overlay {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.welcome-content {
+    animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.icon-wrapper svg {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
+
+.signup-form button:hover {
+    background: #f0f0f0;
+    transform: scale(1.05);
+}
+
+.close-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: rotate(90deg);
+}
+</style>

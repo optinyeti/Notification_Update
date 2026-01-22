@@ -1,0 +1,90 @@
+<div class="webinar-popup" style="max-width: 600px; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.25);">
+    <button class="close-btn" style="position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.5); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10;">&times;</button>
+    
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 50px 40px; text-align: center; color: white;">
+        <span style="display: inline-block; background: rgba(255,255,255,0.2); padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px;">🎓 LIVE WEBINAR</span>
+        <h2 style="font-size: 30px; margin-bottom: 15px; font-weight: bold; line-height: 1.2;">Master Digital Marketing in 60 Minutes</h2>
+        <p style="font-size: 17px; margin-bottom: 25px; opacity: 0.95;">Join industry experts for an exclusive live session</p>
+        
+        <div style="display: inline-flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.15); padding: 15px 25px; border-radius: 30px;">
+            <div style="text-align: left;">
+                <div style="font-size: 13px; opacity: 0.9; margin-bottom: 3px;">Date & Time</div>
+                <div style="font-size: 16px; font-weight: 600;">Jan 15, 2026 • 2:00 PM EST</div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="padding: 40px;">
+        <h3 style="font-size: 20px; margin-bottom: 20px; color: #333;">What You'll Learn:</h3>
+        
+        <div style="margin-bottom: 30px;">
+            <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 15px;">
+                <div style="width: 30px; height: 30px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✓</div>
+                <div>
+                    <div style="font-weight: 600; color: #333; margin-bottom: 3px;">Social Media Strategies</div>
+                    <div style="font-size: 14px; color: #666;">Latest tactics to boost engagement</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 15px;">
+                <div style="width: 30px; height: 30px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✓</div>
+                <div>
+                    <div style="font-weight: 600; color: #333; margin-bottom: 3px;">Email Marketing Secrets</div>
+                    <div style="font-size: 14px; color: #666;">Convert subscribers into customers</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: start; gap: 15px;">
+                <div style="width: 30px; height: 30px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✓</div>
+                <div>
+                    <div style="font-weight: 600; color: #333; margin-bottom: 3px;">SEO Fundamentals</div>
+                    <div style="font-size: 14px; color: #666;">Rank higher on search engines</div>
+                </div>
+            </div>
+        </div>
+        
+        <form class="webinar-form">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" placeholder="First Name" style="flex: 1; padding: 14px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px;" required>
+                <input type="text" placeholder="Last Name" style="flex: 1; padding: 14px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px;" required>
+            </div>
+            <input type="email" placeholder="Email Address" style="width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px;" required>
+            <button type="submit" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 17px; cursor: pointer; font-weight: bold;">
+                🎯 Reserve My Free Seat
+            </button>
+        </form>
+        
+        <p style="font-size: 13px; color: #999; margin-top: 15px; text-align: center;">Limited seats available • 234 already registered</p>
+    </div>
+</div>
+
+<style>
+.webinar-popup {
+    position: relative;
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.webinar-form input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+.webinar-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+}
+
+.close-btn:hover {
+    background: rgba(0,0,0,0.7);
+}
+</style>

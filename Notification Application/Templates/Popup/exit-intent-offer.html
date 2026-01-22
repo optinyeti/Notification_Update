@@ -1,0 +1,51 @@
+<div class="exit-popup" style="max-width: 550px; background: white; padding: 0; border-radius: 15px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); overflow: hidden;">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10;">&times;</button>
+    
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 40px; text-align: center; color: white;">
+        <h2 style="font-size: 32px; margin-bottom: 10px; font-weight: bold;">Wait! Don't Leave Yet!</h2>
+        <p style="font-size: 18px; margin-bottom: 0; opacity: 0.95;">Take 25% off your first order</p>
+    </div>
+    
+    <div style="padding: 40px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="display: inline-block; background: #fff3cd; color: #856404; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 18px;">
+                SAVE25
+            </div>
+        </div>
+        
+        <form class="popup-form">
+            <input type="email" placeholder="Enter your email to claim offer" style="width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;" required>
+            <button type="submit" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; font-weight: bold;">Claim My 25% Off</button>
+        </form>
+        
+        <p style="font-size: 13px; color: #999; margin-top: 20px; text-align: center;">Code will be sent to your email • Valid for 24 hours</p>
+    </div>
+</div>
+
+<style>
+.exit-popup {
+    position: relative;
+    animation: slideInDown 0.4s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.popup-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(245,87,108,0.4);
+}
+
+.close-btn:hover {
+    background: rgba(0,0,0,0.7);
+    transform: rotate(90deg);
+}
+</style>

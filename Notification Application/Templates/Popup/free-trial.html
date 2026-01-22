@@ -1,0 +1,77 @@
+<div class="trial-popup" style="max-width: 520px; background: white; padding: 0; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10;">&times;</button>
+    
+    <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 40px; text-align: center; color: white;">
+        <h2 style="font-size: 32px; margin-bottom: 10px; font-weight: bold;">Start Your Free Trial</h2>
+        <p style="font-size: 18px; margin-bottom: 0; opacity: 0.95;">No credit card required • Cancel anytime</p>
+    </div>
+    
+    <div style="padding: 40px;">
+        <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <div style="font-size: 28px; font-weight: bold; color: #15803d; margin-bottom: 5px;">14 Days Free</div>
+            <div style="color: #166534; font-size: 15px;">Full access to all premium features</div>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 24px; height: 24px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">✓</div>
+                <span style="color: #555; font-size: 15px;">Unlimited projects and team members</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 24px; height: 24px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">✓</div>
+                <span style="color: #555; font-size: 15px;">Premium templates and resources</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 24px; height: 24px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">✓</div>
+                <span style="color: #555; font-size: 15px;">Priority customer support</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 24px; height: 24px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">✓</div>
+                <span style="color: #555; font-size: 15px;">Advanced analytics and reporting</span>
+            </div>
+        </div>
+        
+        <form class="trial-form">
+            <input type="email" placeholder="Enter your email address" style="width: 100%; padding: 15px; margin-bottom: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px;" required>
+            <input type="password" placeholder="Create a password" style="width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px;" required>
+            <button type="submit" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; border-radius: 8px; font-size: 17px; cursor: pointer; font-weight: bold;">
+                🚀 Start Free Trial
+            </button>
+        </form>
+        
+        <p style="font-size: 13px; color: #999; margin-top: 15px; text-align: center;">By signing up, you agree to our Terms & Privacy Policy</p>
+    </div>
+</div>
+
+<style>
+.trial-popup {
+    position: relative;
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.trial-form input:focus {
+    outline: none;
+    border-color: #11998e;
+    box-shadow: 0 0 0 3px rgba(17,153,142,0.1);
+}
+
+.trial-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(17,153,142,0.4);
+}
+
+.close-btn:hover {
+    background: rgba(0,0,0,0.7);
+}
+</style>

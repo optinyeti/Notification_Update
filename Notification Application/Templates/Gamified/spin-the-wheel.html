@@ -1,0 +1,87 @@
+<div class="gamified-popup" style="max-width: 500px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+    
+    <h2 style="color: #333; margin-bottom: 10px; font-size: 28px;">Spin to Win!</h2>
+    <p style="color: #666; margin-bottom: 25px; font-size: 16px;">Try your luck and win exclusive discounts</p>
+    
+    <div class="wheel-container" style="position: relative; width: 300px; height: 300px; margin: 0 auto 30px;">
+        <div class="wheel" style="width: 100%; height: 100%; border-radius: 50%; border: 10px solid #007bff; background: conic-gradient(from 0deg, #ff6b6b 0deg 60deg, #ffd93d 60deg 120deg, #6bcf7f 120deg 180deg, #4ecdc4 180deg 240deg, #a78bfa 240deg 300deg, #fb7185 300deg 360deg); position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+            <div class="wheel-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: white; border-radius: 50%; border: 5px solid #007bff; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #007bff;">SPIN</div>
+        </div>
+        
+        <div class="pointer" style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #ff4757; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></div>
+    </div>
+    
+    <button class="spin-btn" style="padding: 15px 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 30px; font-size: 18px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(102,126,234,0.4); margin-bottom: 20px;">Spin the Wheel</button>
+    
+    <p style="font-size: 14px; color: #999; margin-bottom: 15px;">Enter your email to claim your prize</p>
+    
+    <form class="email-form" style="max-width: 350px; margin: 0 auto;">
+        <input type="email" placeholder="Your email address" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 25px; font-size: 14px; text-align: center; margin-bottom: 10px;" required>
+        <button type="submit" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: 600;">Claim Prize</button>
+    </form>
+</div>
+
+<style>
+.gamified-popup {
+    position: relative;
+    animation: zoomIn 0.4s ease-out;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.wheel {
+    transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.wheel.spinning {
+    animation: spinWheel 3s ease-out;
+}
+
+@keyframes spinWheel {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(1800deg);
+    }
+}
+
+.spin-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(102,126,234,0.5);
+}
+
+.spin-btn:active {
+    transform: scale(0.98);
+}
+
+.close-btn:hover {
+    color: #007bff;
+}
+
+.email-form button:hover {
+    background: #218838;
+}
+</style>
+
+<script>
+document.querySelector('.spin-btn').addEventListener('click', function() {
+    const wheel = document.querySelector('.wheel');
+    const degrees = Math.floor(Math.random() * 360) + 1440; // At least 4 full rotations
+    wheel.style.transform = `rotate(${degrees}deg)`;
+    
+    setTimeout(() => {
+        alert('Congratulations! You won a discount!');
+    }, 3000);
+});
+</script>

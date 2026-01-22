@@ -103,3 +103,12 @@ public interface IPopupTemplateService
     Task<PopupTemplate> UpdateTemplateAsync(PopupTemplate template);
     Task DeleteTemplateAsync(int id);
 }
+
+public interface ITemplateService
+{
+    Task<IEnumerable<TemplateInfo>> GetTemplatesByCategoryAsync(string category);
+    Task<string> GetTemplateContentAsync(string category, string templateName);
+    Task<bool> SaveTemplateAsync(string category, string templateName, string content);
+    Task<bool> DeleteTemplateAsync(string category, string templateName);
+    IEnumerable<TemplateCategory> GetAllCategories();
+}

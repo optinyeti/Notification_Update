@@ -57,7 +57,7 @@ public class PopupController : Controller
         return View();
     }
 
-    public async Task<IActionResult> Designer(int? id, string? name, PopupType? type)
+    public async Task<IActionResult> Designer(int? id, string? name, PopupType? type, string? templateFile, string? category)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
@@ -88,6 +88,50 @@ public class PopupController : Controller
                 ShowOnMobile = true,
                 ShowOnDesktop = true
             };
+
+            // If templateFile is provided, load the HTML template from file system
+            if (!string.IsNullOrEmpty(templateFile) && !string.IsNullOrEmpty(category))
+            {
+                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", category, templateFile);
+                if (System.IO.File.Exists(templatePath))
+                {
+                    popup.Content = await System.IO.File.ReadAllTextAsync(templatePath);
+                    popup.Name = Path.GetFileNameWithoutExtension(templateFile).Replace("-", " ")
+                        .Replace("_", " ");
+                    // Convert to title case
+                    popup.Name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(popup.Name.ToLower());
+                }
+            }
+            // If type is provided and name is not "Blank", try to load a template for that type
+            else if (type.HasValue && !string.Equals(name, "Blank", StringComparison.OrdinalIgnoreCase))
+            {
+                var templates = await _templateService.GetTemplatesByTypeAsync(type.Value);
+                var template = templates?.FirstOrDefault();
+                
+                if (template != null)
+                {
+                    // Load template data into the popup
+                    popup.Title = template.Title ?? popup.Title;
+                    popup.Subtitle = template.Subtitle ?? popup.Subtitle;
+                    popup.CallToAction = template.CallToAction ?? popup.CallToAction;
+                    popup.ImageUrl = template.ImageUrl;
+                    popup.TargetingRules = template.DefaultTargetingRules ?? popup.TargetingRules;
+                    popup.Trigger = template.DefaultTrigger;
+                    popup.DelayMs = template.DefaultDelayMs;
+                    popup.Frequency = template.DefaultFrequency;
+                    
+                    // Generate HTML content from template based on type
+                    popup.Content = GenerateContentFromTemplate(template);
+                }
+            }
+            
+            // For "Blank" template, ensure truly empty content
+            if (string.Equals(name, "Blank", StringComparison.OrdinalIgnoreCase))
+            {
+                popup.Content = "";
+                popup.Title = "";
+                popup.Subtitle = "";
+            }
             
             // Save the new popup first
             try
@@ -443,5 +487,147 @@ public class PopupController : Controller
         if (popup == null) return NotFound();
 
         return View(popup);
+    }
+
+    private string GenerateContentFromTemplate(PopupTemplate template)
+    {
+        // Generate HTML content based on template type and options
+        try
+        {
+            Console.WriteLine($"[GenerateContentFromTemplate] Template: {template.Name}");
+            Console.WriteLine($"[GenerateContentFromTemplate] Content: {template.Content?.Substring(0, Math.Min(100, template.Content?.Length ?? 0))}...");
+            Console.WriteLine($"[GenerateContentFromTemplate] TypeSpecificOptions: {template.TypeSpecificOptions?.Substring(0, Math.Min(100, template.TypeSpecificOptions?.Length ?? 0))}...");
+            
+            var html = "<div style=\"padding: 40px; text-align: center;\">";
+
+            // Try to parse Content first
+            Dictionary<string, JsonElement>? contentJson = null;
+            if (!string.IsNullOrEmpty(template.Content) && template.Content != "{}")
+            {
+                try
+                {
+                    contentJson = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(template.Content);
+                    Console.WriteLine($"[GenerateContentFromTemplate] Parsed Content JSON: {(contentJson != null ? string.Join(", ", contentJson.Keys) : "none")}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[GenerateContentFromTemplate] Failed to parse Content: {ex.Message}");
+                }
+            }
+
+            // Try to parse TypeSpecificOptions
+            Dictionary<string, JsonElement>? optionsJson = null;
+            if (!string.IsNullOrEmpty(template.TypeSpecificOptions) && template.TypeSpecificOptions != "{}")
+            {
+                try
+                {
+                    optionsJson = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(template.TypeSpecificOptions);
+                    Console.WriteLine($"[GenerateContentFromTemplate] Parsed Options JSON: {(optionsJson != null ? string.Join(", ", optionsJson.Keys) : "none")}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[GenerateContentFromTemplate] Failed to parse TypeSpecificOptions: {ex.Message}");
+                }
+            }
+
+            // Helper to get string value from either source
+            string GetValue(string key, string defaultValue = "")
+            {
+                if (contentJson != null && contentJson.ContainsKey(key))
+                {
+                    var value = contentJson[key].GetString() ?? defaultValue;
+                    Console.WriteLine($"[GetValue] Found '{key}' in Content: {value}");
+                    return value;
+                }
+                if (optionsJson != null && optionsJson.ContainsKey(key))
+                {
+                    var value = optionsJson[key].GetString() ?? defaultValue;
+                    Console.WriteLine($"[GetValue] Found '{key}' in Options: {value}");
+                    return value;
+                }
+                Console.WriteLine($"[GetValue] Key '{key}' not found, using default: {defaultValue}");
+                return defaultValue;
+            }
+
+            // Get heading/title - check JSON first, then fallback to template properties
+            var heading = GetValue("heading", 
+                          GetValue("Heading", 
+                          GetValue("title", "")));
+            
+            // Fallback to template-level Title or Name if no heading in JSON
+            if (string.IsNullOrEmpty(heading))
+            {
+                heading = !string.IsNullOrEmpty(template.Title) ? template.Title : template.Name;
+            }
+
+            Console.WriteLine($"[GenerateContentFromTemplate] Final heading: {heading}");
+            html += $"<h2 style=\"font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 16px;\">{heading}</h2>";
+
+            // Get description/subtitle - check JSON first, then fallback to template properties
+            var description = GetValue("description", 
+                              GetValue("Description", 
+                              GetValue("subtitle", "")));
+            
+            // Fallback to template-level Subtitle or Description
+            if (string.IsNullOrEmpty(description))
+            {
+                description = !string.IsNullOrEmpty(template.Subtitle) ? template.Subtitle : template.Description ?? "";
+            }
+
+            if (!string.IsNullOrEmpty(description))
+            {
+                html += $"<p style=\"font-size: 16px; color: #64748b; margin-bottom: 24px;\">{description}</p>";
+            }
+
+            // Add coupon code if present (for Coupon type)
+            var couponCode = GetValue("couponCode", GetValue("CouponCode", ""));
+            if (!string.IsNullOrEmpty(couponCode))
+            {
+                var discountValue = GetValue("discountValue", GetValue("DiscountValue", ""));
+                if (!string.IsNullOrEmpty(discountValue))
+                {
+                    html += $"<div style=\"font-size: 18px; color: #10b981; font-weight: 600; margin: 16px 0;\">{discountValue}</div>";
+                }
+                html += $"<div style=\"background: #1e293b; color: white; padding: 16px 32px; border-radius: 8px; font-size: 24px; font-weight: 700; letter-spacing: 2px; margin: 24px auto; display: inline-block; max-width: 90%;\">{couponCode}</div>";
+                
+                var expiryNote = GetValue("expiryNote", "");
+                if (!string.IsNullOrEmpty(expiryNote))
+                {
+                    html += $"<p style=\"font-size: 13px; color: #94a3b8; margin-top: 8px;\">{expiryNote}</p>";
+                }
+            }
+
+            // Add email field for most templates
+            if (template.Type == PopupType.EmailCollector || template.Type == PopupType.Coupon || 
+                GetValue("requireEmail", GetValue("RequireEmail", "false")).ToLower() == "true")
+            {
+                var emailPlaceholder = GetValue("emailPlaceholder", GetValue("EmailPlaceholder", "Enter your email"));
+                html += $"<div style=\"margin: 24px 0;\"><input type=\"email\" placeholder=\"{emailPlaceholder}\" style=\"width: 100%; max-width: 400px; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;\"></div>";
+            }
+
+            // Add button
+            var buttonText = GetValue("buttonText", 
+                             GetValue("ButtonText", 
+                             GetValue("callToAction", "Get Started")));
+            html += $"<div style=\"margin-top: 24px;\"><button style=\"background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); color: white; border: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;\">{buttonText}</button></div>";
+
+            // Add success message hint
+            var successMessage = GetValue("successMessage", GetValue("SuccessMessage", ""));
+            if (!string.IsNullOrEmpty(successMessage))
+            {
+                html += $"<p style=\"font-size: 13px; color: #94a3b8; margin-top: 16px; font-style: italic;\">On submit: \"{successMessage}\"</p>";
+            }
+
+            html += "</div>";
+
+            return JsonSerializer.Serialize(new { html });
+        }
+        catch (Exception ex)
+        {
+            // Fallback to basic template with template name
+            return JsonSerializer.Serialize(new { 
+                html = $"<div style=\"padding: 40px; text-align: center;\"><h2 style=\"font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 16px;\">{template.Name}</h2><p style=\"font-size: 16px; color: #64748b; margin-bottom: 24px;\">{template.Description}</p><div style=\"margin: 24px 0;\"><input type=\"email\" placeholder=\"Enter your email\" style=\"width: 100%; max-width: 400px; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;\"></div><button style=\"background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); color: white; border: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;\">Get Started</button></div>" 
+            });
+        }
     }
 }

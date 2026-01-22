@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Template System Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>✅ Template System Diagnostic</h1>
+    
+    <div class="section">
+        <h2>📍 Correct URL</h2>
+        <p class="success">✅ You need to visit:</p>
+        <pre>http://localhost:5117/Template/SelectTemplate</pre>
+        <a href="/Template/SelectTemplate" class="btn">Go to Template Gallery</a>
+    </div>
+    
+    <div class="section">
+        <h2>🔐 Login Required</h2>
+        <p>Make sure you're logged in first:</p>
+        <ul>
+            <li><strong>Email:</strong> info@vertexsofts.com</li>
+            <li><strong>Password:</strong> Workload11</li>
+        </ul>
+        <a href="/Account/Login" class="btn">Go to Login</a>
+    </div>
+    
+    <div class="section">
+        <h2>📂 Templates Available</h2>
+        <p class="success">✅ 8 sample templates are loaded:</p>
+        <ul>
+            <li>Popup/basic-modal.html</li>
+            <li>Popup/discount-offer.html</li>
+            <li>FloatingBar/announcement-bar.html</li>
+            <li>FloatingBar/countdown-timer.html</li>
+            <li>Fullscreen/fullscreen-welcome.html</li>
+            <li>Inline/inline-signup.html</li>
+            <li>SlideIn/slide-in-notification.html</li>
+            <li>Gamified/spin-the-wheel.html</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h2>❌ Wrong URLs (Don't Use These)</h2>
+        <p class="error">These are NOT the template gallery:</p>
+        <ul>
+            <li><code>/Popup/SelectTemplate</code> - Old popup system</li>
+            <li><code>/Admin/Templates</code> - Admin template management</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h2>🧪 API Test</h2>
+        <p>Test the API endpoint:</p>
+        <button onclick="testAPI()" class="btn">Test API</button>
+        <div id="apiResult"></div>
+    </div>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch('/api/templates/popup');
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ API Working! Found ${data.length} templates:</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<p class="error">❌ No templates found</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+    
+    <div class="section">
+        <h2>📝 Quick Links</h2>
+        <a href="/Template/SelectTemplate" class="btn">Template Gallery</a>
+        <a href="/Popup/Index" class="btn">Popup Manager</a>
+        <a href="/Home/Index" class="btn">Dashboard</a>
+    </div>
+</body>
+</html>

@@ -43,6 +43,7 @@ builder.Services.AddScoped<ISupportService, SupportService>();
 builder.Services.AddScoped<IApiUsageService, ApiUsageService>();
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
 
 // Add MVC
 builder.Services.AddControllersWithViews();
@@ -80,6 +81,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Serve Templates folder as static files
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Templates")),
+    RequestPath = "/Templates"
+});
 
 app.UseRouting();
 
