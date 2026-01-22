@@ -1,0 +1,489 @@
+@model PopupTemplate
+@{
+    ViewData["Title"] = "Edit Template";
+}
+
+<style>
+    .builder-container { display: grid; grid-template-columns: 280px 1fr 320px; gap: 1rem; height: calc(100vh - 180px); }
+    .components-panel, .properties-panel { background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow-y: auto; }
+    .canvas-area { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow-y: auto; padding: 2rem; }
+    .popup-preview { max-width: 500px; margin: 0 auto; background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); min-height: 300px; }
+    .component-item { padding: 0.75rem; margin: 0.5rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 0.375rem; cursor: move; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+    .component-item:hover { background: #e5e7eb; transform: translateX(4px); }
+    .canvas-element { padding: 1rem; margin: 0.5rem 0; background: white; border: 2px dashed #d1d5db; border-radius: 0.375rem; cursor: move; position: relative; transition: all 0.2s; }
+    .canvas-element:hover { border-color: #3b82f6; background: #eff6ff; }
+    .canvas-element.selected { border-color: #3b82f6; border-style: solid; background: #dbeafe; }
+    .element-actions { position: absolute; top: 0.25rem; right: 0.25rem; display: flex; gap: 0.25rem; opacity: 0; transition: opacity 0.2s; }
+    .canvas-element:hover .element-actions { opacity: 1; }
+    .action-btn { background: white; border: 1px solid #d1d5db; border-radius: 0.25rem; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.75rem; }
+    .action-btn:hover { background: #f3f4f6; }
+    .sortable-ghost { opacity: 0.4; }
+    .tab-button { padding: 0.5rem 1rem; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500; }
+    .tab-button.active { border-bottom-color: #3b82f6; color: #3b82f6; }
+</style>
+
+<div class="max-w-full mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <a asp-action="Templates" class="text-gray-600 hover:text-gray-900">
+                <i class="bi bi-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Edit Template - @Model.Name</h1>
+                <p class="text-sm text-gray-600">Drag and drop elements to build your popup</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button type="button" onclick="switchMode('code')" id="codeBtn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">
+                <i class="bi bi-code-slash me-1"></i>Code View
+            </button>
+            <button type="button" onclick="saveTemplate()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+                <i class="bi bi-check-lg me-1"></i>Save Template
+            </button>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <!-- Visual Builder -->
+    <div id="visualBuilder" class="builder-container">
+        <!-- Components Panel -->
+        <div class="components-panel p-4">
+            <h3 class="text-lg font-bold text-gray-900 mb-3">Components</h3>
+            <div class="space-y-2">
+                <div class="component-item" draggable="true" data-type="heading">
+                    <i class="bi bi-type-h1 text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Heading</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="text">
+                    <i class="bi bi-text-paragraph text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Text</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="image">
+                    <i class="bi bi-image text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Image</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="button">
+                    <i class="bi bi-square text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Button</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="input">
+                    <i class="bi bi-input-cursor-text text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Text Input</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="email">
+                    <i class="bi bi-envelope text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Email Input</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="textarea">
+                    <i class="bi bi-textarea-t text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Textarea</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="checkbox">
+                    <i class="bi bi-check-square text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Checkbox</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="select">
+                    <i class="bi bi-ui-checks text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Select Dropdown</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="divider">
+                    <i class="bi bi-dash-lg text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Divider</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="spacer">
+                    <i class="bi bi-arrows-expand text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Spacer</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="icon">
+                    <i class="bi bi-emoji-smile text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Icon</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="video">
+                    <i class="bi bi-play-circle text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Video</span>
+                </div>
+                <div class="component-item" draggable="true" data-type="countdown">
+                    <i class="bi bi-alarm text-lg text-gray-700"></i>
+                    <span class="text-sm font-medium">Countdown</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <div class="popup-preview" id="popupCanvas">
+                <div id="canvasElements" class="p-4"></div>
+            </div>
+        </div>
+
+        <!-- Properties Panel -->
+        <div class="properties-panel">
+            <div class="p-4">
+                <div class="flex border-b mb-4">
+                    <button type="button" class="tab-button active" onclick="switchTab('element')">Element</button>
+                    <button type="button" class="tab-button" onclick="switchTab('popup')">Popup</button>
+                </div>
+                
+                <!-- Element Properties -->
+                <div id="elementProperties">
+                    <p class="text-sm text-gray-500 text-center py-8">Select an element to edit its properties</p>
+                </div>
+
+                <!-- Popup Properties -->
+                <div id="popupProperties" style="display: none;">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" id="templateName" value="@Model.Name" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <input type="text" id="templateCategory" value="@Model.Category" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="templateDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">@Model.Description</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+                            <input type="color" id="popupBgColor" value="#ffffff" class="w-full h-10 border border-gray-300 rounded" onchange="updatePopupStyle()" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Max Width (px)</label>
+                            <input type="number" id="popupMaxWidth" value="500" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" onchange="updatePopupStyle()" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Padding (px)</label>
+                            <input type="number" id="popupPadding" value="24" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" onchange="updatePopupStyle()" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Border Radius (px)</label>
+                            <input type="number" id="popupBorderRadius" value="8" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" onchange="updatePopupStyle()" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Editor (Hidden by default) -->
+    <div id="codeEditor" style="display: none;">
+        <div class="bg-white rounded-lg shadow border p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                    <input type="text" id="codeTemplateName" value="@Model.Name" class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <input type="text" id="codeTemplateCategory" value="@Model.Category" class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="codeTemplateDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg">@Model.Description</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">HTML Content</label>
+                    <textarea id="codeContent" rows="15" class="w-full px-4 py-2 border border-gray-300 rounded-lg font-mono text-sm">@Model.Content</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form for saving -->
+    <form id="saveForm" asp-action="EditTemplate" method="post" style="display: none;">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Type" />
+        <input type="hidden" id="hiddenName" asp-for="Name" />
+        <input type="hidden" id="hiddenCategory" asp-for="Category" />
+        <input type="hidden" id="hiddenDescription" asp-for="Description" />
+        <input type="hidden" id="hiddenContent" asp-for="Content" />
+        <input type="hidden" asp-for="ImageUrl" />
+        <input type="hidden" asp-for="PreviewImageUrl" />
+        <input type="hidden" asp-for="SortOrder" />
+        <input type="hidden" asp-for="TypeSpecificOptions" />
+        <input type="hidden" asp-for="DefaultTrigger" />
+        <input type="hidden" asp-for="DefaultFrequency" />
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+let elements = [];
+let selectedElement = null;
+let elementIdCounter = 0;
+let isVisualMode = true;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDragDrop();
+    loadExistingContent();
+});
+
+function initializeDragDrop() {
+    new Sortable(document.getElementById('canvasElements'), {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function() {
+            updateElementsOrder();
+            renderCanvas();
+        }
+    });
+
+    document.querySelectorAll('.component-item').forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('componentType', this.dataset.type);
+        });
+    });
+
+    document.getElementById('canvasElements').addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+
+    document.getElementById('canvasElements').addEventListener('drop', function(e) {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('componentType');
+        if (type) {
+            addElement(type);
+        }
+    });
+}
+
+function addElement(type) {
+    const element = {
+        id: elementIdCounter++,
+        type: type,
+        ...getDefaultProps(type)
+    };
+    elements.push(element);
+    renderCanvas();
+}
+
+function getDefaultProps(type) {
+    const defaults = {
+        heading: { text: 'Heading Text', size: 'h2', color: '#000000', align: 'left', weight: 'bold' },
+        text: { text: 'Enter your text here...', size: '16', color: '#000000', align: 'left', weight: 'normal' },
+        image: { src: 'https://placehold.co/400x200', alt: 'Image', width: '100%', align: 'center' },
+        button: { text: 'Click Me', color: '#ffffff', bgColor: '#3b82f6', size: '16', padding: '12', borderRadius: '8', align: 'center', url: '#' },
+        input: { placeholder: 'Enter text...', name: 'input_field', required: false },
+        email: { placeholder: 'Enter email...', name: 'email', required: true },
+        textarea: { placeholder: 'Enter message...', name: 'message', rows: 4, required: false },
+        checkbox: { label: 'I agree to terms', name: 'checkbox', required: false },
+        select: { label: 'Choose option', name: 'select', options: 'Option 1,Option 2,Option 3', required: false },
+        divider: { color: '#e5e7eb', thickness: '1', margin: '20' },
+        spacer: { height: '30' },
+        icon: { name: 'bi-star-fill', size: '32', color: '#3b82f6', align: 'center' },
+        video: { src: 'https://www.youtube.com/embed/dQw4w9WgXcQ', width: '100%', height: '315' },
+        countdown: { endDate: '2025-12-31', size: '24', color: '#000000', align: 'center' }
+    };
+    return defaults[type] || {};
+}
+
+function renderCanvas() {
+    const canvas = document.getElementById('canvasElements');
+    canvas.innerHTML = '';
+    
+    elements.forEach((el, index) => {
+        const div = document.createElement('div');
+        div.className = 'canvas-element' + (selectedElement === el.id ? ' selected' : '');
+        div.dataset.id = el.id;
+        div.innerHTML = getElementHTML(el) + `
+            <div class="element-actions">
+                <button type="button" class="action-btn" onclick="selectElement(${el.id}); event.stopPropagation();"><i class="bi bi-gear-fill"></i></button>
+                <button type="button" class="action-btn" onclick="duplicateElement(${index}); event.stopPropagation();"><i class="bi bi-files"></i></button>
+                <button type="button" class="action-btn" onclick="deleteElement(${index}); event.stopPropagation();"><i class="bi bi-trash"></i></button>
+            </div>
+        `;
+        div.onclick = () => selectElement(el.id);
+        canvas.appendChild(div);
+    });
+}
+
+function getElementHTML(el) {
+    switch(el.type) {
+        case 'heading':
+            return `<${el.size} style="color:${el.color}; text-align:${el.align}; font-weight:${el.weight}; margin:0;">${el.text}</${el.size}>`;
+        case 'text':
+            return `<p style="color:${el.color}; font-size:${el.size}px; text-align:${el.align}; font-weight:${el.weight}; margin:0;">${el.text}</p>`;
+        case 'image':
+            return `<div style="text-align:${el.align};"><img src="${el.src}" alt="${el.alt}" style="max-width:${el.width}; height:auto; border-radius:4px;" /></div>`;
+        case 'button':
+            return `<div style="text-align:${el.align};"><a href="${el.url}" style="display:inline-block; color:${el.color}; background-color:${el.bgColor}; padding:${el.padding}px 24px; border-radius:${el.borderRadius}px; font-size:${el.size}px; text-decoration:none; font-weight:600;">${el.text}</a></div>`;
+        case 'input':
+            return `<input type="text" name="${el.name}" placeholder="${el.placeholder}" ${el.required ? 'required' : ''} style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:4px;" />`;
+        case 'email':
+            return `<input type="email" name="${el.name}" placeholder="${el.placeholder}" ${el.required ? 'required' : ''} style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:4px;" />`;
+        case 'textarea':
+            return `<textarea name="${el.name}" placeholder="${el.placeholder}" rows="${el.rows}" ${el.required ? 'required' : ''} style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:4px;"></textarea>`;
+        case 'checkbox':
+            return `<label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="${el.name}" ${el.required ? 'required' : ''} /> ${el.label}</label>`;
+        case 'select':
+            return `<div><label style="display:block; margin-bottom:4px; font-weight:500;">${el.label}</label><select name="${el.name}" ${el.required ? 'required' : ''} style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:4px;">${el.options.split(',').map(opt => `<option>${opt.trim()}</option>`).join('')}</select></div>`;
+        case 'divider':
+            return `<hr style="border:0; border-top:${el.thickness}px solid ${el.color}; margin:${el.margin}px 0;" />`;
+        case 'spacer':
+            return `<div style="height:${el.height}px;"></div>`;
+        case 'icon':
+            return `<div style="text-align:${el.align};"><i class="bi ${el.name}" style="font-size:${el.size}px; color:${el.color};"></i></div>`;
+        case 'video':
+            return `<iframe src="${el.src}" width="${el.width}" height="${el.height}" frameborder="0" allowfullscreen style="max-width:100%;"></iframe>`;
+        case 'countdown':
+            return `<div style="text-align:${el.align}; font-size:${el.size}px; color:${el.color}; font-weight:bold;" data-countdown="${el.endDate}">00:00:00:00</div>`;
+        default:
+            return `<div>Unknown element type</div>`;
+    }
+}
+
+function selectElement(id) {
+    selectedElement = id;
+    renderCanvas();
+    showElementProperties(elements.find(el => el.id === id));
+}
+
+function showElementProperties(el) {
+    const props = document.getElementById('elementProperties');
+    if (!el) {
+        props.innerHTML = '<p class="text-sm text-gray-500 text-center py-8">Select an element to edit</p>';
+        return;
+    }
+
+    let html = `<h3 class="text-lg font-bold mb-4">${el.type.charAt(0).toUpperCase() + el.type.slice(1)}</h3><div class="space-y-3">`;
+    
+    Object.keys(el).forEach(key => {
+        if (key === 'id' || key === 'type') return;
+        
+        const value = el[key];
+        const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+        
+        if (typeof value === 'boolean') {
+            html += `<label class="flex items-center gap-2"><input type="checkbox" ${value ? 'checked' : ''} onchange="updateElementProp('${key}', this.checked)" /> <span class="text-sm">${label}</span></label>`;
+        } else if (key.includes('color') || key.includes('Color')) {
+            html += `<div><label class="block text-sm font-medium mb-1">${label}</label><input type="color" value="${value}" onchange="updateElementProp('${key}', this.value)" class="w-full h-10 border rounded" /></div>`;
+        } else if (key === 'size' && el.type === 'heading') {
+            html += `<div><label class="block text-sm font-medium mb-1">${label}</label><select onchange="updateElementProp('${key}', this.value)" class="w-full px-2 py-1 border rounded text-sm"><option ${value==='h1'?'selected':''}>h1</option><option ${value==='h2'?'selected':''}>h2</option><option ${value==='h3'?'selected':''}>h3</option><option ${value==='h4'?'selected':''}>h4</option><option ${value==='h5'?'selected':''}>h5</option><option ${value==='h6'?'selected':''}>h6</option></select></div>`;
+        } else if (key === 'align') {
+            html += `<div><label class="block text-sm font-medium mb-1">${label}</label><select onchange="updateElementProp('${key}', this.value)" class="w-full px-2 py-1 border rounded text-sm"><option ${value==='left'?'selected':''}>left</option><option ${value==='center'?'selected':''}>center</option><option ${value==='right'?'selected':''}>right</option></select></div>`;
+        } else if (key === 'weight') {
+            html += `<div><label class="block text-sm font-medium mb-1">${label}</label><select onchange="updateElementProp('${key}', this.value)" class="w-full px-2 py-1 border rounded text-sm"><option ${value==='normal'?'selected':''}>normal</option><option ${value==='bold'?'selected':''}>bold</option><option ${value==='600'?'selected':''}>600</option><option ${value==='700'?'selected':''}>700</option></select></div>`;
+        } else if (key === 'text' || key === 'src' || key === 'placeholder' || key === 'label' || key === 'options' || key === 'url') {
+            html += `<div><label class="block text-sm font-medium mb-1">${label}</label><input type="text" value="${value}" onchange="updateElementProp('${key}', this.value)" class="w-full px-2 py-1 border rounded text-sm" /></div>`;
+        } else {
+            html += `<div><label class="block text-sm font-medium mb-1">${label}</label><input type="number" value="${value}" onchange="updateElementProp('${key}', this.value)" class="w-full px-2 py-1 border rounded text-sm" /></div>`;
+        }
+    });
+    
+    html += '</div>';
+    props.innerHTML = html;
+}
+
+function updateElementProp(key, value) {
+    const el = elements.find(e => e.id === selectedElement);
+    if (el) {
+        el[key] = value;
+        renderCanvas();
+    }
+}
+
+function deleteElement(index) {
+    elements.splice(index, 1);
+    selectedElement = null;
+    renderCanvas();
+    showElementProperties(null);
+}
+
+function duplicateElement(index) {
+    const copy = JSON.parse(JSON.stringify(elements[index]));
+    copy.id = elementIdCounter++;
+    elements.splice(index + 1, 0, copy);
+    renderCanvas();
+}
+
+function updateElementsOrder() {
+    const newOrder = [];
+    document.querySelectorAll('.canvas-element').forEach(el => {
+        const id = parseInt(el.dataset.id);
+        const element = elements.find(e => e.id === id);
+        if (element) newOrder.push(element);
+    });
+    elements = newOrder;
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (tab === 'element') {
+        document.getElementById('elementProperties').style.display = 'block';
+        document.getElementById('popupProperties').style.display = 'none';
+    } else {
+        document.getElementById('elementProperties').style.display = 'none';
+        document.getElementById('popupProperties').style.display = 'block';
+    }
+}
+
+function updatePopupStyle() {
+    const preview = document.getElementById('popupCanvas');
+    preview.style.backgroundColor = document.getElementById('popupBgColor').value;
+    preview.style.maxWidth = document.getElementById('popupMaxWidth').value + 'px';
+    preview.style.borderRadius = document.getElementById('popupBorderRadius').value + 'px';
+    document.getElementById('canvasElements').style.padding = document.getElementById('popupPadding').value + 'px';
+}
+
+function switchMode(mode) {
+    if (mode === 'code') {
+        generateHTMLFromElements();
+        const html = document.getElementById('hiddenContent').value;
+        document.getElementById('codeContent').value = html;
+        document.getElementById('codeTemplateName').value = document.getElementById('templateName').value;
+        document.getElementById('codeTemplateCategory').value = document.getElementById('templateCategory').value;
+        document.getElementById('codeTemplateDescription').value = document.getElementById('templateDescription').value;
+        
+        document.getElementById('visualBuilder').style.display = 'none';
+        document.getElementById('codeEditor').style.display = 'block';
+        document.getElementById('codeBtn').innerHTML = '<i class="bi bi-palette me-1"></i>Visual Builder';
+        document.getElementById('codeBtn').onclick = () => switchMode('visual');
+        isVisualMode = false;
+    } else {
+        document.getElementById('visualBuilder').style.display = 'grid';
+        document.getElementById('codeEditor').style.display = 'none';
+        document.getElementById('codeBtn').innerHTML = '<i class="bi bi-code-slash me-1"></i>Code View';
+        document.getElementById('codeBtn').onclick = () => switchMode('code');
+        isVisualMode = true;
+    }
+}
+
+function generateHTMLFromElements() {
+    let html = '<div style="font-family: Arial, sans-serif;">\n';
+    elements.forEach(el => {
+        html += '  ' + getElementHTML(el) + '\n';
+    });
+    html += '</div>';
+    document.getElementById('hiddenContent').value = html;
+}
+
+function loadExistingContent() {
+    console.log('Template loaded');
+}
+
+function saveTemplate() {
+    if (isVisualMode) {
+        document.getElementById('hiddenName').value = document.getElementById('templateName').value;
+        document.getElementById('hiddenCategory').value = document.getElementById('templateCategory').value;
+        document.getElementById('hiddenDescription').value = document.getElementById('templateDescription').value;
+        generateHTMLFromElements();
+    } else {
+        document.getElementById('hiddenName').value = document.getElementById('codeTemplateName').value;
+        document.getElementById('hiddenCategory').value = document.getElementById('codeTemplateCategory').value;
+        document.getElementById('hiddenDescription').value = document.getElementById('codeTemplateDescription').value;
+        document.getElementById('hiddenContent').value = document.getElementById('codeContent').value;
+    }
+    
+    document.getElementById('saveForm').submit();
+}
+</script>

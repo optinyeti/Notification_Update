@@ -70,6 +70,115 @@ public class AdminController : Controller
         return View(users);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> EditUser(string id)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var userToEdit = await _userManager.FindByIdAsync(id);
+        if (userToEdit == null || userToEdit.TenantId != currentUser.TenantId)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Users");
+        }
+
+        return View(userToEdit);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> EditUser(string id, string firstName, string lastName, string email, UserRole role, bool isActive)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var userToEdit = await _userManager.FindByIdAsync(id);
+        if (userToEdit == null || userToEdit.TenantId != currentUser.TenantId)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Users");
+        }
+
+        userToEdit.FirstName = firstName;
+        userToEdit.LastName = lastName;
+        userToEdit.Email = email;
+        userToEdit.NormalizedEmail = email.ToUpper();
+        userToEdit.UserName = email;
+        userToEdit.NormalizedUserName = email.ToUpper();
+        userToEdit.Role = role;
+        userToEdit.IsActive = isActive;
+
+        var result = await _userManager.UpdateAsync(userToEdit);
+        if (result.Succeeded)
+        {
+            TempData["Success"] = "User updated successfully!";
+        }
+        else
+        {
+            TempData["Error"] = "Failed to update user.";
+        }
+
+        return RedirectToAction("Users");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> UserActivity(string id)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var userToView = await _userManager.FindByIdAsync(id);
+        if (userToView == null || userToView.TenantId != currentUser.TenantId)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Users");
+        }
+
+        // Get user's activity data
+        var popups = await _context.Popups
+            .Where(p => p.TenantId == currentUser.TenantId)
+            .Include(p => p.Analytics)
+            .ToListAsync();
+
+        ViewBag.User = userToView;
+        return View(popups);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ToggleUserStatus(string id)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var userToToggle = await _userManager.FindByIdAsync(id);
+        if (userToToggle == null || userToToggle.TenantId != currentUser.TenantId)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Users");
+        }
+
+        // Don't allow deactivating yourself
+        if (userToToggle.Id == currentUser.Id)
+        {
+            TempData["Error"] = "You cannot deactivate yourself.";
+            return RedirectToAction("Users");
+        }
+
+        userToToggle.IsActive = !userToToggle.IsActive;
+        var result = await _userManager.UpdateAsync(userToToggle);
+
+        if (result.Succeeded)
+        {
+            TempData["Success"] = $"User {(userToToggle.IsActive ? "activated" : "deactivated")} successfully!";
+        }
+        else
+        {
+            TempData["Error"] = "Failed to update user status.";
+        }
+
+        return RedirectToAction("Users");
+    }
+
     public async Task<IActionResult> Analytics()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -331,6 +440,53 @@ public class AdminController : Controller
         return RedirectToAction("Templates");
     }
     
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> EditTemplate(int id)
+    {
+        var template = await _context.PopupTemplates.FindAsync(id);
+        if (template == null)
+        {
+            TempData["Error"] = "Template not found.";
+            return RedirectToAction("Templates");
+        }
+        return View(template);
+    }
+    
+    [HttpPost]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> EditTemplate(PopupTemplate model)
+    {
+        try
+        {
+            var template = await _context.PopupTemplates.FindAsync(model.Id);
+            if (template == null)
+            {
+                TempData["Error"] = "Template not found.";
+                return RedirectToAction("Templates");
+            }
+            
+            template.Name = model.Name;
+            template.Description = model.Description;
+            template.Content = model.Content;
+            template.ImageUrl = model.ImageUrl;
+            template.PreviewImageUrl = model.PreviewImageUrl;
+            template.Category = model.Category;
+            template.SortOrder = model.SortOrder;
+            template.TypeSpecificOptions = model.TypeSpecificOptions;
+            template.DefaultTrigger = model.DefaultTrigger;
+            template.DefaultFrequency = model.DefaultFrequency;
+            
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Template updated successfully!";
+            return RedirectToAction("Templates");
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Failed to update template: {ex.Message}";
+            return View(model);
+        }
+    }
+    
     [HttpPost]
     [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> DeleteTemplate(int id)
@@ -577,5 +733,137 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("BlogCategories");
+    }
+
+    // Subscription Plans Management
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> Plans()
+    {
+        var plans = await _context.SubscriptionPlans.ToListAsync();
+        plans = plans.OrderBy(p => p.MonthlyPrice).ToList();
+        return View(plans);
+    }
+
+    [Authorize(Roles = "SuperAdmin")]
+    public IActionResult CreatePlan()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> CreatePlan(SubscriptionPlan plan)
+    {
+        if (ModelState.IsValid)
+        {
+            plan.CreatedAt = DateTime.UtcNow;
+            plan.IsActive = true;
+            _context.SubscriptionPlans.Add(plan);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Plan created successfully!";
+            return RedirectToAction("Plans");
+        }
+        return View(plan);
+    }
+
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> EditPlan(int id)
+    {
+        var plan = await _context.SubscriptionPlans.FindAsync(id);
+        if (plan == null)
+        {
+            TempData["Error"] = "Plan not found!";
+            return RedirectToAction("Plans");
+        }
+        return View(plan);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> EditPlan(int id, SubscriptionPlan plan)
+    {
+        if (id != plan.Id)
+        {
+            return NotFound();
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                var existingPlan = await _context.SubscriptionPlans.FindAsync(id);
+                if (existingPlan == null)
+                {
+                    return NotFound();
+                }
+
+                existingPlan.Name = plan.Name;
+                existingPlan.Description = plan.Description;
+                existingPlan.MonthlyPrice = plan.MonthlyPrice;
+                existingPlan.YearlyPrice = plan.YearlyPrice;
+                existingPlan.StripePriceIdMonthly = plan.StripePriceIdMonthly;
+                existingPlan.StripePriceIdYearly = plan.StripePriceIdYearly;
+                existingPlan.StripeProductId = plan.StripeProductId;
+                existingPlan.MaxPopups = plan.MaxPopups;
+                existingPlan.MaxPopupViews = plan.MaxPopupViews;
+                existingPlan.MaxUsers = plan.MaxUsers;
+                existingPlan.HasAdvancedTargeting = plan.HasAdvancedTargeting;
+                existingPlan.HasAnalytics = plan.HasAnalytics;
+                existingPlan.HasAPIAccess = plan.HasAPIAccess;
+                existingPlan.HasPrioritySupport = plan.HasPrioritySupport;
+                existingPlan.HasWhiteLabel = plan.HasWhiteLabel;
+                existingPlan.IsActive = plan.IsActive;
+
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Plan updated successfully!";
+                return RedirectToAction("Plans");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _context.SubscriptionPlans.AnyAsync(p => p.Id == id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+        }
+        return View(plan);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> TogglePlanStatus(int id)
+    {
+        var plan = await _context.SubscriptionPlans.FindAsync(id);
+        if (plan != null)
+        {
+            plan.IsActive = !plan.IsActive;
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Plan {(plan.IsActive ? "activated" : "deactivated")} successfully!";
+        }
+        return RedirectToAction("Plans");
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> DeletePlan(int id)
+    {
+        var plan = await _context.SubscriptionPlans
+            .Include(p => p.Tenants)
+            .FirstOrDefaultAsync(p => p.Id == id);
+        
+        if (plan != null)
+        {
+            if (plan.Tenants.Any())
+            {
+                TempData["Error"] = "Cannot delete plan with active subscriptions!";
+                return RedirectToAction("Plans");
+            }
+
+            _context.SubscriptionPlans.Remove(plan);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Plan deleted successfully!";
+        }
+        return RedirectToAction("Plans");
     }
 }

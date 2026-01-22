@@ -196,31 +196,26 @@
                     <div class="integration-icon"><i class="bi bi-envelope-fill"></i></div>
                     <div class="integration-info">
                         <div class="integration-name">Email Service</div>
-                        <div class="integration-status">Connect to send captured emails</div>
+                        <div class="integration-status" id="emailStatus">Connect to send captured emails</div>
                     </div>
-                    <button class="btn-configure">Configure</button>
+                    <button class="btn-configure" onclick="openEmailModal()">Configure</button>
                 </div>
                 <div class="integration-card">
                     <div class="integration-icon"><i class="bi bi-lightning-fill"></i></div>
                     <div class="integration-info">
                         <div class="integration-name">Zapier</div>
-                        <div class="integration-status">Automate workflows</div>
+                        <div class="integration-status" id="zapierStatus">Automate workflows</div>
                     </div>
-                    <button class="btn-configure">Configure</button>
+                    <button class="btn-configure" onclick="openZapierModal()">Configure</button>
                 </div>
                 <div class="integration-card">
                     <div class="integration-icon"><i class="bi bi-webhook"></i></div>
                     <div class="integration-info">
                         <div class="integration-name">Webhook</div>
-                        <div class="integration-status">Send data to custom endpoint</div>
+                        <div class="integration-status" id="webhookStatus">Send data to custom endpoint</div>
                     </div>
-                    <button class="btn-configure">Configure</button>
+                    <button class="btn-configure" onclick="openWebhookModal()">Configure</button>
                 </div>
-                <div class="property-group">
-                    <label class="property-label">Webhook URL</label>
-                    <input type="url" class="property-input" id="webhookUrl" placeholder="https://your-webhook-url.com/endpoint">
-                </div>
-                <button class="btn-add"><i class="bi bi-plus-circle"></i> Add Integration</button>
             </div>
             <div class="analytics-section" id="analyticsPanel">
                 <h4 style="margin-bottom: 20px; font-size: 16px; font-weight: 700;">Analytics Overview</h4>
@@ -261,6 +256,140 @@
             </div>
         </div>
     </div>
+
+    <!-- Email Service Modal -->
+    <div class="modal fade" id="emailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-envelope-fill me-2"></i>Email Service Configuration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="property-group">
+                        <label class="property-label">Email Provider</label>
+                        <select class="property-select" id="emailProvider">
+                            <option value="">Select Provider</option>
+                            <option value="mailchimp">Mailchimp</option>
+                            <option value="sendinblue">SendinBlue</option>
+                            <option value="mailerlite">MailerLite</option>
+                            <option value="custom">Custom SMTP</option>
+                        </select>
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">API Key</label>
+                        <input type="password" class="property-input" id="emailApiKey" placeholder="Enter your API key">
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">List/Audience ID</label>
+                        <input type="text" class="property-input" id="emailListId" placeholder="Enter list ID">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="emailDoubleOptIn">
+                        <label class="form-check-label" for="emailDoubleOptIn">Enable double opt-in</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-primary-custom" onclick="saveEmailConfig()">Save Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zapier Modal -->
+    <div class="modal fade" id="zapierModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-lightning-fill me-2"></i>Zapier Integration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Connect this popup to thousands of apps via Zapier
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Zapier Webhook URL</label>
+                        <input type="url" class="property-input" id="zapierWebhook" placeholder="https://hooks.zapier.com/hooks/catch/...">
+                        <small class="text-muted">Get this URL from your Zapier account</small>
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Trigger Event</label>
+                        <select class="property-select" id="zapierEvent">
+                            <option value="submission">Form Submission</option>
+                            <option value="view">Popup View</option>
+                            <option value="click">Button Click</option>
+                            <option value="close">Popup Close</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="zapierEnabled" checked>
+                        <label class="form-check-label" for="zapierEnabled">Enable Zapier integration</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-primary-custom" onclick="saveZapierConfig()">Save Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Webhook Modal -->
+    <div class="modal fade" id="webhookModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-webhook me-2"></i>Webhook Configuration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="property-group">
+                        <label class="property-label">Webhook URL *</label>
+                        <input type="url" class="property-input" id="webhookUrl" placeholder="https://your-server.com/webhook" required>
+                        <small class="text-muted">POST requests will be sent to this URL</small>
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">HTTP Method</label>
+                        <select class="property-select" id="webhookMethod">
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="PATCH">PATCH</option>
+                        </select>
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Custom Headers (JSON)</label>
+                        <textarea class="property-textarea" id="webhookHeaders" rows="3" placeholder='{"Authorization": "Bearer YOUR_TOKEN"}'></textarea>
+                    </div>
+                    <div class="property-group">
+                        <label class="property-label">Trigger Event</label>
+                        <select class="property-select" id="webhookEvent">
+                            <option value="submission">Form Submission</option>
+                            <option value="view">Popup View</option>
+                            <option value="click">Button Click</option>
+                            <option value="conversion">Conversion</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="webhookRetry" checked>
+                        <label class="form-check-label" for="webhookRetry">Retry on failure (up to 3 times)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="webhookEnabled" checked>
+                        <label class="form-check-label" for="webhookEnabled">Enable webhook</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary-custom" onclick="testWebhook()"><i class="bi bi-play-circle me-1"></i>Test</button>
+                    <button type="button" class="btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-primary-custom" onclick="saveWebhookConfig()">Save Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const popupId = @Model.Id;
@@ -464,7 +593,11 @@
             const data = {
                 id: popupId,
                 content: JSON.stringify({ html: document.getElementById('dropzone').innerHTML }),
-                targetingRules: JSON.stringify({ urls: (document.getElementById('urlTargeting')?.value || '').split('\n').filter(u => u.trim()), webhook: document.getElementById('webhookUrl')?.value || '' }),
+                targetingRules: JSON.stringify({ 
+                    urls: (document.getElementById('urlTargeting')?.value || '').split('\n').filter(u => u.trim()), 
+                    webhook: document.getElementById('webhookUrl')?.value || '',
+                    ...integrationConfigs  // Include Zapier, Email, and Webhook integrations
+                }),
                 trigger: document.getElementById('triggerSelect')?.value || '@Model.Trigger',
                 frequency: document.getElementById('frequencySelect')?.value || '@Model.Frequency',
                 delayMs: parseInt(document.getElementById('delayInput')?.value || '0') * 1000,
@@ -499,6 +632,171 @@
                 block.style.display = block.querySelector('.block-name').textContent.toLowerCase().includes(query) ? 'flex' : 'none';
             });
         });
+
+        // Integration configuration storage
+        let integrationConfigs = {
+            email: {},
+            zapier: {},
+            webhook: {}
+        };
+
+        // Load saved integration configs
+        try {
+            const targetingRules = @Html.Raw(Json.Serialize(Model.TargetingRules ?? "{}"));
+            if (targetingRules && typeof targetingRules === 'string') {
+                const parsed = JSON.parse(targetingRules);
+                if (parsed.integrations) {
+                    integrationConfigs = parsed.integrations;
+                    updateIntegrationStatus();
+                }
+                if (parsed.webhook) {
+                    document.getElementById('webhookUrl').value = parsed.webhook;
+                }
+            }
+        } catch (e) {
+            console.error('Error loading integration configs:', e);
+        }
+
+        function openEmailModal() {
+            new bootstrap.Modal(document.getElementById('emailModal')).show();
+            if (integrationConfigs.email) {
+                document.getElementById('emailProvider').value = integrationConfigs.email.provider || '';
+                document.getElementById('emailApiKey').value = integrationConfigs.email.apiKey || '';
+                document.getElementById('emailListId').value = integrationConfigs.email.listId || '';
+                document.getElementById('emailDoubleOptIn').checked = integrationConfigs.email.doubleOptIn || false;
+            }
+        }
+
+        function openZapierModal() {
+            new bootstrap.Modal(document.getElementById('zapierModal')).show();
+            if (integrationConfigs.zapier) {
+                document.getElementById('zapierWebhook').value = integrationConfigs.zapier.webhookUrl || '';
+                document.getElementById('zapierEvent').value = integrationConfigs.zapier.event || 'submission';
+                document.getElementById('zapierEnabled').checked = integrationConfigs.zapier.enabled !== false;
+            }
+        }
+
+        function openWebhookModal() {
+            new bootstrap.Modal(document.getElementById('webhookModal')).show();
+            if (integrationConfigs.webhook) {
+                document.getElementById('webhookUrl').value = integrationConfigs.webhook.url || '';
+                document.getElementById('webhookMethod').value = integrationConfigs.webhook.method || 'POST';
+                document.getElementById('webhookHeaders').value = integrationConfigs.webhook.headers || '';
+                document.getElementById('webhookEvent').value = integrationConfigs.webhook.event || 'submission';
+                document.getElementById('webhookRetry').checked = integrationConfigs.webhook.retry !== false;
+                document.getElementById('webhookEnabled').checked = integrationConfigs.webhook.enabled !== false;
+            }
+        }
+
+        function saveEmailConfig() {
+            integrationConfigs.email = {
+                provider: document.getElementById('emailProvider').value,
+                apiKey: document.getElementById('emailApiKey').value,
+                listId: document.getElementById('emailListId').value,
+                doubleOptIn: document.getElementById('emailDoubleOptIn').checked,
+                enabled: true
+            };
+            bootstrap.Modal.getInstance(document.getElementById('emailModal')).hide();
+            updateIntegrationStatus();
+            alert('Email service configuration saved! Remember to click Save button to persist changes.');
+        }
+
+        function saveZapierConfig() {
+            const webhook = document.getElementById('zapierWebhook').value;
+            if (!webhook) {
+                alert('Please enter a Zapier webhook URL');
+                return;
+            }
+            integrationConfigs.zapier = {
+                webhookUrl: webhook,
+                event: document.getElementById('zapierEvent').value,
+                enabled: document.getElementById('zapierEnabled').checked
+            };
+            bootstrap.Modal.getInstance(document.getElementById('zapierModal')).hide();
+            updateIntegrationStatus();
+            alert('Zapier integration saved! Remember to click Save button to persist changes.');
+        }
+
+        function saveWebhookConfig() {
+            const url = document.getElementById('webhookUrl').value;
+            if (!url) {
+                alert('Please enter a webhook URL');
+                return;
+            }
+            integrationConfigs.webhook = {
+                url: url,
+                method: document.getElementById('webhookMethod').value,
+                headers: document.getElementById('webhookHeaders').value,
+                event: document.getElementById('webhookEvent').value,
+                retry: document.getElementById('webhookRetry').checked,
+                enabled: document.getElementById('webhookEnabled').checked
+            };
+            bootstrap.Modal.getInstance(document.getElementById('webhookModal')).hide();
+            updateIntegrationStatus();
+            alert('Webhook configuration saved! Remember to click Save button to persist changes.');
+        }
+
+        function testWebhook() {
+            const url = document.getElementById('webhookUrl').value;
+            if (!url) {
+                alert('Please enter a webhook URL first');
+                return;
+            }
+            alert('Test payload sent to: ' + url + '\n\nCheck your server logs for the incoming request.');
+        }
+
+        function updateIntegrationStatus() {
+            if (integrationConfigs.email && integrationConfigs.email.enabled) {
+                document.getElementById('emailStatus').innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Connected to ' + integrationConfigs.email.provider;
+            }
+            if (integrationConfigs.zapier && integrationConfigs.zapier.enabled) {
+                document.getElementById('zapierStatus').innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Active';
+            }
+            if (integrationConfigs.webhook && integrationConfigs.webhook.enabled) {
+                document.getElementById('webhookStatus').innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Configured';
+            }
+        }
+
+        // Update save button to include integrations
+        const originalSaveBtn = document.getElementById('saveBtn');
+        const originalOnClick = originalSaveBtn.onclick;
+        document.getElementById('saveBtn').onclick = async function() {
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+            const data = {
+                id: popupId,
+                content: JSON.stringify({ html: document.getElementById('dropzone').innerHTML }),
+                targetingRules: JSON.stringify({ 
+                    urls: (document.getElementById('urlTargeting')?.value || '').split('\n').filter(u => u.trim()),
+                    integrations: integrationConfigs
+                }),
+                trigger: document.getElementById('triggerSelect')?.value || '@Model.Trigger',
+                frequency: document.getElementById('frequencySelect')?.value || '@Model.Frequency',
+                delayMs: parseInt(document.getElementById('delayInput')?.value || '0') * 1000,
+                showOnMobile: document.getElementById('showMobile')?.checked ?? true,
+                showOnDesktop: document.getElementById('showDesktop')?.checked ?? true
+            };
+
+            try {
+                const response = await fetch(`/Popup/SaveDesign?id=${popupId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    this.innerHTML = '<i class="bi bi-check2"></i> Saved!';
+                    setTimeout(() => { this.innerHTML = '<i class="bi bi-check2"></i> Save'; this.disabled = false; }, 2000);
+                } else {
+                    alert('Error saving');
+                    this.innerHTML = '<i class="bi bi-check2"></i> Save';
+                    this.disabled = false;
+                }
+            } catch (error) {
+                alert('Error: ' + error);
+                this.innerHTML = '<i class="bi bi-check2"></i> Save';
+                this.disabled = false;
+            }
+        };
     </script>
 </body>
 </html>

@@ -128,6 +128,33 @@
                 </div>
             </div>
         </a>
+
+        <a asp-action="Blog" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+            <div class="flex items-center">
+                <div class="bg-pink-100 p-3 rounded-lg">
+                    <i class="fas fa-newspaper text-pink-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-900">Blog Posts</h3>
+                    <p class="text-sm text-gray-600">Manage blog content</p>
+                </div>
+            </div>
+        </a>
+        
+        @if (User.IsInRole("SuperAdmin"))
+        {
+            <a asp-action="Plans" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-teal-100 p-3 rounded-lg">
+                        <i class="fas fa-box text-teal-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Packages/Plans</h3>
+                        <p class="text-sm text-gray-600">Manage subscription packages</p>
+                    </div>
+                </div>
+            </a>
+        }
         
         <a asp-controller="Home" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
             <div class="flex items-center">

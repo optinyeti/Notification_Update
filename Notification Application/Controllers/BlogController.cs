@@ -1,24 +1,38 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Notification_Application.Services;
 using Notification_Application.Models;
+using Notification_Application.Data;
 
 namespace Notification_Application.Controllers;
 
 public class BlogController : Controller
 {
     private readonly IBlogService _blogService;
+    private readonly ApplicationDbContext _context;
 
-    public BlogController(IBlogService blogService)
+    public BlogController(IBlogService blogService, ApplicationDbContext context)
     {
         _blogService = blogService;
+        _context = context;
     }
 
     public async Task<IActionResult> Index(int page = 1)
     {
-        // For now, using tenantId = 1 (default). You can modify this based on subdomain routing
-        const int tenantId = 1;
-        var posts = await _blogService.GetBlogPostsAsync(tenantId, page, 12);
-        var categories = await _blogService.GetCategoriesAsync(tenantId);
+        // Get all published posts from all tenants
+        var posts = await _context.BlogPosts
+            .Where(bp => bp.Status == BlogPostStatus.Published)
+            .Include(bp => bp.Author)
+            .Include(bp => bp.Categories)
+            .Include(bp => bp.Tags)
+            .OrderByDescending(bp => bp.PublishedAt ?? bp.CreatedAt)
+            .Skip((page - 1) * 12)
+            .Take(12)
+            .ToListAsync();
+        
+        var categories = await _context.BlogCategories
+            .OrderBy(bc => bc.Name)
+            .ToListAsync();
         
         ViewBag.Categories = categories;
         ViewBag.CurrentPage = page;

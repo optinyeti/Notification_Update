@@ -90,14 +90,185 @@ public class PopupApiController : ControllerBase
     {
         try
         {
+            Console.WriteLine($"=== CONVERSION ENDPOINT HIT: Popup ID {id} ===");
             var userAgent = Request.Headers["User-Agent"].ToString();
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             await _analyticsService.RecordPopupConversionAsync(id, userAgent, ipAddress);
+            
+            Console.WriteLine($"Converting for popup {id}, calling SendToIntegrations...");
+            // Send to integrations (Zapier, Webhooks)
+            await SendToIntegrations(id, null, userAgent, ipAddress);
+            Console.WriteLine($"SendToIntegrations completed for popup {id}");
+            
             return Ok(new { success = true });
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"ERROR in RecordConversion: {ex.Message}");
             return Ok(new { success = false });
+        }
+    }
+
+    private async Task SendToIntegrations(int popupId, Dictionary<string, object>? conversionData, string? userAgent, string? ipAddress)
+    {
+        try
+        {
+            Console.WriteLine($"=== SendToIntegrations START for popup {popupId} ===");
+            var popup = await _context.Popups.FindAsync(popupId);
+            
+            if (popup == null)
+            {
+                Console.WriteLine($"ERROR: Popup {popupId} not found in database");
+                return;
+            }
+            
+            Console.WriteLine($"Popup found: {popup.Name}, TargetingRules length: {popup.TargetingRules?.Length ?? 0}");
+            
+            if (string.IsNullOrEmpty(popup.TargetingRules))
+            {
+                Console.WriteLine($"ERROR: TargetingRules is empty for popup {popupId}");
+                return;
+            }
+
+            Console.WriteLine($"TargetingRules content: {popup.TargetingRules}");
+
+            // Parse targeting rules to get integration configs
+            var targetingRules = System.Text.Json.JsonDocument.Parse(popup.TargetingRules);
+            Console.WriteLine($"TargetingRules parsed successfully");
+            
+            // Prepare payload
+            var payload = new
+            {
+                popupId = popupId,
+                popupName = popup.Name,
+                timestamp = DateTime.UtcNow,
+                userAgent = userAgent,
+                ipAddress = ipAddress,
+                conversionData = conversionData ?? new Dictionary<string, object>()
+            };
+
+            var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
+            Console.WriteLine($"Payload prepared: {jsonPayload}");
+            var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
+
+            // Check for Zapier integration
+            Console.WriteLine($"Checking for zapier property...");
+            if (targetingRules.RootElement.TryGetProperty("zapier", out var zapierConfig))
+            {
+                Console.WriteLine($"Found zapier property");
+                Console.WriteLine($"Zapier config: {zapierConfig.ToString()}");
+                
+                if (zapierConfig.TryGetProperty("enabled", out var zapierEnabled))
+                {
+                    Console.WriteLine($"Zapier enabled value: {zapierEnabled.GetBoolean()}");
+                    
+                    if (zapierEnabled.GetBoolean())
+                    {
+                        Console.WriteLine($"Zapier is ENABLED");
+                        
+                        if (zapierConfig.TryGetProperty("webhookUrl", out var webhookUrl))
+                        {
+                            var url = webhookUrl.GetString();
+                            Console.WriteLine($"Zapier webhook URL found: {url}");
+                            
+                            try
+                            {
+                                using var httpClient = new HttpClient();
+                                httpClient.Timeout = TimeSpan.FromSeconds(10);
+                                Console.WriteLine($"Sending POST request to Zapier...");
+                                var response = await httpClient.PostAsync(url, content);
+                                Console.WriteLine($"✓ Zapier webhook SENT to {url}: Status={response.StatusCode}");
+                                var responseBody = await response.Content.ReadAsStringAsync();
+                                Console.WriteLine($"Zapier response: {responseBody}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"✗ FAILED to send Zapier webhook: {ex.Message}");
+                                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"ERROR: webhookUrl property not found in zapier config");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Zapier is DISABLED");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"ERROR: enabled property not found in zapier config");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No zapier property found in targeting rules");
+            }
+
+            // Check for custom webhook integration
+            if (targetingRules.RootElement.TryGetProperty("webhook", out var webhookConfig))
+            {
+                if (webhookConfig.TryGetProperty("enabled", out var webhookEnabled) && webhookEnabled.GetBoolean())
+                {
+                    if (webhookConfig.TryGetProperty("url", out var webhookUrlProp))
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            httpClient.Timeout = TimeSpan.FromSeconds(10);
+                            
+                            // Get method (default POST)
+                            var method = webhookConfig.TryGetProperty("method", out var methodProp) 
+                                ? methodProp.GetString() ?? "POST" 
+                                : "POST";
+
+                            // Add custom headers if provided
+                            if (webhookConfig.TryGetProperty("headers", out var headersProp))
+                            {
+                                var headersText = headersProp.GetString();
+                                if (!string.IsNullOrEmpty(headersText))
+                                {
+                                    foreach (var line in headersText.Split('\n'))
+                                    {
+                                        var parts = line.Split(':', 2);
+                                        if (parts.Length == 2)
+                                        {
+                                            httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                                                parts[0].Trim(), 
+                                                parts[1].Trim()
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+
+                            var request = new HttpRequestMessage(
+                                new HttpMethod(method), 
+                                webhookUrlProp.GetString()
+                            )
+                            {
+                                Content = content
+                            };
+
+                            var response = await httpClient.SendAsync(request);
+                            Console.WriteLine($"Webhook sent to {webhookUrlProp.GetString()}: {response.StatusCode}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to send webhook: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            
+            Console.WriteLine($"=== SendToIntegrations END for popup {popupId} ===");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ CRITICAL ERROR in SendToIntegrations: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
         }
     }
 }
@@ -106,15 +277,18 @@ public class PopupApiController : ControllerBase
 [Route("api/popup-analytics")]
 public class PopupAnalyticsApiController : ControllerBase
 {
+    private readonly ApplicationDbContext _context;
     private readonly IPopupService _popupService;
     private readonly IAnalyticsService _analyticsService;
     private readonly IApiUsageService _apiUsageService;
 
     public PopupAnalyticsApiController(
+        ApplicationDbContext context,
         IPopupService popupService,
         IAnalyticsService analyticsService,
         IApiUsageService apiUsageService)
     {
+        _context = context;
         _popupService = popupService;
         _analyticsService = analyticsService;
         _apiUsageService = apiUsageService;
@@ -173,6 +347,19 @@ public class PopupAnalyticsApiController : ControllerBase
                 // This would typically be handled by a separate service
                 // For now, we'll just record the conversion
             }
+            
+            // Send to integrations
+            var conversionData = new Dictionary<string, object>();
+            if (!string.IsNullOrEmpty(request.Email))
+                conversionData["email"] = request.Email;
+            if (!string.IsNullOrEmpty(request.FirstName))
+                conversionData["firstName"] = request.FirstName;
+            if (!string.IsNullOrEmpty(request.LastName))
+                conversionData["lastName"] = request.LastName;
+            if (!string.IsNullOrEmpty(request.Phone))
+                conversionData["phone"] = request.Phone;
+                
+            await SendToIntegrations(id, conversionData, request.UserAgent, request.IpAddress);
             
             await RecordApiUsage(request.TenantId, "convert", 200, startTime);
             return Ok(new { success = true });
@@ -234,6 +421,115 @@ public class PopupAnalyticsApiController : ControllerBase
             statusCode, 
             responseTime, 
             ipAddress);
+    }
+
+    private async Task SendToIntegrations(int popupId, Dictionary<string, object>? conversionData, string? userAgent, string? ipAddress)
+    {
+        try
+        {
+            var popup = await _context.Popups.FindAsync(popupId);
+            if (popup == null || string.IsNullOrEmpty(popup.TargetingRules))
+                return;
+
+            // Parse targeting rules to get integration configs
+            var targetingRules = System.Text.Json.JsonDocument.Parse(popup.TargetingRules);
+            
+            // Prepare payload
+            var payload = new
+            {
+                popupId = popupId,
+                popupName = popup.Name,
+                timestamp = DateTime.UtcNow,
+                userAgent = userAgent,
+                ipAddress = ipAddress,
+                conversionData = conversionData ?? new Dictionary<string, object>()
+            };
+
+            var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
+
+            // Check for Zapier integration
+            if (targetingRules.RootElement.TryGetProperty("zapier", out var zapierConfig))
+            {
+                if (zapierConfig.TryGetProperty("enabled", out var zapierEnabled) && zapierEnabled.GetBoolean())
+                {
+                    if (zapierConfig.TryGetProperty("webhookUrl", out var webhookUrl))
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            httpClient.Timeout = TimeSpan.FromSeconds(10);
+                            var response = await httpClient.PostAsync(webhookUrl.GetString(), content);
+                            Console.WriteLine($"Zapier webhook sent to {webhookUrl.GetString()}: {response.StatusCode}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to send Zapier webhook: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
+            // Check for custom webhook integration
+            if (targetingRules.RootElement.TryGetProperty("webhook", out var webhookConfig))
+            {
+                if (webhookConfig.TryGetProperty("enabled", out var webhookEnabled) && webhookEnabled.GetBoolean())
+                {
+                    if (webhookConfig.TryGetProperty("url", out var webhookUrlProp))
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            httpClient.Timeout = TimeSpan.FromSeconds(10);
+                            
+                            // Get method (default POST)
+                            var method = webhookConfig.TryGetProperty("method", out var methodProp) 
+                                ? methodProp.GetString() ?? "POST" 
+                                : "POST";
+
+                            // Add custom headers if provided
+                            if (webhookConfig.TryGetProperty("headers", out var headersProp))
+                            {
+                                var headersText = headersProp.GetString();
+                                if (!string.IsNullOrEmpty(headersText))
+                                {
+                                    foreach (var line in headersText.Split('\n'))
+                                    {
+                                        var parts = line.Split(':', 2);
+                                        if (parts.Length == 2)
+                                        {
+                                            httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                                                parts[0].Trim(), 
+                                                parts[1].Trim()
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+
+                            var request = new HttpRequestMessage(
+                                new HttpMethod(method), 
+                                webhookUrlProp.GetString()
+                            )
+                            {
+                                Content = content
+                            };
+
+                            var response = await httpClient.SendAsync(request);
+                            Console.WriteLine($"Webhook sent to {webhookUrlProp.GetString()}: {response.StatusCode}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to send webhook: {ex.Message}");
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in SendToIntegrations: {ex.Message}");
+        }
     }
 }
 
@@ -353,6 +649,9 @@ public class TrackingController : ControllerBase
                         // Store email capture or other conversion data
                         // This can be extended based on requirements
                     }
+                    
+                    // Send to integrations (Zapier, Webhooks)
+                    await SendToIntegrations(request.CampaignId, request.ConversionData, userAgent, ipAddress);
                     break;
                 case "close":
                     // Track popup close events
@@ -392,6 +691,8 @@ public class TrackingController : ControllerBase
                             break;
                         case "conversion":
                             await _analyticsService.RecordPopupConversionAsync(evt.CampaignId, userAgent, ipAddress);
+                            // Send to integrations
+                            await SendToIntegrations(evt.CampaignId, evt.ConversionData, userAgent, ipAddress);
                             break;
                     }
                     processedCount++;
@@ -407,6 +708,113 @@ public class TrackingController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { success = false, error = ex.Message });
+        }
+    }
+
+    private async Task SendToIntegrations(int popupId, Dictionary<string, object>? conversionData, string? userAgent, string? ipAddress)
+    {
+        try
+        {
+            var popup = await _context.Popups.FindAsync(popupId);
+            if (popup == null || string.IsNullOrEmpty(popup.TargetingRules))
+                return;
+
+            // Parse targeting rules to get integration configs
+            var targetingRules = System.Text.Json.JsonDocument.Parse(popup.TargetingRules);
+            
+            // Prepare payload
+            var payload = new
+            {
+                popupId = popupId,
+                popupName = popup.Name,
+                timestamp = DateTime.UtcNow,
+                userAgent = userAgent,
+                ipAddress = ipAddress,
+                conversionData = conversionData ?? new Dictionary<string, object>()
+            };
+
+            var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
+
+            // Check for Zapier integration
+            if (targetingRules.RootElement.TryGetProperty("zapier", out var zapierConfig))
+            {
+                if (zapierConfig.TryGetProperty("enabled", out var zapierEnabled) && zapierEnabled.GetBoolean())
+                {
+                    if (zapierConfig.TryGetProperty("webhookUrl", out var webhookUrl))
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            httpClient.Timeout = TimeSpan.FromSeconds(10);
+                            await httpClient.PostAsync(webhookUrl.GetString(), content);
+                        }
+                        catch
+                        {
+                            // Log error but don't fail the conversion
+                        }
+                    }
+                }
+            }
+
+            // Check for custom webhook integration
+            if (targetingRules.RootElement.TryGetProperty("webhook", out var webhookConfig))
+            {
+                if (webhookConfig.TryGetProperty("enabled", out var webhookEnabled) && webhookEnabled.GetBoolean())
+                {
+                    if (webhookConfig.TryGetProperty("url", out var webhookUrlProp))
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            httpClient.Timeout = TimeSpan.FromSeconds(10);
+                            
+                            // Get method (default POST)
+                            var method = webhookConfig.TryGetProperty("method", out var methodProp) 
+                                ? methodProp.GetString() ?? "POST" 
+                                : "POST";
+
+                            // Add custom headers if provided
+                            if (webhookConfig.TryGetProperty("headers", out var headersProp))
+                            {
+                                var headersText = headersProp.GetString();
+                                if (!string.IsNullOrEmpty(headersText))
+                                {
+                                    foreach (var line in headersText.Split('\n'))
+                                    {
+                                        var parts = line.Split(':', 2);
+                                        if (parts.Length == 2)
+                                        {
+                                            httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                                                parts[0].Trim(), 
+                                                parts[1].Trim()
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+
+                            var request = new HttpRequestMessage(
+                                new HttpMethod(method), 
+                                webhookUrlProp.GetString()
+                            )
+                            {
+                                Content = content
+                            };
+
+                            await httpClient.SendAsync(request);
+                        }
+                        catch
+                        {
+                            // Log error but don't fail the conversion
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Don't fail the conversion if webhook posting fails
         }
     }
 }

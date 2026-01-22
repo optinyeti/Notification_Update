@@ -904,17 +904,20 @@
         },
 
         recordClick: function() {
-            fetch(`http://localhost:5117/Api/Popup/${this.config.id}/click`, {
+            fetch(`${window.PopupManager.baseUrl}/Api/Popup/${this.config.id}/click`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             }).catch(err => console.error('Failed to record click:', err));
         },
 
         recordConversion: function() {
-            fetch(`http://localhost:5117/Api/Popup/${this.config.id}/conversion`, {
+            console.log('[TRACKING] Recording conversion for popup', this.config.id);
+            fetch(`${window.PopupManager.baseUrl}/Api/Popup/${this.config.id}/conversion`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
-            }).catch(err => console.error('Failed to record conversion:', err));
+            })
+            .then(response => console.log('[TRACKING] Conversion recorded:', response.status))
+            .catch(err => console.error('[TRACKING] Failed to record conversion:', err));
         },
 
         addStyles: function() {

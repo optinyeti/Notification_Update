@@ -4,6 +4,8 @@ using Notification_Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Notification_Application.Services;
+using Microsoft.EntityFrameworkCore;
+using Notification_Application.Data;
 
 namespace Notification_Application.Controllers
 {
@@ -13,23 +15,35 @@ namespace Notification_Application.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IPopupService _popupService;
         private readonly IAnalyticsService _analyticsService;
+        private readonly ApplicationDbContext _context;
 
         public HomeController(
             ILogger<HomeController> logger, 
             UserManager<User> userManager,
             IPopupService popupService,
-            IAnalyticsService analyticsService)
+            IAnalyticsService analyticsService,
+            ApplicationDbContext context)
         {
             _logger = logger;
             _userManager = userManager;
             _popupService = popupService;
             _analyticsService = analyticsService;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
         {
             if (!User.Identity?.IsAuthenticated ?? false)
             {
+                // Get latest blog posts for landing page
+                var blogPosts = await _context.BlogPosts
+                    .Where(p => p.Status == BlogPostStatus.Published)
+                    .OrderByDescending(p => p.PublishedAt)
+                    .Take(3)
+                    .Include(p => p.Categories)
+                    .ToListAsync();
+                
+                ViewBag.BlogPosts = blogPosts;
                 return View();
             }
 

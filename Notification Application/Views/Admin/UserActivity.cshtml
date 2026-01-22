@@ -1,0 +1,274 @@
+@model List<Popup>
+@{
+    ViewData["Title"] = "User Activity";
+    var user = ViewBag.User as User;
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a asp-action="Users" class="text-gray-600 hover:text-gray-900">
+                <i class="bi bi-arrow-left text-xl"></i>
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">User Activity</h1>
+        </div>
+        <p class="text-gray-600">Activity log for @user?.FirstName @user?.LastName</p>
+    </div>
+
+    <!-- User Info Card -->
+    <div class="bg-white rounded-lg shadow border p-6 mb-6">
+        <div class="flex items-center gap-4">
+            <div class="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
+                <span class="text-blue-600 font-bold text-2xl">
+                    @((user?.FirstName?.Substring(0, 1) ?? "?") + (user?.LastName?.Substring(0, 1) ?? ""))
+                </span>
+            </div>
+            <div class="flex-1">
+                <h2 class="text-xl font-semibold text-gray-900">@user?.FirstName @user?.LastName</h2>
+                <p class="text-sm text-gray-600">@user?.Email</p>
+                <div class="flex items-center gap-4 mt-2">
+                    @{
+                        var roleClass = user?.Role switch
+                        {
+                            UserRole.SuperAdmin => "bg-purple-100 text-purple-800",
+                            UserRole.Admin => "bg-blue-100 text-blue-800",
+                            UserRole.User => "bg-gray-100 text-gray-800",
+                            _ => "bg-gray-100 text-gray-800"
+                        };
+                        var roleIcon = user?.Role switch
+                        {
+                            UserRole.SuperAdmin => "bi-crown",
+                            UserRole.Admin => "bi-shield-check",
+                            UserRole.User => "bi-person",
+                            _ => "bi-person"
+                        };
+                    }
+                    <span class="px-3 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full @roleClass">
+                        <i class="bi @roleIcon"></i>
+                        @user?.Role
+                    </span>
+                    @if (user?.IsActive == true)
+                    {
+                        <span class="px-3 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            <i class="bi bi-check-circle"></i>
+                            Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="px-3 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            <i class="bi bi-x-circle"></i>
+                            Inactive
+                        </span>
+                    }
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-600">Joined</p>
+                <p class="text-sm font-medium text-gray-900">@user?.CreatedAt.ToString("MMM dd, yyyy")</p>
+                <p class="text-sm text-gray-600 mt-2">Last Login</p>
+                <p class="text-sm font-medium text-gray-900">
+                    @if (user?.LastLoginAt.HasValue == true)
+                    {
+                        @user.LastLoginAt.Value.ToString("MMM dd, yyyy")
+                    }
+                    else
+                    {
+                        <span class="text-gray-400">Never</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow border p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Total Popups</p>
+                    <p class="text-2xl font-bold text-gray-900">@Model.Count</p>
+                </div>
+                <div class="bg-blue-100 rounded-full p-3">
+                    <i class="bi bi-window text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow border p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Active Popups</p>
+                    <p class="text-2xl font-bold text-green-600">@Model.Count(p => p.Status == PopupStatus.Published)</p>
+                </div>
+                <div class="bg-green-100 rounded-full p-3">
+                    <i class="bi bi-check-circle text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow border p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Total Views</p>
+                    <p class="text-2xl font-bold text-purple-600">@Model.Sum(p => p.Analytics.Sum(a => a.Views))</p>
+                </div>
+                <div class="bg-purple-100 rounded-full p-3">
+                    <i class="bi bi-eye text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow border p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Total Clicks</p>
+                    <p class="text-2xl font-bold text-orange-600">@Model.Sum(p => p.Analytics.Sum(a => a.Clicks))</p>
+                </div>
+                <div class="bg-orange-100 rounded-full p-3">
+                    <i class="bi bi-cursor text-orange-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popups List -->
+    <div class="bg-white rounded-lg shadow border">
+        <div class="p-6 border-b">
+            <h3 class="text-lg font-semibold text-gray-900">Created Popups</h3>
+            <p class="text-sm text-gray-600 mt-1">All popups created by this user</p>
+        </div>
+        
+        @if (Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Popup Name
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Views
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Clicks
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Created
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach (var popup in Model.OrderByDescending(p => p.CreatedAt))
+                        {
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">@popup.Name</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                        @popup.Type
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if (popup.Status == PopupStatus.Published)
+                                    {
+                                        <span class="px-2 py-1 inline-flex items-center gap-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            <i class="bi bi-check-circle"></i>
+                                            Published
+                                        </span>
+                                    }
+                                    else if (popup.Status == PopupStatus.Draft)
+                                    {
+                                        <span class="px-2 py-1 inline-flex items-center gap-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            <i class="bi bi-file-earmark"></i>
+                                            Draft
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 inline-flex items-center gap-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            <i class="bi bi-pause-circle"></i>
+                                            @popup.Status
+                                        </span>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @popup.Analytics.Sum(a => a.Views)
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @popup.Analytics.Sum(a => a.Clicks)
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @popup.CreatedAt.ToString("MMM dd, yyyy")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-12 text-center">
+                <i class="bi bi-inbox text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500">No popups created yet</p>
+            </div>
+        }
+    </div>
+
+    <!-- Recent Activity Timeline (Optional Enhancement) -->
+    <div class="bg-white rounded-lg shadow border mt-6">
+        <div class="p-6 border-b">
+            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+            <p class="text-sm text-gray-600 mt-1">Recent actions and changes</p>
+        </div>
+        <div class="p-6">
+            <div class="flow-root">
+                <ul class="space-y-4">
+                    <li class="relative pb-4">
+                        <div class="relative flex items-start space-x-3">
+                            <div class="relative">
+                                <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="bi bi-person-check text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div>
+                                    <p class="text-sm text-gray-900 font-medium">Account created</p>
+                                    <p class="text-sm text-gray-500">@user?.CreatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    @if (user?.LastLoginAt.HasValue == true)
+                    {
+                        <li class="relative pb-4">
+                            <div class="relative flex items-start space-x-3">
+                                <div class="relative">
+                                    <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                                        <i class="bi bi-box-arrow-in-right text-green-600"></i>
+                                    </div>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div>
+                                        <p class="text-sm text-gray-900 font-medium">Last login</p>
+                                        <p class="text-sm text-gray-500">@user.LastLoginAt.Value.ToString("MMMM dd, yyyy 'at' hh:mm tt")</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

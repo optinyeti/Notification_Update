@@ -1,0 +1,223 @@
+@model List<User>
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Users</h1>
+            <p class="text-gray-600 mt-2">Manage tenant users and their permissions</p>
+        </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
+            <i class="bi bi-plus-circle"></i>
+            Add User
+        </button>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Users Table -->
+        <div class="bg-white rounded-lg shadow border overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            User
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Role
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Last Login
+                        </th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Actions</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach (var user in Model)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-semibold text-sm">
+                                                @((user.FirstName?.Substring(0, 1) ?? "?") + (user.LastName?.Substring(0, 1) ?? ""))
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            @(user.FirstName ?? "") @(user.LastName ?? "")
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            @user.UserName
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">@user.Email</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @{
+                                    var roleClass = user.Role switch
+                                    {
+                                        UserRole.SuperAdmin => "bg-purple-100 text-purple-800",
+                                        UserRole.Admin => "bg-blue-100 text-blue-800",
+                                        UserRole.User => "bg-gray-100 text-gray-800",
+                                        _ => "bg-gray-100 text-gray-800"
+                                    };
+                                    var roleIcon = user.Role switch
+                                    {
+                                        UserRole.SuperAdmin => "bi-crown",
+                                        UserRole.Admin => "bi-shield-check",
+                                        UserRole.User => "bi-person",
+                                        _ => "bi-person"
+                                    };
+                                }
+                                <span class="px-3 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full @roleClass">
+                                    <i class="bi @roleIcon"></i>
+                                    @user.Role
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if (user.IsActive)
+                                {
+                                    <span class="px-3 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <i class="bi bi-check-circle"></i>
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-3 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <i class="bi bi-x-circle"></i>
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @user.CreatedAt.ToString("MMM dd, yyyy")
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @if (user.LastLoginAt.HasValue)
+                                {
+                                    @user.LastLoginAt.Value.ToString("MMM dd, yyyy")
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400">Never</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a asp-action="EditUser" asp-route-id="@user.Id" class="text-blue-600 hover:text-blue-900" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="UserActivity" asp-route-id="@user.Id" class="text-gray-600 hover:text-gray-900" title="View Activity">
+                                        <i class="bi bi-activity"></i>
+                                    </a>
+                                    <form asp-action="ToggleUserStatus" asp-route-id="@user.Id" method="post" class="inline-block" onsubmit="return confirm('@(user.IsActive ? "Deactivate" : "Activate") this user?')">
+                                        @if (!user.IsActive)
+                                        {
+                                            <button type="submit" class="text-green-600 hover:text-green-900" title="Activate">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Deactivate">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        }
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-lg shadow border p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Total Users</p>
+                        <p class="text-2xl font-bold text-gray-900">@Model.Count</p>
+                    </div>
+                    <div class="bg-blue-100 rounded-full p-3">
+                        <i class="bi bi-people text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow border p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Active Users</p>
+                        <p class="text-2xl font-bold text-green-600">@Model.Count(u => u.IsActive)</p>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-3">
+                        <i class="bi bi-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow border p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Admins</p>
+                        <p class="text-2xl font-bold text-purple-600">@Model.Count(u => u.Role == UserRole.Admin || u.Role == UserRole.SuperAdmin)</p>
+                    </div>
+                    <div class="bg-purple-100 rounded-full p-3">
+                        <i class="bi bi-shield-check text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow border p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Regular Users</p>
+                        <p class="text-2xl font-bold text-gray-600">@Model.Count(u => u.Role == UserRole.User)</p>
+                    </div>
+                    <div class="bg-gray-100 rounded-full p-3">
+                        <i class="bi bi-person text-gray-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="bg-white rounded-lg shadow border p-12 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                    <i class="bi bi-people text-gray-400 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No Users Yet</h3>
+                <p class="text-gray-600 mb-6">Get started by adding your first team member.</p>
+                <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
+                    <i class="bi bi-plus-circle mr-2"></i>Add First User
+                </button>
+            </div>
+        </div>
+    }
+</div>

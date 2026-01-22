@@ -1,0 +1,159 @@
+@model User
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="max-w-3xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a asp-action="Users" class="text-gray-600 hover:text-gray-900">
+                <i class="bi bi-arrow-left text-xl"></i>
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">Edit User</h1>
+        </div>
+        <p class="text-gray-600">Update user information and permissions</p>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <!-- Edit Form -->
+    <form asp-action="EditUser" asp-route-id="@Model.Id" method="post" class="bg-white rounded-lg shadow border">
+        <div class="p-6 space-y-6">
+            <!-- User Info -->
+            <div class="flex items-center gap-4 pb-6 border-b">
+                <div class="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span class="text-blue-600 font-bold text-2xl">
+                        @((Model.FirstName?.Substring(0, 1) ?? "?") + (Model.LastName?.Substring(0, 1) ?? ""))
+                    </span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">@Model.FirstName @Model.LastName</h2>
+                    <p class="text-sm text-gray-600">@Model.Email</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="bi bi-calendar3"></i> Joined @Model.CreatedAt.ToString("MMMM dd, yyyy")
+                    </p>
+                </div>
+            </div>
+
+            <!-- Basic Information -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
+                            First Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="firstName" name="firstName" value="@Model.FirstName" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                    
+                    <div>
+                        <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">
+                            Last Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="lastName" name="lastName" value="@Model.LastName" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" value="@Model.Email" required 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+            </div>
+
+            <!-- Role & Status -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Role & Status</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+                            Role <span class="text-red-500">*</span>
+                        </label>
+                        <select id="role" name="role" required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="0" selected="@(Model.Role == UserRole.User)">
+                                👤 User
+                            </option>
+                            <option value="1" selected="@(Model.Role == UserRole.Admin)">
+                                🛡️ Admin
+                            </option>
+                            <option value="2" selected="@(Model.Role == UserRole.SuperAdmin)">
+                                👑 Super Admin
+                            </option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Controls user permissions and access levels</p>
+                    </div>
+                    
+                    <div>
+                        <label for="isActive" class="block text-sm font-medium text-gray-700 mb-2">
+                            Account Status
+                        </label>
+                        <div class="flex items-center gap-3 mt-3">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="isActive" name="isActive" value="true" @(Model.IsActive ? "checked" : "") class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                <span class="ml-3 text-sm font-medium text-gray-900">
+                                    @(Model.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Inactive users cannot log in</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Stats -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600">User ID</p>
+                        <p class="text-sm font-mono text-gray-900 mt-1">@Model.Id</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600">Last Login</p>
+                        <p class="text-sm text-gray-900 mt-1">
+                            @if (Model.LastLoginAt.HasValue)
+                            {
+                                @Model.LastLoginAt.Value.ToString("MMM dd, yyyy hh:mm tt")
+                            }
+                            else
+                            {
+                                <span class="text-gray-400">Never</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-between items-center border-t">
+            <a asp-action="Users" class="text-gray-600 hover:text-gray-900 font-medium">
+                <i class="bi bi-x-lg me-2"></i>Cancel
+            </a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2">
+                <i class="bi bi-check-lg"></i>
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Update status text when toggle is changed
+    document.getElementById('isActive').addEventListener('change', function() {
+        const label = this.parentElement.querySelector('span');
+        label.textContent = this.checked ? 'Active' : 'Inactive';
+    });
+</script>

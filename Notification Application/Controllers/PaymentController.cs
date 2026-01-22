@@ -27,8 +27,10 @@ public class PaymentController : Controller
     {
         var plans = await _context.SubscriptionPlans
             .Where(p => p.IsActive)
-            .OrderBy(p => p.MonthlyPrice)
             .ToListAsync();
+        
+        // Order by price on client side (SQLite doesn't support decimal in ORDER BY)
+        plans = plans.OrderBy(p => p.MonthlyPrice).ToList();
 
         return View(plans);
     }

@@ -120,14 +120,8 @@ public class PopupController : Controller
 
     public IActionResult Create(PopupType? type, int? templateId)
     {
-        var model = new PopupCreateViewModel();
-        
-        if (type.HasValue)
-        {
-            model.Type = type.Value;
-        }
-        
-        return View(model);
+        // Redirect to CreateCampaign instead
+        return RedirectToAction("CreateCampaign");
     }
 
     [HttpGet]

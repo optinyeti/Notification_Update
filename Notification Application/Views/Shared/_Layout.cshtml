@@ -59,15 +59,38 @@
                             </a>
                             @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                             {
-                                <a asp-controller="Admin" asp-action="Blog" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                    Blog
-                                </a>
-                                <a asp-controller="Admin" asp-action="Analytics" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                    Analytics
-                                </a>
-                                <a asp-controller="Admin" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                    Admin
-                                </a>
+                                <div class="dropdown inline-flex items-center px-1 pt-1">
+                                    <button class="text-gray-500 hover:text-gray-700 text-sm font-medium dropdown-toggle" type="button" id="adminMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Admin
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="adminMenuDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Blog">
+                                            <i class="bi bi-file-text me-2"></i>Blog
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Analytics">
+                                            <i class="bi bi-graph-up me-2"></i>Analytics
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                            <i class="bi bi-people me-2"></i>Users
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Templates">
+                                            <i class="bi bi-collection me-2"></i>Templates
+                                        </a></li>
+                                        @if (User.IsInRole("SuperAdmin"))
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="Plans">
+                                                <i class="bi bi-box-seam me-2"></i>Packages/Plans
+                                            </a></li>
+                                        }
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Settings">
+                                            <i class="bi bi-gear me-2"></i>Settings
+                                        </a></li>
+                                    </ul>
+                                </div>
                             }
                         </div>
                     }

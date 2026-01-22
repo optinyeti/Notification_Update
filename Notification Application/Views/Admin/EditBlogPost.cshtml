@@ -35,8 +35,8 @@
             <!-- Content -->
             <div>
                 <label asp-for="Content" class="block text-sm font-medium text-gray-700 mb-2">Content *</label>
-                <textarea asp-for="Content" rows="15" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 font-mono text-sm" required></textarea>
-                <p class="text-sm text-gray-500 mt-1">Supports HTML and Markdown</p>
+                <div id="quillEditor" style="height: 400px; background: white;"></div>
+                <textarea asp-for="Content" id="blogContent" rows="15" class="hidden" required></textarea>
                 <span asp-validation-for="Content" class="text-red-600 text-sm"></span>
             </div>
 
@@ -134,4 +134,45 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <!-- Quill WYSIWYG Editor (Free) -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Create Quill editor
+        var quill = new Quill('#quillEditor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['link', 'image', 'video'],
+                    ['blockquote', 'code-block'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Write your blog content here...'
+        });
+        
+        // Load existing content
+        var existingContent = document.getElementById('blogContent').value;
+        if (existingContent) {
+            quill.root.innerHTML = existingContent;
+        }
+        
+        // Continuously sync content from Quill to textarea
+        quill.on('text-change', function() {
+            var html = quill.root.innerHTML;
+            document.getElementById('blogContent').value = html;
+        });
+        
+        // Also sync on form submit (backup)
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var html = quill.root.innerHTML;
+            document.getElementById('blogContent').value = html;
+        });
+    </script>
 }

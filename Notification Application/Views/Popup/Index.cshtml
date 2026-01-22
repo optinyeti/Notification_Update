@@ -168,66 +168,14 @@
             <i class="fas fa-window-restore text-gray-300 text-6xl mb-6"></i>
             <h3 class="text-xl font-medium text-gray-500 mb-4">No popups found</h3>
             <p class="text-gray-400 mb-6">Create your first popup to get started</p>
-            <a asp-action="Create" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+            <a asp-action="CreateCampaign" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
                 <i class="fas fa-plus mr-2"></i>Create Your First Popup
             </a>
         </div>
     }
 </div>
 
-<!-- Embed Code Modal -->
-<div id="embedModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeEmbedModal(event)">
-    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between p-6 border-b">
-            <div>
-                <h3 class="text-xl font-bold text-gray-900">Installation Code</h3>
-                <p class="text-sm text-gray-600 mt-1">Choose how to install your popup</p>
-            </div>
-            <button onclick="closeEmbedModal()" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <!-- Recommended: Tenant Code -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div class="flex items-start mb-3">
-                    <i class="fas fa-star text-blue-600 mr-2 mt-1"></i>
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-900 mb-1">Recommended: Tenant-Wide Tracking</h4>
-                        <p class="text-sm text-gray-600 mb-3">Install one code for all your campaigns (like GTM/GA4). All published campaigns automatically appear.</p>
-                    </div>
-                </div>
-                <div class="bg-gray-900 text-gray-100 p-4 rounded-lg mb-3 overflow-x-auto">
-                    <code id="modalTenantCode" class="text-sm"></code>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="copyModalTenantCode()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-medium">
-                        <i class="fas fa-clipboard mr-1"></i>Copy Tenant Code
-                    </button>
-                    <a href="@Url.Action("Settings", "Admin")" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 text-sm font-medium">
-                        <i class="fas fa-gear mr-1"></i>View in Settings
-                    </a>
-                </div>
-            </div>
-
-            <!-- Individual Campaign Code -->
-            <details class="border border-gray-200 rounded-lg">
-                <summary class="px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm text-gray-600 font-medium">
-                    <i class="fas fa-chevron-right mr-2"></i>Individual Campaign Code (Legacy)
-                </summary>
-                <div class="px-4 pb-4">
-                    <p class="text-sm text-gray-600 mb-3 mt-2">Use this if you only want this specific campaign (not recommended):</p>
-                    <div class="bg-gray-100 text-gray-800 p-4 rounded-lg mb-3 overflow-x-auto">
-                        <code id="modalCampaignCode" class="text-sm"></code>
-                    </div>
-                    <button onclick="copyModalCampaignCode()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm font-medium">
-                        <i class="fas fa-clipboard mr-1"></i>Copy Campaign Code
-                    </button>
-                </div>
-            </details>
-        </div>
-    </div>
-</div>
+<!-- Removed Embed Modal - Visit Settings page to get your tracking pixel -->
 
 @section Scripts {
     <script>

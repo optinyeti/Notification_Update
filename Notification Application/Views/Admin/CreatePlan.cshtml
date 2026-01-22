@@ -1,0 +1,198 @@
+@model SubscriptionPlan
+@{
+    ViewData["Title"] = "Create Subscription Plan";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-action="Plans">Plans</a></li>
+                        <li class="breadcrumb-item active">Create New Plan</li>
+                    </ol>
+                </nav>
+                <h2>
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Create Subscription Plan
+                </h2>
+                <p class="text-muted">Define a new subscription package with pricing and features</p>
+            </div>
+
+            <form asp-action="CreatePlan" method="post">
+                <div class="row g-4">
+                    <!-- Basic Information -->
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">Plan Name *</label>
+                                    <input asp-for="Name" class="form-control" placeholder="e.g., Professional" required>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label">Description *</label>
+                                    <textarea asp-for="Description" class="form-control" rows="3" 
+                                              placeholder="Brief description of what's included" required></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="MonthlyPrice" class="form-label">Monthly Price ($) *</label>
+                                        <input asp-for="MonthlyPrice" type="number" step="0.01" class="form-control" 
+                                               placeholder="0.00" required>
+                                        <span asp-validation-for="MonthlyPrice" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="YearlyPrice" class="form-label">Yearly Price ($) *</label>
+                                        <input asp-for="YearlyPrice" type="number" step="0.01" class="form-control" 
+                                               placeholder="0.00" required>
+                                        <span asp-validation-for="YearlyPrice" class="text-danger"></span>
+                                        <small class="text-muted">Typically ~17% discount</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Limits -->
+                        <div class="card shadow-sm mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Plan Limits</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Use <strong>-1</strong> for unlimited access
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="MaxPopups" class="form-label">Max Popups</label>
+                                        <input asp-for="MaxPopups" type="number" class="form-control" value="10" required>
+                                        <span asp-validation-for="MaxPopups" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="MaxPopupViews" class="form-label">Max Views/Month</label>
+                                        <input asp-for="MaxPopupViews" type="number" class="form-control" value="10000" required>
+                                        <span asp-validation-for="MaxPopupViews" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="MaxUsers" class="form-label">Max Users</label>
+                                        <input asp-for="MaxUsers" type="number" class="form-control" value="1" required>
+                                        <span asp-validation-for="MaxUsers" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stripe Integration -->
+                        <div class="card shadow-sm mt-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i class="bi bi-stripe me-2"></i>Stripe Integration (Optional)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="StripeProductId" class="form-label">Stripe Product ID</label>
+                                    <input asp-for="StripeProductId" class="form-control" 
+                                           placeholder="prod_xxxxxxxxxxxxx">
+                                    <small class="text-muted">From your Stripe dashboard</small>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="StripePriceIdMonthly" class="form-label">Monthly Price ID</label>
+                                        <input asp-for="StripePriceIdMonthly" class="form-control" 
+                                               placeholder="price_xxxxxxxxxxxxx">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="StripePriceIdYearly" class="form-label">Yearly Price ID</label>
+                                        <input asp-for="StripePriceIdYearly" class="form-control" 
+                                               placeholder="price_xxxxxxxxxxxxx">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Sidebar -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm sticky-top" style="top: 20px;">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="bi bi-star me-2"></i>Features</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-3">Select features included in this plan</p>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input asp-for="HasAdvancedTargeting" class="form-check-input" type="checkbox" 
+                                           id="advancedTargeting">
+                                    <label class="form-check-label" for="advancedTargeting">
+                                        <strong>Advanced Targeting</strong>
+                                        <br><small class="text-muted">Device, location, behavior rules</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input asp-for="HasAnalytics" class="form-check-input" type="checkbox" 
+                                           id="analytics" checked>
+                                    <label class="form-check-label" for="analytics">
+                                        <strong>Analytics Dashboard</strong>
+                                        <br><small class="text-muted">Views, clicks, conversions</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input asp-for="HasAPIAccess" class="form-check-input" type="checkbox" 
+                                           id="apiAccess">
+                                    <label class="form-check-label" for="apiAccess">
+                                        <strong>API Access</strong>
+                                        <br><small class="text-muted">REST API integration</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input asp-for="HasPrioritySupport" class="form-check-input" type="checkbox" 
+                                           id="prioritySupport">
+                                    <label class="form-check-label" for="prioritySupport">
+                                        <strong>Priority Support</strong>
+                                        <br><small class="text-muted">24/7 premium support</small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input asp-for="HasWhiteLabel" class="form-check-input" type="checkbox" 
+                                           id="whiteLabel">
+                                    <label class="form-check-label" for="whiteLabel">
+                                        <strong>White Label</strong>
+                                        <br><small class="text-muted">Remove branding</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Plans" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>Create Plan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
