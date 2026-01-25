@@ -34,6 +34,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
 // Add application services
 builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<IBillingService, BillingService>();
 builder.Services.AddScoped<IPopupService, PopupService>();
 builder.Services.AddScoped<IPopupTemplateService, PopupTemplateService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();

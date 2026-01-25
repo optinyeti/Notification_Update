@@ -1,0 +1,310 @@
+@using Notification_Application.Services
+@model BillingInfo
+@{
+    ViewData["Title"] = "Subscription & Billing";
+    var billingHistory = ViewBag.BillingHistory as List<BillingEvent> ?? new List<BillingEvent>();
+}
+
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Subscription & Billing</h1>
+        <p class="text-gray-600 mt-2">Manage your subscription plan and view billing history</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Warning"]
+        </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Current Plan Card -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white">Current Plan</h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">@Model.PlanName</h3>
+                            <p class="text-gray-600 mt-1">
+                                @if (Model.SubscriptionStatus == "active")
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Active
+                                    </span>
+                                }
+                                else if (Model.SubscriptionStatus == "trialing")
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <i class="bi bi-clock-fill me-1"></i> Trial
+                                    </span>
+                                }
+                                else if (Model.SubscriptionStatus == "past_due")
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Past Due
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <i class="bi bi-x-circle-fill me-1"></i> Inactive
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-bold text-gray-900">$@Model.MonthlyPrice</div>
+                            <div class="text-sm text-gray-600">per month</div>
+                        </div>
+                    </div>
+
+                    @if (Model.SubscriptionStartDate.HasValue)
+                    {
+                        <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Started</p>
+                                <p class="font-semibold text-gray-900">@Model.SubscriptionStartDate.Value.ToString("MMM dd, yyyy")</p>
+                            </div>
+                            @if (Model.SubscriptionEndDate.HasValue)
+                            {
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-1">
+                                        @(Model.SubscriptionStatus == "active" ? "Renews" : "Ends")
+                                    </p>
+                                    <p class="font-semibold text-gray-900">@Model.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Current Usage -->
+                    @if (Model.CurrentUsage != null)
+                    {
+                        <div class="space-y-4 mb-6">
+                            <h4 class="font-semibold text-gray-900">Current Usage</h4>
+                            
+                            <!-- Popups -->
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">Popups</span>
+                                    <span class="text-sm font-medium text-gray-900">
+                                        @Model.CurrentUsage.PopupsCreated / @(Model.CurrentUsage.MaxPopups?.ToString() ?? "∞")
+                                    </span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    @{
+                                        var popupPercentage = Model.CurrentUsage.MaxPopups.HasValue && Model.CurrentUsage.MaxPopups.Value > 0
+                                            ? (Model.CurrentUsage.PopupsCreated * 100.0 / Model.CurrentUsage.MaxPopups.Value) 
+                                            : 0;
+                                        var popupColor = popupPercentage > 90 ? "bg-red-500" : popupPercentage > 75 ? "bg-yellow-500" : "bg-blue-600";
+                                    }
+                                    <div class="@popupColor h-2 rounded-full transition-all" style="width: @Math.Min(popupPercentage, 100)%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Views -->
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">Monthly Views</span>
+                                    <span class="text-sm font-medium text-gray-900">
+                                        @Model.CurrentUsage.MonthlyViews.ToString("N0") / @(Model.CurrentUsage.MaxMonthlyViews.HasValue ? Model.CurrentUsage.MaxMonthlyViews.Value.ToString("N0") : "Unlimited")
+                                    </span>
+                                </div>
+                                @if (Model.CurrentUsage.MaxMonthlyViews.HasValue)
+                                {
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        @{
+                                            var viewPercentage = Model.CurrentUsage.MaxMonthlyViews.Value > 0 
+                                                ? (Model.CurrentUsage.MonthlyViews * 100.0 / Model.CurrentUsage.MaxMonthlyViews.Value) 
+                                                : 0;
+                                            var viewColor = viewPercentage > 90 ? "bg-red-500" : viewPercentage > 75 ? "bg-yellow-500" : "bg-blue-600";
+                                        }
+                                        <div class="@viewColor h-2 rounded-full transition-all" style="width: @Math.Min(viewPercentage, 100)%"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 25%"></div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        @if (Model.SubscriptionStatus != "active" || Model.MonthlyPrice == 0)
+                        {
+                            <a asp-controller="Payment" asp-action="Plans" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition text-center">
+                                <i class="bi bi-arrow-up-circle me-1"></i> Upgrade Plan
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Payment" asp-action="Plans" class="flex-1 bg-white hover:bg-gray-50 text-gray-900 font-semibold py-2 px-4 rounded-lg border-2 border-gray-300 transition text-center">
+                                <i class="bi bi-arrow-repeat me-1"></i> Change Plan
+                            </a>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(Model.StripeCustomerId))
+                        {
+                            <a asp-controller="Payment" asp-action="ManageSubscription" class="flex-1 bg-white hover:bg-gray-50 text-gray-900 font-semibold py-2 px-4 rounded-lg border-2 border-gray-300 transition text-center">
+                                <i class="bi bi-credit-card me-1"></i> Manage Billing
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="space-y-6">
+            <!-- Estimated Charge -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-gray-900">Next Invoice</h3>
+                    <i class="bi bi-receipt text-2xl text-gray-400"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 mb-1">$@Model.MonthlyPrice</div>
+                <p class="text-sm text-gray-600">
+                    @if (Model.SubscriptionEndDate.HasValue)
+                    {
+                        <span>Due @Model.SubscriptionEndDate.Value.ToString("MMM dd")</span>
+                    }
+                    else
+                    {
+                        <span>No active subscription</span>
+                    }
+                </p>
+            </div>
+
+            <!-- Features -->
+            @if (Model.CurrentUsage != null)
+            {
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Plan Features</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill text-green-500 mt-0.5 me-2"></i>
+                            <span class="text-sm text-gray-700">@(Model.CurrentUsage.MaxPopups.HasValue ? Model.CurrentUsage.MaxPopups.Value.ToString() : "Unlimited") popups</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill text-green-500 mt-0.5 me-2"></i>
+                            <span class="text-sm text-gray-700">@(Model.CurrentUsage.MaxMonthlyViews.HasValue ? Model.CurrentUsage.MaxMonthlyViews.Value.ToString("N0") : "Unlimited") monthly views</span>
+                        </li>
+                        @if (Model.CurrentUsage.HasAdvancedTargeting)
+                        {
+                            <li class="flex items-start">
+                                <i class="bi bi-check-circle-fill text-green-500 mt-0.5 me-2"></i>
+                                <span class="text-sm text-gray-700">Advanced targeting</span>
+                            </li>
+                        }
+                        @if (Model.CurrentUsage.HasAnalytics)
+                        {
+                            <li class="flex items-start">
+                                <i class="bi bi-check-circle-fill text-green-500 mt-0.5 me-2"></i>
+                                <span class="text-sm text-gray-700">Analytics & Reports</span>
+                            </li>
+                        }
+                        @if (Model.CurrentUsage.HasAPIAccess)
+                        {
+                            <li class="flex items-start">
+                                <i class="bi bi-check-circle-fill text-green-500 mt-0.5 me-2"></i>
+                                <span class="text-sm text-gray-700">API Access</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Billing History -->
+    @if (billingHistory.Any())
+    {
+        <div class="mt-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">Billing History</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach (var evt in billingHistory.OrderByDescending(e => e.Date))
+                            {
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        @evt.Date.ToString("MMM dd, yyyy")
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                        @evt.Description
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @if (evt.Type == "payment")
+                                        {
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                <i class="bi bi-check-circle"></i> Payment
+                                            </span>
+                                        }
+                                        else if (evt.Type == "subscription_created")
+                                        {
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                <i class="bi bi-plus-circle"></i> Subscription
+                                            </span>
+                                        }
+                                        else if (evt.Type == "upgrade")
+                                        {
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                <i class="bi bi-arrow-up-circle"></i> Upgrade
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                @evt.Type
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                                        $@evt.Amount.ToString("F2")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="mt-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+                <i class="bi bi-receipt text-5xl text-gray-300 mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No Billing History</h3>
+                <p class="text-gray-600">Your billing history will appear here once you subscribe to a plan.</p>
+            </div>
+        </div>
+    }
+</div>

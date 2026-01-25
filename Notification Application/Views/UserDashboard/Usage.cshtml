@@ -1,0 +1,286 @@
+@using Notification_Application.Controllers
+@model UsageDashboardViewModel
+@{
+    ViewData["Title"] = "Usage Statistics";
+}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Usage Statistics</h1>
+        <p class="text-gray-600 mt-2">Detailed breakdown of your usage and limits for @Model.DateRange</p>
+    </div>
+
+    <!-- Usage Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Popups Usage -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Popup Usage</h3>
+                <div class="bg-blue-100 p-2 rounded-lg">
+                    <i class="bi bi-window-maximize text-blue-600 text-xl"></i>
+                </div>
+            </div>
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-3xl font-bold text-gray-900">@Model.UsageStats?.PopupsCreated</span>
+                    <span class="text-lg text-gray-500">/ @(Model.UsageStats?.MaxPopups?.ToString() ?? "∞")</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">Popups created this month</p>
+                @if (Model.UsageStats != null && Model.UsageStats.MaxPopups.HasValue && Model.UsageStats.MaxPopups.Value > 0)
+                {
+                    var percentage = (Model.UsageStats.PopupsCreated * 100.0 / Model.UsageStats.MaxPopups.Value);
+                    var colorClass = percentage > 90 ? "bg-red-500" : percentage > 75 ? "bg-yellow-500" : "bg-blue-600";
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="@colorClass h-3 rounded-full transition-all" style="width: @Math.Min(percentage, 100)%"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">@percentage.ToString("F1")% of limit used</p>
+                }
+                else
+                {
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-green-500 h-3 rounded-full" style="width: 25%"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Unlimited popups available</p>
+                }
+            </div>
+        </div>
+
+        <!-- Views Usage -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Monthly Views</h3>
+                <div class="bg-orange-100 p-2 rounded-lg">
+                    <i class="bi bi-eye text-orange-600 text-xl"></i>
+                </div>
+            </div>
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-3xl font-bold text-gray-900">@Model.UsageStats?.MonthlyViews.ToString("N0")</span>
+                    <span class="text-lg text-gray-500">/ @(Model.UsageStats?.MaxMonthlyViews?.ToString("N0") ?? "∞")</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">Total popup views this month</p>
+                @if (Model.UsageStats != null && Model.UsageStats.MaxMonthlyViews.HasValue && Model.UsageStats.MaxMonthlyViews.Value > 0)
+                {
+                    var percentage = (Model.UsageStats.MonthlyViews * 100.0 / Model.UsageStats.MaxMonthlyViews.Value);
+                    var colorClass = percentage > 90 ? "bg-red-500" : percentage > 75 ? "bg-yellow-500" : "bg-orange-600";
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="@colorClass h-3 rounded-full transition-all" style="width: @Math.Min(percentage, 100)%"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">@percentage.ToString("F1")% of limit used</p>
+                }
+                else
+                {
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-green-500 h-3 rounded-full" style="width: 25%"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Unlimited views available</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Usage -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Feature Usage</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            @foreach (var feature in Model.FeatureUsage)
+            {
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">@feature.Key</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1">@feature.Value.ToString("N0")</p>
+                        </div>
+                        <div class="bg-blue-100 p-2 rounded-lg">
+                            <i class="bi bi-graph-up text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Plan Features -->
+    @if (Model.UsageStats != null)
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Available Features</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="flex items-center p-3 rounded-lg @(Model.UsageStats.MaxPopups.HasValue ? "bg-green-50" : "bg-gray-50")">
+                    <i class="bi @(Model.UsageStats.MaxPopups.HasValue ? "bi-check-circle-fill text-green-500" : "bi-x-circle text-gray-400") text-xl mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">Popup Limit</p>
+                        <p class="text-sm text-gray-600">@(Model.UsageStats.MaxPopups.HasValue ? Model.UsageStats.MaxPopups.Value.ToString() + " popups" : "Unlimited")</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center p-3 rounded-lg @(Model.UsageStats.MaxMonthlyViews.HasValue ? "bg-green-50" : "bg-gray-50")">
+                    <i class="bi @(Model.UsageStats.MaxMonthlyViews.HasValue ? "bi-check-circle-fill text-green-500" : "bi-x-circle text-gray-400") text-xl mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">Monthly Views</p>
+                        <p class="text-sm text-gray-600">@(Model.UsageStats.MaxMonthlyViews.HasValue ? Model.UsageStats.MaxMonthlyViews.Value.ToString("N0") + " views" : "Unlimited")</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-3 rounded-lg @(Model.UsageStats.HasAdvancedTargeting ? "bg-green-50" : "bg-gray-50")">
+                    <i class="bi @(Model.UsageStats.HasAdvancedTargeting ? "bi-check-circle-fill text-green-500" : "bi-x-circle text-gray-400") text-xl mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">Advanced Targeting</p>
+                        <p class="text-sm text-gray-600">@(Model.UsageStats.HasAdvancedTargeting ? "Enabled" : "Not available")</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-3 rounded-lg @(Model.UsageStats.HasAnalytics ? "bg-green-50" : "bg-gray-50")">
+                    <i class="bi @(Model.UsageStats.HasAnalytics ? "bi-check-circle-fill text-green-500" : "bi-x-circle text-gray-400") text-xl mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">Analytics Dashboard</p>
+                        <p class="text-sm text-gray-600">@(Model.UsageStats.HasAnalytics ? "Enabled" : "Not available")</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-3 rounded-lg @(Model.UsageStats.HasAPIAccess ? "bg-green-50" : "bg-gray-50")">
+                    <i class="bi @(Model.UsageStats.HasAPIAccess ? "bi-check-circle-fill text-green-500" : "bi-x-circle text-gray-400") text-xl mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">API Access</p>
+                        <p class="text-sm text-gray-600">@(Model.UsageStats.HasAPIAccess ? "Enabled" : "Not available")</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-3 rounded-lg bg-green-50">
+                    <i class="bi bi-check-circle-fill text-green-500 text-xl mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">Email Support</p>
+                        <p class="text-sm text-gray-600">Always included</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Performance Chart -->
+    @if (Model.Analytics.Any())
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Views Over Time</h3>
+            <div class="chart-container" style="position: relative; height: 300px;">
+                <canvas id="usageChart"></canvas>
+            </div>
+        </div>
+    }
+
+    <!-- Analytics Summary -->
+    @if (Model.Analytics.Any())
+    {
+        var totalViews = Model.Analytics.Sum(a => a.Views);
+        var totalClicks = Model.Analytics.Sum(a => a.Clicks);
+        var totalConversions = Model.Analytics.Sum(a => a.Conversions);
+        var conversionRate = totalViews > 0 ? (totalConversions * 100.0 / totalViews) : 0;
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance Summary (@Model.DateRange)</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Total Views</p>
+                    <p class="text-2xl font-bold text-blue-600">@totalViews.ToString("N0")</p>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Total Clicks</p>
+                    <p class="text-2xl font-bold text-green-600">@totalClicks.ToString("N0")</p>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Conversions</p>
+                    <p class="text-2xl font-bold text-purple-600">@totalConversions.ToString("N0")</p>
+                </div>
+                <div class="text-center p-4 bg-orange-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Conversion Rate</p>
+                    <p class="text-2xl font-bold text-orange-600">@conversionRate.ToString("F2")%</p>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Upgrade CTA -->
+    @if (Model.UsageStats != null && (Model.UsageStats.MaxPopups.HasValue || Model.UsageStats.MaxMonthlyViews.HasValue))
+    {
+        <div class="mt-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-8 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-2xl font-bold mb-2">Need More Resources?</h3>
+                    <p class="text-blue-100">Upgrade your plan to unlock unlimited popups and views</p>
+                </div>
+                <a href="/UserDashboard/Subscription" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    View Plans
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if (Model.Analytics.Any())
+        {
+            <text>
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Date.ToString("MMM dd")))),
+                    datasets: [{
+                        label: 'Views',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Views))),
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Clicks',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Clicks))),
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Conversions',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Analytics.OrderBy(a => a.Date).Select(a => a.Conversions))),
+                        borderColor: 'rgb(168, 85, 247)',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}

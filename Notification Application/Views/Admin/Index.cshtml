@@ -21,11 +21,12 @@
         <div class="bg-white p-6 rounded-lg shadow border">
             <div class="flex items-center">
                 <div class="bg-blue-100 p-3 rounded-lg">
-                    <i class="fas fa-eye text-blue-600 text-xl"></i>
+                    <i class="fas fa-window-maximize text-blue-600 text-xl"></i>
                 </div>
                 <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Total Views (30d)</h3>
-                    <p class="text-2xl font-bold text-blue-600">@((Model.AnalyticsSummary as dynamic)?.TotalViews ?? 0)</p>
+                    <h3 class="text-lg font-semibold text-gray-800">Popups</h3>
+                    <p class="text-2xl font-bold text-blue-600">@(Model.UsageStats?.PopupsCreated ?? 0) / @(Model.UsageStats?.MaxPopups?.ToString() ?? "∞")</p>
+                    <p class="text-sm text-gray-500">@(Model.UsageStats?.PopupUsagePercentage ?? 0)% used</p>
                 </div>
             </div>
         </div>
@@ -33,11 +34,12 @@
         <div class="bg-white p-6 rounded-lg shadow border">
             <div class="flex items-center">
                 <div class="bg-green-100 p-3 rounded-lg">
-                    <i class="fas fa-mouse-pointer text-green-600 text-xl"></i>
+                    <i class="fas fa-users text-green-600 text-xl"></i>
                 </div>
                 <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Conversions (30d)</h3>
-                    <p class="text-2xl font-bold text-green-600">@((Model.AnalyticsSummary as dynamic)?.TotalConversions ?? 0)</p>
+                    <h3 class="text-lg font-semibold text-gray-800">Team Members</h3>
+                    <p class="text-2xl font-bold text-green-600">@Model.ActiveTeamMembers / @Model.TeamMemberCount</p>
+                    <p class="text-sm text-gray-500">Active members</p>
                 </div>
             </div>
         </div>
@@ -45,11 +47,12 @@
         <div class="bg-white p-6 rounded-lg shadow border">
             <div class="flex items-center">
                 <div class="bg-orange-100 p-3 rounded-lg">
-                    <i class="fas fa-life-ring text-orange-600 text-xl"></i>
+                    <i class="fas fa-chart-line text-orange-600 text-xl"></i>
                 </div>
                 <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Open Tickets</h3>
-                    <p class="text-2xl font-bold text-orange-600">@Model.OpenTickets</p>
+                    <h3 class="text-lg font-semibold text-gray-800">Monthly Views</h3>
+                    <p class="text-2xl font-bold text-orange-600">@(Model.UsageStats?.MonthlyViews ?? 0) / @(Model.UsageStats?.MaxMonthlyViews?.ToString() ?? "∞")</p>
+                    <p class="text-sm text-gray-500">@(Model.UsageStats?.ViewsUsagePercentage ?? 0)% used</p>
                 </div>
             </div>
         </div>

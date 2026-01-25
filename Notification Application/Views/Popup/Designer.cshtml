@@ -16,6 +16,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; overflow: hidden; }
         .designer-container { display: flex; height: 100vh; }
+        .designer-container.hidden { display: none; }
         .top-navbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: white; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }
         .navbar-left, .navbar-center, .navbar-right { display: flex; align-items: center; gap: 12px; }
         .brand-logo { font-size: 20px; font-weight: 700; color: #2563eb; text-decoration: none; }
@@ -57,10 +58,11 @@
         .component-wrapper { position: relative; cursor: pointer; transition: all 0.2s; }
         .component-wrapper:hover { outline: 2px solid #93c5fd; }
         .component-wrapper.selected { outline: 2px solid #2563eb; }
-        .component-controls { position: absolute; top: -32px; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px; display: none; gap: 4px; }
+        .component-controls { position: absolute; top: -32px; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px; display: none; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
         .component-wrapper.selected .component-controls { display: flex; }
-        .control-btn { width: 24px; height: 24px; border: none; background: transparent; cursor: pointer; border-radius: 4px; color: #6b7280; }
+        .control-btn { width: 24px; height: 24px; border: none; background: transparent; cursor: pointer; border-radius: 4px; color: #6b7280; font-size: 14px; display: flex; align-items: center; justify-content: center; }
         .control-btn:hover { background: #f3f4f6; color: #2563eb; }
+        .control-btn:hover.delete-btn { background: #fee; color: #dc2626; }
         .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
         .empty-state i { font-size: 48px; margin-bottom: 16px; display: block; }
         .form-check { margin-bottom: 12px; }
@@ -76,6 +78,64 @@
         .integration-name { font-weight: 600; margin-bottom: 4px; }
         .integration-status { font-size: 12px; color: #6b7280; }
         .btn-configure { background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        
+        /* Display Rules Styles */
+        .display-rules-container { display: none; position: fixed; top: 60px; left: 0; right: 0; bottom: 0; flex-direction: column; background: white; z-index: 100; }
+        .display-rules-container.active { display: flex; }
+        .display-rules-header { padding: 20px 40px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .display-rules-main { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Rules Sidebar */
+        .rules-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; padding: 24px 16px; overflow-y: auto; }
+        .rules-search { position: relative; margin-bottom: 24px; }
+        .rules-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
+        .rules-search input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+        .rules-categories { margin-bottom: 24px; }
+        .category-item { padding: 10px 16px; margin-bottom: 4px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; color: #374151; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .category-item:hover { background: #f3f4f6; }
+        .category-item.active { background: #2563eb; color: white; }
+        .category-item i { font-size: 16px; }
+        .category-subtitle { font-size: 11px; font-weight: 400; opacity: 0.9; margin-left: 4px; }
+        .category-subitems { padding-left: 32px; margin-bottom: 8px; }
+        .category-subitem { padding: 6px 12px; margin-bottom: 2px; border-radius: 4px; cursor: pointer; font-size: 13px; color: #6b7280; transition: all 0.2s; }
+        .category-subitem:hover { background: #f3f4f6; color: #374151; }
+        .did-you-know { background: #fef3c7; border: 1px solid #fde047; border-radius: 8px; padding: 16px; margin-top: auto; }
+        .did-you-know i { color: #f59e0b; margin-right: 8px; }
+        .did-you-know strong { display: block; margin-bottom: 8px; color: #92400e; font-size: 13px; }
+        .did-you-know p { margin: 0; font-size: 12px; color: #78350f; line-height: 1.6; }
+        .did-you-know a { color: #2563eb; text-decoration: none; font-weight: 600; }
+        
+        /* Rules Content Area */
+        .rules-content { flex: 1; background: #f9fafb; overflow-y: auto; padding: 32px; }
+        .condition-builder { background: white; border-radius: 8px; padding: 24px; margin-bottom: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .condition-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; font-size: 15px; color: #374151; }
+        .condition-logic-select { padding: 4px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-weight: 600; font-size: 14px; background: white; cursor: pointer; }
+        .condition-delete-all { margin-left: auto; color: #ef4444; cursor: pointer; background: none; border: none; padding: 4px 8px; }
+        .condition-delete-all:hover { color: #dc2626; }
+        .conditions-list { display: flex; flex-direction: column; gap: 12px; }
+        .condition-row { display: flex; align-items: center; gap: 12px; padding: 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; transition: all 0.2s; }
+        .condition-row:hover { border-color: #2563eb; background: #eff6ff; }
+        .condition-drag { color: #9ca3af; cursor: move; font-size: 18px; display: flex; align-items: center; }
+        .condition-field, .condition-operator { flex: 1; min-width: 180px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white; }
+        .condition-actions { display: flex; gap: 8px; align-items: center; }
+        .condition-btn { width: 32px; height: 32px; border: none; background: white; border-radius: 4px; cursor: pointer; color: #6b7280; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .condition-btn:hover { background: #f3f4f6; color: #2563eb; }
+        .condition-and { padding: 0 12px; height: 32px; border: none; background: white; border-radius: 4px; cursor: pointer; color: #2563eb; font-weight: 600; font-size: 14px; }
+        .condition-and:hover { background: #eff6ff; }
+        .add-new-rule { color: #2563eb; background: none; border: none; padding: 8px 0; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .add-new-rule:hover { color: #1d4ed8; }
+        
+        /* Rules List */
+        .rules-list { display: flex; flex-direction: column; gap: 16px; }
+        .rule-item { background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; transition: all 0.2s; cursor: pointer; }
+        .rule-item:hover { border-color: #2563eb; background: #eff6ff; }
+        .rule-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .rule-item-name { font-weight: 600; font-size: 14px; color: #111827; }
+        .rule-selected-badge { background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .rule-item-description { font-size: 13px; color: #6b7280; line-height: 1.6; margin-bottom: 12px; }
+        .rule-item-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .rule-item-btn { padding: 6px 10px; border: none; background: white; border-radius: 4px; color: #6b7280; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .rule-item-btn:hover { background: #f3f4f6; color: #2563eb; }
     </style>
 </head>
 <body>
@@ -89,7 +149,6 @@
                 <button class="nav-tab active" data-tab="design">Design</button>
                 <button class="nav-tab" data-tab="display-rules">Display Rules</button>
                 <button class="nav-tab" data-tab="integrations">Integrations</button>
-                <button class="nav-tab" data-tab="analytics">Analytics</button>
             </div>
         </div>
         <div class="navbar-right">
@@ -255,6 +314,729 @@
             </div>
         </div>
     </div>
+
+    <!-- Display Rules Tab -->
+    <div class="display-rules-container" id="displayRulesContainer">
+        <div class="display-rules-header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <span style="font-weight: 500; color: #374151;">Show the</span>
+                <select class="form-select" id="viewTypeSelect" style="width: 150px;">
+                    <option value="optin">Optin View</option>
+                    <option value="success">Success View</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-success" id="saveRuleset">
+                    <i class="bi bi-check-circle me-2"></i>Save Ruleset
+                </button>
+                <button class="btn btn-primary" id="importRuleset">
+                    <i class="bi bi-upload me-2"></i>Import Ruleset
+                </button>
+            </div>
+        </div>
+
+        <div class="display-rules-main">
+            <!-- Sidebar -->
+            <div class="rules-sidebar">
+                <div class="rules-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchConditions" placeholder="Search conditions">
+                </div>
+
+                <div class="rules-categories">
+                    <div class="category-item active" data-category="popular">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Popular</span>
+                    </div>
+                    <div class="category-item" data-category="who">
+                        <i class="bi bi-person-fill"></i>
+                        <div>
+                            <span>Who</span>
+                            <span class="category-subtitle">(Personalization)</span>
+                        </div>
+                    </div>
+                    <div class="category-item" data-category="when">
+                        <i class="bi bi-clock-fill"></i>
+                        <div>
+                            <span>When</span>
+                            <span class="category-subtitle">(Triggers)</span>
+                        </div>
+                    </div>
+                    <div class="category-item" data-category="where">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div>
+                            <span>Where</span>
+                            <span class="category-subtitle">(Targeting)</span>
+                        </div>
+                    </div>
+                    <div class="category-item" data-category="onsite">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>OnSite Retargeting</span>
+                    </div>
+                    <div class="category-item" data-category="ecommerce">
+                        <i class="bi bi-cart-fill"></i>
+                        <span>Ecommerce</span>
+                    </div>
+                    <div class="category-subitems">
+                        <div class="category-subitem" data-category="edd">EDD</div>
+                        <div class="category-subitem" data-category="shopify">Shopify</div>
+                        <div class="category-subitem" data-category="woocommerce">WooCommerce</div>
+                    </div>
+                </div>
+
+                <div class="did-you-know">
+                    <strong><i class="bi bi-lightbulb-fill"></i>Did you know?</strong>
+                    <p>You can combine multiple conditions to create highly targeted campaigns.</p>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="rules-content">
+                <!-- Condition Builder -->
+                <div class="condition-builder">
+                    <div class="condition-header">
+                        <span style="font-weight: 500;">If</span>
+                        <select class="condition-logic-select" id="conditionLogic">
+                            <option value="all">ALL</option>
+                            <option value="any">ANY</option>
+                        </select>
+                        <span style="font-weight: 500;">of the following conditions are true at the same time...</span>
+                        <button class="condition-delete-all" id="deleteAllConditions">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+
+                    <div class="conditions-list" id="conditionsList">
+                        <div class="condition-row" data-id="1">
+                            <div class="condition-drag"><i class="bi bi-grip-vertical"></i></div>
+                            <select class="condition-field">
+                                <option value="url-path">current URL path</option>
+                                <option value="page-targeting">Page Targeting</option>
+                                <option value="exit-intent">Exit Intent</option>
+                                <option value="new-visitor">New Visitor</option>
+                                <option value="returning-visitor">Returning Visitor</option>
+                                <option value="device">Visitor's Device</option>
+                                <option value="location">Physical Location</option>
+                                <option value="referral">Referral Source</option>
+                                <option value="browser">Visitor's Browser</option>
+                                <option value="cookie">Cookie Targeting</option>
+                            </select>
+                            <select class="condition-operator">
+                                <option value="is-any">is any page</option>
+                                <option value="is-homepage">is the homepage</option>
+                                <option value="not-homepage">is not the homepage</option>
+                                <option value="exactly-matches">exactly matches</option>
+                                <option value="not-exactly">does not exactly match</option>
+                                <option value="contains">contains</option>
+                                <option value="not-contain">does not contain</option>
+                                <option value="starts-with">starts with</option>
+                                <option value="not-start">does not start with</option>
+                                <option value="ends-with">ends with</option>
+                                <option value="not-end">does not end with</option>
+                            </select>
+                            <div class="condition-actions">
+                                <button class="condition-btn" title="Duplicate" onclick="duplicateCondition(this)">
+                                    <i class="bi bi-files"></i>
+                                </button>
+                                <button class="condition-btn" title="View" onclick="viewCondition(this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="condition-btn" title="Delete" onclick="deleteCondition(this)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <button class="condition-and" onclick="addCondition()">And</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="add-new-rule" onclick="addCondition()">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Add a New Rule</span>
+                    </button>
+                </div>
+
+                <!-- Rules List -->
+                <div class="rules-list" id="rulesList">
+                    <!-- Popular Rules -->
+                    <div class="rules-category" id="category-popular">
+                        <div class="rule-item" data-rule="page-targeting">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Page Targeting</span>
+                                <span class="rule-selected-badge" style="display:none;">SELECTED</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is on a specific page.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('page-targeting', 'Page Targeting')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="exit-intent">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Exit Intent®</span>
+                            </div>
+                            <div class="rule-item-description">Show when your visitor tries to leave your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('exit-intent', 'Exit Intent')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="new-visitor">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">New Visitor</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is new to your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('new-visitor', 'New Visitor')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="returning-visitor">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Returning Visitor</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is not new to your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('returning-visitor', 'Returning Visitor')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="visitor-device">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Visitor's Device</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is browsing your site with a specific device.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('device', 'Visitor Device')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Who (Personalization) Rules -->
+                    <div class="rules-category" id="category-who" style="display:none;">
+                        <div class="rule-item" data-rule="physical-location">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Physical Location</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is from a specific location.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('location', 'Physical Location')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="referral-targeting">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Referral Targeting</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor came to your site from a specific website.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('referral', 'Referral Targeting')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="visitor-device-who">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Visitor's Device</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is browsing your site with a specific device.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('device', 'Visitor Device')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="cookie-targeting">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Cookie Targeting</span>
+                            </div>
+                            <div class="rule-item-description">Show if a specific cookie is available in your visitor's browser.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('cookie', 'Cookie Targeting')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="local-storage">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Local Storage Targeting</span>
+                            </div>
+                            <div class="rule-item-description">Show if a specific Local Storage item is available in your visitor's browser.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('local-storage', 'Local Storage')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="session-storage">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Session Storage Targeting</span>
+                            </div>
+                            <div class="rule-item-description">Show if a specific Session Storage item is available in your visitor's browser.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('session-storage', 'Session Storage')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="html-element">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">HTML Element Targeting</span>
+                            </div>
+                            <div class="rule-item-description">Show if a specific HTML element is present on the page being viewed.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('html-element', 'HTML Element')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="js-variable">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">JavaScript Variable Targeting</span>
+                            </div>
+                            <div class="rule-item-description">Show if a specific JavaScript variable is available on the page being viewed.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('js-variable', 'JS Variable')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="ad-blocker">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Ad-Blocker Targeting</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has ad-block software enabled in their browser.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('ad-blocker', 'Ad-Blocker')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="visitor-browser">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Visitor's Browser</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is browsing your site in a specific browser.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('browser', 'Browser')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- When (Triggers) Rules -->
+                    <div class="rules-category" id="category-when" style="display:none;">
+                        <div class="rule-item" data-rule="time-on-page">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Time on Page</span>
+                            </div>
+                            <div class="rule-item-description">Show when your visitor has viewed a page for a specific period of time.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('time-on-page', 'Time on Page')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="exit-intent-when">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Exit Intent®</span>
+                            </div>
+                            <div class="rule-item-description">Show when your visitor tries to leave your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('exit-intent', 'Exit Intent')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="monsterlink">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">MonsterLink® (On Click)</span>
+                            </div>
+                            <div class="rule-item-description">Show when the visitor clicks a specific link, button or image on your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('monsterlink', 'MonsterLink')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="time-on-site">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Time on Site</span>
+                            </div>
+                            <div class="rule-item-description">Show when your visitor has viewed your site for a specific period of time.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('time-on-site', 'Time on Site')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="scroll-distance">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Scroll Distance</span>
+                            </div>
+                            <div class="rule-item-description">Show when your visitor has scrolled down the page a specific amount.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('scroll-distance', 'Scroll Distance')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="inactivity-sensor">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">InactivitySensor® (Seconds of Inactivity)</span>
+                            </div>
+                            <div class="rule-item-description">Show when your visitor has stopped clicking or scrolling for a specific period of time.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('inactivity-sensor', 'Inactivity Sensor')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="date">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Date</span>
+                            </div>
+                            <div class="rule-item-description">Show on a specific date.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('date', 'Date')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="time">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Time</span>
+                            </div>
+                            <div class="rule-item-description">Show at a specific time of the day.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('time', 'Time')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="date-time">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Date & Time</span>
+                            </div>
+                            <div class="rule-item-description">Show at a specific date and time.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('date-time', 'Date & Time')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="day-of-week">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Day of the Week</span>
+                            </div>
+                            <div class="rule-item-description">Show on a specific day of the week.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('day-of-week', 'Day of Week')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="month">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Month of the Year</span>
+                            </div>
+                            <div class="rule-item-description">Show during a specific month of the year.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('month', 'Month')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="pages-viewed">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name"># of Pages Viewed</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has viewed a specific number of pages on your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('pages-viewed', 'Pages Viewed')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Where (Targeting) Rules -->
+                    <div class="rules-category" id="category-where" style="display:none;">
+                        <div class="rule-item" data-rule="current-url">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Current URL</span>
+                            </div>
+                            <div class="rule-item-description">Show on specific URLs or URL patterns.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('url-path', 'Current URL')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OnSite Retargeting Rules -->
+                    <div class="rules-category" id="category-onsite" style="display:none;">
+                        <div class="rule-item" data-rule="new-visitor-onsite">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">New Visitor</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is new to your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('new-visitor', 'New Visitor')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="returning-visitor-onsite">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Returning Visitor</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor is not new to your site.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('returning-visitor', 'Returning Visitor')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-converted">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Converted</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has already converted any of the selected campaigns or any campaign from a specific folder.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-converted', 'Has Converted')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-not-converted">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Not Converted</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has not already converted any of the selected campaigns or any campaign from a specific folder.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-not-converted', 'Has Not Converted')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-closed">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Closed</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has closed, but not converted, any of the selected campaigns or any campaign from a specific folder.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-closed', 'Has Closed')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-not-closed">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Not Closed</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has not closed a specific campaign or any campaign from a specific folder.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-not-closed', 'Has Not Closed')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-seen">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Seen</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has seen, but not converted, any of the selected campaigns or any campaign from a specific folder.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-seen', 'Has Seen')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-not-seen">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Not Seen</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has not seen any of the selected campaigns or any campaign from a specific folder.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-not-seen', 'Has Not Seen')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-viewed-campaign-type">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Viewed Campaign Type</span>
+                            </div>
+                            <div class="rule-item-description">Show if the visitor has viewed any campaigns of a specific type recently.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-viewed-campaign-type', 'Has Viewed Campaign Type')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-not-viewed-campaign-type">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Not Viewed Campaign Type</span>
+                            </div>
+                            <div class="rule-item-description">Show if the visitor has not viewed any campaigns of a specific type recently.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-not-viewed-campaign-type', 'Has Not Viewed Campaign Type')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-visited-page">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Visited a Page</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has viewed a specific page on your site within a specific number of days.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-visited-page', 'Has Visited a Page')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" data-rule="has-not-visited-page">
+                            <div class="rule-item-header">
+                                <span class="rule-item-name">Has Not Visited a Page</span>
+                            </div>
+                            <div class="rule-item-description">Show if your visitor has not viewed a specific page on your site within a specific number of days.</div>
+                            <div class="rule-item-actions">
+                                <button class="rule-item-btn"><i class="bi bi-files"></i></button>
+                                <button class="rule-item-btn"><i class="bi bi-eye"></i></button>
+                                <button class="rule-item-btn" onclick="addRuleToConditions('has-not-visited-page', 'Has Not Visited a Page')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="previewModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -431,33 +1213,44 @@
                 console.log('Loading content:', contentStr);
                 
                 if (contentStr && contentStr !== '{}' && contentStr !== '') {
-                    // Check if content is plain HTML (from template) or JSON (from saved popup)
                     let htmlContent = '';
                     
-                    // If it looks like HTML (contains < tags), use it directly
-                    if (contentStr.includes('<') && contentStr.includes('>')) {
-                        htmlContent = contentStr;
-                        console.log('Loading HTML template content');
-                    } else {
-                        // Try to parse as JSON
-                        try {
-                            const parsed = typeof contentStr === 'string' ? JSON.parse(contentStr) : contentStr;
-                            console.log('Parsed content:', parsed);
-                            
-                            if (parsed.html) {
-                                htmlContent = parsed.html;
-                            }
-                        } catch (jsonError) {
-                            console.log('Content is not JSON, treating as plain text');
+                    try {
+                        // Try to parse as JSON first
+                        const parsed = typeof contentStr === 'string' ? JSON.parse(contentStr) : contentStr;
+                        console.log('Parsed content as JSON:', parsed);
+                        
+                        if (typeof parsed === 'object' && parsed.html) {
+                            // Saved popup with JSON structure
+                            htmlContent = parsed.html;
+                        } else if (typeof parsed === 'string') {
+                            // Plain HTML string that was JSON-serialized
+                            htmlContent = parsed;
                         }
+                    } catch (jsonError) {
+                        // Not valid JSON, treat as plain HTML
+                        console.log('Content is not JSON, using as plain HTML');
+                        htmlContent = contentStr;
                     }
                     
                     // If we have HTML content, load it
-                    if (htmlContent) {
+                    if (htmlContent && htmlContent.trim() !== '' && htmlContent !== '{}') {
+                        console.log('Loading HTML content into dropzone');
                         document.getElementById('dropzone').innerHTML = htmlContent;
                         const emptyState = document.querySelector('.empty-state');
                         if (emptyState) emptyState.remove();
+                        
+                        // Wrap existing elements with component wrappers for editing
+                        wrapExistingElements();
+                        
+                        // Attach event listeners
                         attachEventListeners();
+                        
+                        // Make all text elements directly editable
+                        makeTextElementsEditable();
+                        
+                        // Re-initialize drag and drop after loading template
+                        initializeDragAndDrop();
                     }
                 }
             } catch (e) {
@@ -465,20 +1258,65 @@
             }
         });
 
+        function initializeDragAndDrop() {
+            const dropzone = document.getElementById('dropzone');
+            
+            // Re-attach drag events to all block items
+            document.querySelectorAll('.block-item').forEach(block => {
+                block.addEventListener('dragstart', e => e.dataTransfer.setData('blockType', block.dataset.blockType));
+            });
+            
+            // Ensure dropzone has drag handlers
+            dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+            dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('drag-over');
+                addComponent(e.dataTransfer.getData('blockType'));
+                const emptyState = dropzone.querySelector('.empty-state');
+                if (emptyState) emptyState.remove();
+            });
+            
+            // Click on empty space to deselect
+            dropzone.addEventListener('click', function(e) {
+                if (e.target === dropzone || e.target.classList.contains('canvas-dropzone')) {
+                    if (selectedComponent) {
+                        selectedComponent.classList.remove('selected');
+                        selectedComponent = null;
+                        document.getElementById('propertiesPanel').innerHTML = '<div class="empty-state" style="padding-top: 100px;"><i class="bi bi-sliders"></i><p>Select a block to edit properties</p></div>';
+                    }
+                }
+            });
+        }
+
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 const tabName = this.dataset.tab;
+                
+                // Hide all sections
                 document.querySelectorAll('.properties-section, .rules-section, .integrations-section, .analytics-section').forEach(s => s.classList.remove('active'));
+                document.getElementById('designSidebar').classList.remove('active');
+                document.getElementById('displayRulesContainer').classList.remove('active');
+                
+                // Toggle designer container visibility
+                const designerContainer = document.querySelector('.designer-container');
+                
                 if (tabName === 'design') {
+                    designerContainer.classList.remove('hidden');
                     document.getElementById('propertiesPanel').classList.add('active');
                     document.getElementById('designSidebar').classList.add('active');
+                } else if (tabName === 'display-rules') {
+                    designerContainer.classList.add('hidden');
+                    document.getElementById('displayRulesContainer').classList.add('active');
                 } else {
-                    document.getElementById('designSidebar').classList.remove('active');
-                    if (tabName === 'display-rules') document.getElementById('rulesPanel').classList.add('active');
-                    else if (tabName === 'integrations') document.getElementById('integrationsPanel').classList.add('active');
-                    else if (tabName === 'analytics') document.getElementById('analyticsPanel').classList.add('active');
+                    designerContainer.classList.remove('hidden');
+                    if (tabName === 'integrations') {
+                        document.getElementById('integrationsPanel').classList.add('active');
+                    } else if (tabName === 'analytics') {
+                        document.getElementById('analyticsPanel').classList.add('active');
+                    }
                 }
             });
         });
@@ -491,19 +1329,8 @@
             });
         });
 
-        const dropzone = document.getElementById('dropzone');
-        document.querySelectorAll('.block-item').forEach(block => {
-            block.addEventListener('dragstart', e => e.dataTransfer.setData('blockType', block.dataset.blockType));
-        });
-        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
-        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
-        dropzone.addEventListener('drop', function(e) {
-            e.preventDefault();
-            dropzone.classList.remove('drag-over');
-            addComponent(e.dataTransfer.getData('blockType'));
-            const emptyState = dropzone.querySelector('.empty-state');
-            if (emptyState) emptyState.remove();
-        });
+        // Initialize drag and drop on page load
+        initializeDragAndDrop();
 
         function addComponent(type) {
             componentCounter++;
@@ -539,10 +1366,50 @@
                 case 'columns': content = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;"><div style="padding: 20px; background: #f3f4f6; border-radius: 8px;">Column 1</div><div style="padding: 20px; background: #f3f4f6; border-radius: 8px;">Column 2</div></div>'; break;
                 default: content = `<div style="padding: 16px; background: #f3f4f6; border-radius: 8px; margin: 16px 0; text-align: center;">${type} block</div>`;
             }
-            wrapper.innerHTML = `<div class="component-controls"><button class="control-btn" onclick="moveUp(${componentCounter})"><i class="bi bi-arrow-up"></i></button><button class="control-btn" onclick="moveDown(${componentCounter})"><i class="bi bi-arrow-down"></i></button><button class="control-btn" onclick="deleteComponent(${componentCounter})"><i class="bi bi-trash"></i></button></div>${content}`;
+            wrapper.innerHTML = `<div class="component-controls"><button class="control-btn" onclick="moveUp(${componentCounter})" title="Move Up"><i class="bi bi-arrow-up"></i></button><button class="control-btn" onclick="moveDown(${componentCounter})" title="Move Down"><i class="bi bi-arrow-down"></i></button><button class="control-btn delete-btn" onclick="deleteComponent(${componentCounter})" title="Delete (Del)"><i class="bi bi-trash"></i></button></div>${content}`;
             dropzone.appendChild(wrapper);
             wrapper.addEventListener('click', function(e) { e.stopPropagation(); selectComponent(this); });
+            
+            // Make text elements in the new component editable
+            const textElements = wrapper.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, button:not(.control-btn), div[style*="text-align"]');
+            textElements.forEach(elem => {
+                const hasDirectText = Array.from(elem.childNodes).some(node => 
+                    node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+                );
+                const hasOnlyInlineContent = !elem.querySelector('div:not(.component-controls):not([style*="inline"]), form, table, ul, ol, img, iframe, input, select, textarea');
+                const isButton = elem.tagName === 'BUTTON' && !elem.classList.contains('control-btn');
+                
+                if ((hasDirectText && hasOnlyInlineContent) || isButton) {
+                    elem.setAttribute('contenteditable', 'true');
+                    elem.style.cursor = 'text';
+                    
+                    // Prevent button default action when editing
+                    if (isButton) {
+                        elem.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        });
+                    }
+                }
+            });
         }
+
+        // Add keyboard shortcuts for component operations
+        document.addEventListener('keydown', function(e) {
+            // Delete key - delete selected component
+            if (e.key === 'Delete' && selectedComponent && document.activeElement.getAttribute('contenteditable') !== 'true') {
+                const componentId = selectedComponent.dataset.componentId;
+                deleteComponent(componentId);
+                e.preventDefault();
+            }
+            
+            // Escape key - deselect component
+            if (e.key === 'Escape' && selectedComponent) {
+                selectedComponent.classList.remove('selected');
+                selectedComponent = null;
+                document.getElementById('propertiesPanel').innerHTML = '<div class="empty-state" style="padding-top: 100px;"><i class="bi bi-sliders"></i><p>Select a block to edit properties</p></div>';
+            }
+        });
 
         function attachEventListeners() {
             document.querySelectorAll('.component-wrapper').forEach((wrapper, index) => {
@@ -551,83 +1418,286 @@
             });
         }
 
+        function wrapExistingElements() {
+            const dropzone = document.getElementById('dropzone');
+            const children = Array.from(dropzone.children);
+            
+            children.forEach(child => {
+                // Skip if already wrapped
+                if (child.classList.contains('component-wrapper') || child.classList.contains('empty-state')) {
+                    return;
+                }
+                
+                // Detect component type
+                let componentType = 'text';
+                
+                // Check for testimonial (italic quote with author info)
+                if (child.querySelector('p[style*="italic"]') && child.querySelector('img[style*="border-radius: 50%"]')) {
+                    componentType = 'testimonial';
+                } else if (child.tagName === 'H1' || child.tagName === 'H2' || child.tagName === 'H3' || child.tagName === 'H4') {
+                    componentType = 'heading';
+                } else if (child.querySelector('button:not([type="submit"])') && !child.querySelector('form')) {
+                    componentType = 'button';
+                } else if (child.querySelector('img')) {
+                    componentType = 'image';
+                } else if (child.querySelector('input[type="email"]') && !child.querySelector('form')) {
+                    componentType = 'fields';
+                } else if (child.querySelector('.countdown-timer')) {
+                    componentType = 'countdown';
+                } else if (child.querySelector('.progress-fill')) {
+                    componentType = 'progress';
+                } else if (child.querySelector('i.bi-star-fill, i.bi-star') && !child.querySelector('a') && !child.querySelector('img')) {
+                    componentType = 'rating';
+                } else if (child.querySelector('form')) {
+                    componentType = 'form';
+                } else if (child.querySelector('.social-buttons') || (child.querySelectorAll('a i.bi-facebook, a i.bi-twitter').length > 0)) {
+                    componentType = 'social';
+                } else if (child.querySelector('.coupon-code')) {
+                    componentType = 'coupon';
+                } else if (child.tagName === 'HR') {
+                    componentType = 'divider';
+                } else if (child.querySelector('i.bi-') && !child.querySelector('ul') && !child.querySelector('button') && !child.querySelector('img')) {
+                    componentType = 'icon';
+                } else if (child.querySelector('ul, ol')) {
+                    componentType = 'list';
+                } else if (child.querySelector('iframe[src*="youtube"], iframe[src*="vimeo"]')) {
+                    componentType = 'video';
+                } else if (child.querySelector('iframe[src*="google.com/maps"]')) {
+                    componentType = 'map';
+                } else if (child.style.display === 'grid' || child.style.gridTemplateColumns) {
+                    componentType = 'columns';
+                } else if (child.querySelector('h3') && child.querySelector('button') && child.style.padding) {
+                    componentType = 'card';
+                } else if (child.querySelector('span[style*="border-radius: 20px"]') || child.querySelector('span[style*="border-radius:20px"]')) {
+                    componentType = 'badge';
+                }
+                
+                // Create wrapper
+                componentCounter++;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'component-wrapper';
+                wrapper.dataset.componentId = componentCounter;
+                wrapper.dataset.componentType = componentType;
+                
+                // Add controls
+                const controls = document.createElement('div');
+                controls.className = 'component-controls';
+                controls.innerHTML = `
+                    <button class="control-btn" onclick="moveUp(${componentCounter})" title="Move Up"><i class="bi bi-arrow-up"></i></button>
+                    <button class="control-btn" onclick="moveDown(${componentCounter})" title="Move Down"><i class="bi bi-arrow-down"></i></button>
+                    <button class="control-btn delete-btn" onclick="deleteComponent(${componentCounter})" title="Delete (Del)"><i class="bi bi-trash"></i></button>
+                `;
+                
+                // Wrap the element
+                child.parentNode.insertBefore(wrapper, child);
+                wrapper.appendChild(controls);
+                wrapper.appendChild(child);
+                
+                // Add click listener
+                wrapper.addEventListener('click', function(e) { 
+                    e.stopPropagation(); 
+                    selectComponent(this); 
+                });
+            });
+        }
+
+        function makeTextElementsEditable() {
+            const dropzone = document.getElementById('dropzone');
+            // Select all text-containing elements that should be editable
+            const textElements = dropzone.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span:not(.component-controls *), button:not(.control-btn), a:not([href*="facebook"]):not([href*="twitter"]):not([href*="linkedin"]), div[style*="text-align"]');
+            
+            textElements.forEach(elem => {
+                // Skip if in controls or already has input/select/textarea children
+                if (elem.closest('.component-controls') || 
+                    elem.querySelector('input, select, textarea, img, iframe, i.bi-')) {
+                    return;
+                }
+                
+                // Check if element has direct text content
+                const hasDirectText = Array.from(elem.childNodes).some(node => 
+                    node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+                );
+                
+                // Check if it's a simple container with only text/inline elements
+                const hasOnlyInlineContent = !elem.querySelector('div:not([style*="inline"]), form, table, ul, ol, img, iframe');
+                
+                // Special case for buttons - always make them editable if they have text
+                const isButton = elem.tagName === 'BUTTON' && !elem.classList.contains('control-btn');
+                
+                if ((hasDirectText && hasOnlyInlineContent) || isButton) {
+                    elem.setAttribute('contenteditable', 'true');
+                    elem.style.cursor = 'text';
+                    
+                    // Add hover effect for editability indication
+                    elem.addEventListener('mouseenter', function() {
+                        if (!this.closest('.component-wrapper.selected')) {
+                            this.style.outline = '1px dashed rgba(37, 99, 235, 0.3)';
+                        }
+                    });
+                    
+                    elem.addEventListener('mouseleave', function() {
+                        if (!this.closest('.component-wrapper.selected')) {
+                            this.style.outline = 'none';
+                        }
+                    });
+                    
+                    elem.addEventListener('focus', function() {
+                        this.style.outline = '2px solid #3b82f6';
+                        this.style.outlineOffset = '2px';
+                    });
+                    
+                    elem.addEventListener('blur', function() {
+                        this.style.outline = 'none';
+                    });
+                    
+                    // Prevent button default action when editing
+                    if (isButton) {
+                        elem.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        });
+                    }
+                }
+            });
+        }
+
         function selectComponent(wrapper) {
             if (selectedComponent) selectedComponent.classList.remove('selected');
             selectedComponent = wrapper;
             wrapper.classList.add('selected');
             showProperties(wrapper.dataset.componentType);
+            
+            // Enable contenteditable for text elements - more comprehensive selection
+            const editableElements = wrapper.querySelectorAll('h1, h2, h3, h4, h5, h6, p, button:not(.control-btn), span, li, div:not(.component-controls):not(.component-wrapper), a, label, td, th');
+            editableElements.forEach(elem => {
+                // Only make elements with direct text content editable
+                // Skip if element contains other block elements
+                const hasBlockChildren = elem.querySelector('div:not([style*="inline"]), p, h1, h2, h3, h4, h5, h6, ul, ol, table, form, img, iframe, input, select, textarea');
+                const hasOnlyText = elem.childNodes.length > 0 && Array.from(elem.childNodes).some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+                const isButton = elem.tagName === 'BUTTON' && !elem.classList.contains('control-btn');
+                
+                if ((!hasBlockChildren && hasOnlyText) || isButton) {
+                    if (!elem.classList.contains('component-controls') && !elem.classList.contains('control-btn')) {
+                        elem.setAttribute('contenteditable', 'true');
+                        // Add visual feedback on hover
+                        elem.style.cursor = 'text';
+                        elem.addEventListener('focus', function() {
+                            this.style.outline = '2px solid #3b82f6';
+                            this.style.outlineOffset = '2px';
+                        });
+                        elem.addEventListener('blur', function() {
+                            this.style.outline = 'none';
+                        });
+                        
+                        // Prevent button default action when editing
+                        if (isButton) {
+                            elem.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            });
+                        }
+                    }
+                }
+            });
         }
 
         function showProperties(type) {
             const panel = document.getElementById('propertiesPanel');
             let html = `<h4 style="margin-bottom: 20px; font-size: 16px; font-weight: 700;">${type.charAt(0).toUpperCase() + type.slice(1)} Properties</h4>`;
             
+            // Helper to get current values from selected component
+            const getCurrentValue = (selector, property = 'textContent', defaultValue = '') => {
+                if (!selectedComponent) return defaultValue;
+                const elem = selectedComponent.querySelector(selector);
+                if (!elem) return defaultValue;
+                if (property === 'textContent') return elem.textContent || defaultValue;
+                if (property.startsWith('style.')) {
+                    const styleProp = property.replace('style.', '');
+                    return elem.style[styleProp] || defaultValue;
+                }
+                return elem[property] || defaultValue;
+            };
+            
             switch(type) {
                 case 'text':
+                    const textElem = selectedComponent?.querySelector('p');
+                    const fontSize = textElem ? parseInt(textElem.style.fontSize) || 16 : 16;
+                    const textColor = textElem ? textElem.style.color || '#374151' : '#374151';
+                    const fontWeight = textElem ? textElem.style.fontWeight || '400' : '400';
+                    const textAlign = textElem ? textElem.style.textAlign || 'left' : 'left';
+                    
                     html += `
                         <div class="property-group">
                             <label class="property-label">Font Size (px)</label>
-                            <input type="number" class="property-input" id="fontSize" value="16" onchange="updateTextStyle('fontSize', this.value + 'px')">
+                            <input type="number" class="property-input" id="fontSize" value="${fontSize}" onchange="updateTextStyle('fontSize', this.value + 'px')">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Text Color</label>
                             <div class="color-picker-row">
-                                <input type="color" class="color-preview" id="textColor" value="#374151" onchange="updateTextStyle('color', this.value)">
-                                <input type="text" class="property-input" id="textColorHex" value="#374151" style="flex: 1;" onchange="document.getElementById('textColor').value = this.value; updateTextStyle('color', this.value)">
+                                <input type="color" class="color-preview" id="textColor" value="${textColor}" onchange="updateTextStyle('color', this.value); document.getElementById('textColorHex').value = this.value;">
+                                <input type="text" class="property-input" id="textColorHex" value="${textColor}" style="flex: 1;" onchange="document.getElementById('textColor').value = this.value; updateTextStyle('color', this.value)">
                             </div>
                         </div>
                         <div class="property-group">
                             <label class="property-label">Font Weight</label>
                             <select class="property-select" onchange="updateTextStyle('fontWeight', this.value)">
-                                <option value="400">Normal</option>
-                                <option value="500">Medium</option>
-                                <option value="600">Semi Bold</option>
-                                <option value="700">Bold</option>
+                                <option value="400" ${fontWeight === '400' ? 'selected' : ''}>Normal</option>
+                                <option value="500" ${fontWeight === '500' ? 'selected' : ''}>Medium</option>
+                                <option value="600" ${fontWeight === '600' ? 'selected' : ''}>Semi Bold</option>
+                                <option value="700" ${fontWeight === '700' ? 'selected' : ''}>Bold</option>
                             </select>
                         </div>
                         <div class="property-group">
                             <label class="property-label">Alignment</label>
                             <select class="property-select" onchange="updateTextStyle('textAlign', this.value)">
-                                <option value="left">Left</option>
-                                <option value="center">Center</option>
-                                <option value="right">Right</option>
-                                <option value="justify">Justify</option>
+                                <option value="left" ${textAlign === 'left' ? 'selected' : ''}>Left</option>
+                                <option value="center" ${textAlign === 'center' ? 'selected' : ''}>Center</option>
+                                <option value="right" ${textAlign === 'right' ? 'selected' : ''}>Right</option>
+                                <option value="justify" ${textAlign === 'justify' ? 'selected' : ''}>Justify</option>
                             </select>
                         </div>
                         <div class="property-group">
                             <label class="property-label">Margin (px)</label>
-                            <input type="text" class="property-input" placeholder="e.g., 16px 0" onchange="updateTextStyle('margin', this.value)">
+                            <input type="text" class="property-input" value="${textElem ? textElem.style.margin : '16px 0'}" placeholder="e.g., 16px 0" onchange="updateTextStyle('margin', this.value)">
                         </div>
                     `;
                     break;
                     
                 case 'button':
+                    const btnElem = selectedComponent?.querySelector('button');
+                    const btnText = btnElem ? btnElem.textContent || 'Click Me' : 'Click Me';
+                    const btnBg = btnElem ? btnElem.style.background || '#2563eb' : '#2563eb';
+                    const btnColor = btnElem ? btnElem.style.color || '#ffffff' : '#ffffff';
+                    const btnPadding = btnElem ? btnElem.style.padding || '12px 24px' : '12px 24px';
+                    const btnRadius = btnElem ? parseInt(btnElem.style.borderRadius) || 6 : 6;
+                    const btnFontSize = btnElem ? parseInt(btnElem.style.fontSize) || 16 : 16;
+                    
                     html += `
                         <div class="property-group">
                             <label class="property-label">Button Text</label>
-                            <input type="text" class="property-input" id="buttonText" value="Click Me" onchange="updateButtonText(this.value)">
+                            <input type="text" class="property-input" id="buttonText" value="${btnText}" onchange="updateButtonText(this.value)">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Background Color</label>
                             <div class="color-picker-row">
-                                <input type="color" class="color-preview" id="btnBg" value="#2563eb" onchange="updateButtonStyle('background', this.value)">
-                                <input type="text" class="property-input" value="#2563eb" style="flex: 1;" onchange="document.getElementById('btnBg').value = this.value; updateButtonStyle('background', this.value)">
+                                <input type="color" class="color-preview" id="btnBg" value="${btnBg}" onchange="updateButtonStyle('background', this.value)">
+                                <input type="text" class="property-input" value="${btnBg}" style="flex: 1;" onchange="document.getElementById('btnBg').value = this.value; updateButtonStyle('background', this.value)">
                             </div>
                         </div>
                         <div class="property-group">
                             <label class="property-label">Text Color</label>
                             <div class="color-picker-row">
-                                <input type="color" class="color-preview" id="btnColor" value="#ffffff" onchange="updateButtonStyle('color', this.value)">
-                                <input type="text" class="property-input" value="#ffffff" style="flex: 1;" onchange="document.getElementById('btnColor').value = this.value; updateButtonStyle('color', this.value)">
+                                <input type="color" class="color-preview" id="btnColor" value="${btnColor}" onchange="updateButtonStyle('color', this.value)">
+                                <input type="text" class="property-input" value="${btnColor}" style="flex: 1;" onchange="document.getElementById('btnColor').value = this.value; updateButtonStyle('color', this.value)">
                             </div>
                         </div>
                         <div class="property-group">
                             <label class="property-label">Padding</label>
-                            <input type="text" class="property-input" value="12px 24px" onchange="updateButtonStyle('padding', this.value)">
+                            <input type="text" class="property-input" value="${btnPadding}" onchange="updateButtonStyle('padding', this.value)">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Border Radius (px)</label>
-                            <input type="number" class="property-input" value="6" onchange="updateButtonStyle('borderRadius', this.value + 'px')">
+                            <input type="number" class="property-input" value="${btnRadius}" onchange="updateButtonStyle('borderRadius', this.value + 'px')">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Link URL</label>
@@ -635,35 +1705,43 @@
                         </div>
                         <div class="property-group">
                             <label class="property-label">Font Size (px)</label>
-                            <input type="number" class="property-input" value="16" onchange="updateButtonStyle('fontSize', this.value + 'px')">
+                            <input type="number" class="property-input" value="${btnFontSize}" onchange="updateButtonStyle('fontSize', this.value + 'px')">
                         </div>
                     `;
                     break;
                     
                 case 'image':
+                    const imgElem = selectedComponent?.querySelector('img');
+                    const imgUrl = imgElem ? imgElem.src || 'https://via.placeholder.com/400x200' : 'https://via.placeholder.com/400x200';
+                    const imgAlt = imgElem ? imgElem.alt || '' : '';
+                    const imgMaxWidth = imgElem ? parseInt(imgElem.style.maxWidth) || 100 : 100;
+                    const imgRadius = imgElem ? parseInt(imgElem.style.borderRadius) || 8 : 8;
+                    const imgContainer = selectedComponent?.querySelector('div');
+                    const imgAlign = imgContainer ? imgContainer.style.textAlign || 'center' : 'center';
+                    
                     html += `
                         <div class="property-group">
                             <label class="property-label">Image URL</label>
-                            <input type="url" class="property-input" id="imageUrl" value="https://via.placeholder.com/400x200" onchange="updateImage(this.value)">
+                            <input type="url" class="property-input" id="imageUrl" value="${imgUrl}" onchange="updateImage(this.value)">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Alt Text</label>
-                            <input type="text" class="property-input" placeholder="Image description" onchange="updateImageAlt(this.value)">
+                            <input type="text" class="property-input" value="${imgAlt}" placeholder="Image description" onchange="updateImageAlt(this.value)">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Max Width (%)</label>
-                            <input type="number" class="property-input" value="100" min="10" max="100" onchange="updateImageStyle('maxWidth', this.value + '%')">
+                            <input type="number" class="property-input" value="${imgMaxWidth}" min="10" max="100" onchange="updateImageStyle('maxWidth', this.value + '%')">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Border Radius (px)</label>
-                            <input type="number" class="property-input" value="8" onchange="updateImageStyle('borderRadius', this.value + 'px')">
+                            <input type="number" class="property-input" value="${imgRadius}" onchange="updateImageStyle('borderRadius', this.value + 'px')">
                         </div>
                         <div class="property-group">
                             <label class="property-label">Alignment</label>
                             <select class="property-select" onchange="updateImageAlignment(this.value)">
-                                <option value="center">Center</option>
-                                <option value="left">Left</option>
-                                <option value="right">Right</option>
+                                <option value="center" ${imgAlign === 'center' ? 'selected' : ''}>Center</option>
+                                <option value="left" ${imgAlign === 'left' ? 'selected' : ''}>Left</option>
+                                <option value="right" ${imgAlign === 'right' ? 'selected' : ''}>Right</option>
                             </select>
                         </div>
                         <div class="property-group">
@@ -877,17 +1955,47 @@
                     break;
                     
                 case 'heading':
+                    const headingElem = selectedComponent?.querySelector('h1, h2, h3, h4');
+                    const headingLevel = headingElem ? headingElem.tagName.toLowerCase() : 'h2';
+                    const headingSize = headingElem ? parseInt(headingElem.style.fontSize) || 32 : 32;
+                    const headingColor = headingElem ? headingElem.style.color || '#111827' : '#111827';
+                    const headingWeight = headingElem ? headingElem.style.fontWeight || '700' : '700';
+                    const headingAlign = headingElem ? headingElem.style.textAlign || 'left' : 'left';
+                    
                     html += `
                         <div class="property-group">
                             <label class="property-label">Heading Level</label>
                             <select class="property-select" onchange="updateHeadingLevel(this.value)">
-                                <option value="h1">H1</option>
-                                <option value="h2" selected>H2</option>
-                                <option value="h3">H3</option>
-                                <option value="h4">H4</option>
+                                <option value="h1" ${headingLevel === 'h1' ? 'selected' : ''}>H1</option>
+                                <option value="h2" ${headingLevel === 'h2' ? 'selected' : ''}>H2</option>
+                                <option value="h3" ${headingLevel === 'h3' ? 'selected' : ''}>H3</option>
+                                <option value="h4" ${headingLevel === 'h4' ? 'selected' : ''}>H4</option>
                             </select>
                         </div>
                         <div class="property-group">
+                            <label class="property-label">Font Size (px)</label>
+                            <input type="number" class="property-input" value="${headingSize}" onchange="updateHeadingStyle('fontSize', this.value + 'px')">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" class="color-preview" value="${headingColor}" onchange="updateHeadingStyle('color', this.value)">
+                            </div>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Weight</label>
+                            <select class="property-select" onchange="updateHeadingStyle('fontWeight', this.value)">
+                                <option value="600" ${headingWeight === '600' ? 'selected' : ''}>Semi Bold</option>
+                                <option value="700" ${headingWeight === '700' ? 'selected' : ''}>Bold</option>
+                                <option value="800" ${headingWeight === '800' ? 'selected' : ''}>Extra Bold</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Alignment</label>
+                            <select class="property-select" onchange="updateHeadingStyle('textAlign', this.value)">
+                                <option value="left" ${headingAlign === 'left' ? 'selected' : ''}>Left</option>
+                                <option value="center" ${headingAlign === 'center' ? 'selected' : ''}>Center</option>
+                                <option value="right" ${headingAlign === 'right' ? 'selected' : ''}>Right</option>
                             <label class="property-label">Font Size (px)</label>
                             <input type="number" class="property-input" value="32" onchange="updateHeadingStyle('fontSize', this.value + 'px')">
                         </div>
@@ -1884,8 +2992,57 @@
             document.getElementById('delayGroup').style.display = this.value === 'OnTimeDelay' ? 'block' : 'none';
         });
 
+        function getCleanHTML() {
+            const dropzone = document.getElementById('dropzone');
+            const clone = dropzone.cloneNode(true);
+            
+            // Remove all component wrappers and controls, keeping only the inner content
+            clone.querySelectorAll('.component-wrapper').forEach(wrapper => {
+                const controls = wrapper.querySelector('.component-controls');
+                if (controls) controls.remove();
+                
+                // Unwrap: replace wrapper with its content
+                const content = wrapper.innerHTML;
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = content;
+                wrapper.replaceWith(...tempDiv.childNodes);
+            });
+            
+            // Remove empty state if present
+            const emptyState = clone.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+            
+            // Remove all contenteditable attributes for clean preview
+            clone.querySelectorAll('[contenteditable]').forEach(el => {
+                el.removeAttribute('contenteditable');
+                el.style.outline = 'none';
+                el.style.cursor = 'default';
+            });
+            
+            // Remove any hover effects and editing styles
+            clone.querySelectorAll('*').forEach(el => {
+                if (el.style) {
+                    el.style.removeProperty('outline');
+                }
+            });
+            
+            return clone.innerHTML;
+        }
+
         document.getElementById('previewBtn').addEventListener('click', function() {
-            document.getElementById('previewContent').innerHTML = document.getElementById('dropzone').innerHTML;
+            const previewContent = document.getElementById('previewContent');
+            previewContent.innerHTML = getCleanHTML();
+            
+            // Ensure no editing is possible in preview
+            previewContent.querySelectorAll('*').forEach(el => {
+                el.removeAttribute('contenteditable');
+                if (el.onclick) el.onclick = null;
+                if (el.style) {
+                    el.style.pointerEvents = 'auto';
+                    el.style.cursor = 'default';
+                }
+            });
+            
             new bootstrap.Modal(document.getElementById('previewModal')).show();
         });
 
@@ -1894,7 +3051,7 @@
             this.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
             const data = {
                 id: popupId,
-                content: JSON.stringify({ html: document.getElementById('dropzone').innerHTML }),
+                content: JSON.stringify({ html: getCleanHTML() }),
                 targetingRules: JSON.stringify({ 
                     urls: (document.getElementById('urlTargeting')?.value || '').split('\n').filter(u => u.trim()), 
                     webhook: document.getElementById('webhookUrl')?.value || '',
@@ -2067,7 +3224,7 @@
             this.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
             const data = {
                 id: popupId,
-                content: JSON.stringify({ html: document.getElementById('dropzone').innerHTML }),
+                content: JSON.stringify({ html: getCleanHTML() }),
                 targetingRules: JSON.stringify({ 
                     urls: (document.getElementById('urlTargeting')?.value || '').split('\n').filter(u => u.trim()),
                     integrations: integrationConfigs
@@ -2099,6 +3256,266 @@
                 this.disabled = false;
             }
         };
+
+        // Display Rules Functions
+        let conditionCounter = 1;
+
+        // Category switching
+        document.querySelectorAll('.category-item, .category-subitem').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.category-item').forEach(cat => cat.classList.remove('active'));
+                
+                if (this.classList.contains('category-item')) {
+                    this.classList.add('active');
+                }
+                
+                const category = this.dataset.category;
+                document.querySelectorAll('.rules-category').forEach(cat => cat.style.display = 'none');
+                const targetCategory = document.getElementById('category-' + category);
+                if (targetCategory) {
+                    targetCategory.style.display = 'block';
+                }
+            });
+        });
+
+        // Add condition function
+        function addCondition() {
+            conditionCounter++;
+            const conditionHtml = `
+                <div class="condition-row" data-id="${conditionCounter}">
+                    <div class="condition-drag"><i class="bi bi-grip-vertical"></i></div>
+                    <select class="condition-field">
+                        <option value="url-path">current URL path</option>
+                        <option value="page-targeting">Page Targeting</option>
+                        <option value="exit-intent">Exit Intent</option>
+                        <option value="new-visitor">New Visitor</option>
+                        <option value="returning-visitor">Returning Visitor</option>
+                        <option value="device">Visitor's Device</option>
+                        <option value="location">Physical Location</option>
+                        <option value="referral">Referral Source</option>
+                        <option value="browser">Visitor's Browser</option>
+                        <option value="cookie">Cookie Targeting</option>
+                    </select>
+                    <select class="condition-operator">
+                        <option value="is-any">is any page</option>
+                        <option value="is-homepage">is the homepage</option>
+                        <option value="not-homepage">is not the homepage</option>
+                        <option value="exactly-matches">exactly matches</option>
+                        <option value="not-exactly">does not exactly match</option>
+                        <option value="contains">contains</option>
+                        <option value="not-contain">does not contain</option>
+                        <option value="starts-with">starts with</option>
+                        <option value="not-start">does not start with</option>
+                        <option value="ends-with">ends with</option>
+                        <option value="not-end">does not end with</option>
+                    </select>
+                    <div class="condition-actions">
+                        <button class="condition-btn" title="Duplicate" onclick="duplicateCondition(this)">
+                            <i class="bi bi-files"></i>
+                        </button>
+                        <button class="condition-btn" title="View" onclick="viewCondition(this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="condition-btn" title="Delete" onclick="deleteCondition(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button class="condition-and" onclick="addCondition()">And</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('conditionsList').insertAdjacentHTML('beforeend', conditionHtml);
+        }
+
+        // Duplicate condition
+        function duplicateCondition(btn) {
+            const row = btn.closest('.condition-row');
+            conditionCounter++;
+            const newRow = row.cloneNode(true);
+            newRow.dataset.id = conditionCounter;
+            row.parentNode.insertBefore(newRow, row.nextSibling);
+        }
+
+        // View condition
+        function viewCondition(btn) {
+            const row = btn.closest('.condition-row');
+            const field = row.querySelector('.condition-field').value;
+            const operator = row.querySelector('.condition-operator').value;
+            alert(`Condition:\nField: ${field}\nOperator: ${operator}`);
+        }
+
+        // Delete condition
+        function deleteCondition(btn) {
+            const conditionsList = document.getElementById('conditionsList');
+            if (conditionsList.children.length > 1) {
+                btn.closest('.condition-row').remove();
+            } else {
+                alert('You must have at least one condition.');
+            }
+        }
+
+        // Delete all conditions
+        document.getElementById('deleteAllConditions')?.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete all conditions?')) {
+                const conditionsList = document.getElementById('conditionsList');
+                conditionsList.innerHTML = `
+                    <div class="condition-row" data-id="1">
+                        <div class="condition-drag"><i class="bi bi-grip-vertical"></i></div>
+                        <select class="condition-field">
+                            <option value="url-path">current URL path</option>
+                            <option value="page-targeting">Page Targeting</option>
+                            <option value="exit-intent">Exit Intent</option>
+                            <option value="new-visitor">New Visitor</option>
+                            <option value="returning-visitor">Returning Visitor</option>
+                            <option value="device">Visitor's Device</option>
+                        </select>
+                        <select class="condition-operator">
+                            <option value="is-any">is any page</option>
+                            <option value="contains">contains</option>
+                            <option value="equals">equals</option>
+                        </select>
+                        <div class="condition-actions">
+                            <button class="condition-btn" title="Duplicate" onclick="duplicateCondition(this)">
+                                <i class="bi bi-files"></i>
+                            </button>
+                            <button class="condition-btn" title="View" onclick="viewCondition(this)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="condition-btn" title="Delete" onclick="deleteCondition(this)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button class="condition-and" onclick="addCondition()">And</button>
+                        </div>
+                    </div>
+                `;
+                conditionCounter = 1;
+            }
+        });
+
+        // Add rule to conditions
+        function addRuleToConditions(ruleValue, ruleName) {
+            conditionCounter++;
+            const conditionHtml = `
+                <div class="condition-row" data-id="${conditionCounter}">
+                    <div class="condition-drag"><i class="bi bi-grip-vertical"></i></div>
+                    <select class="condition-field">
+                        <option value="${ruleValue}" selected>${ruleName}</option>
+                        <option value="url-path">current URL path</option>
+                        <option value="page-targeting">Page Targeting</option>
+                        <option value="exit-intent">Exit Intent</option>
+                        <option value="new-visitor">New Visitor</option>
+                        <option value="returning-visitor">Returning Visitor</option>
+                        <option value="device">Visitor's Device</option>
+                    </select>
+                    <select class="condition-operator">
+                        <option value="is-any">is any page</option>
+                        <option value="contains">contains</option>
+                        <option value="equals">equals</option>
+                    </select>
+                    <div class="condition-actions">
+                        <button class="condition-btn" title="Duplicate" onclick="duplicateCondition(this)">
+                            <i class="bi bi-files"></i>
+                        </button>
+                        <button class="condition-btn" title="View" onclick="viewCondition(this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="condition-btn" title="Delete" onclick="deleteCondition(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button class="condition-and" onclick="addCondition()">And</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('conditionsList').insertAdjacentHTML('beforeend', conditionHtml);
+            
+            // Show selected badge
+            const ruleItem = document.querySelector(`[data-rule="${ruleValue}"]`);
+            if (ruleItem) {
+                const badge = ruleItem.querySelector('.rule-selected-badge');
+                if (badge) badge.style.display = 'inline-block';
+            }
+        }
+
+        // Search conditions
+        document.getElementById('searchConditions')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.rule-item').forEach(item => {
+                const name = item.querySelector('.rule-item-name').textContent.toLowerCase();
+                const desc = item.querySelector('.rule-item-description').textContent.toLowerCase();
+                item.style.display = (name.includes(searchTerm) || desc.includes(searchTerm)) ? '' : 'none';
+            });
+        });
+
+        // Save ruleset
+        document.getElementById('saveRuleset')?.addEventListener('click', function() {
+            const conditions = [];
+            document.querySelectorAll('.condition-row').forEach(row => {
+                conditions.push({
+                    id: row.dataset.id,
+                    field: row.querySelector('.condition-field').value,
+                    operator: row.querySelector('.condition-operator').value
+                });
+            });
+            
+            const ruleset = {
+                logic: document.getElementById('conditionLogic').value,
+                view: document.getElementById('viewTypeSelect').value,
+                conditions: conditions
+            };
+            
+            localStorage.setItem('displayRuleset_' + popupId, JSON.stringify(ruleset));
+            alert('Ruleset saved successfully!');
+        });
+
+        // Import ruleset
+        document.getElementById('importRuleset')?.addEventListener('click', function() {
+            const saved = localStorage.getItem('displayRuleset_' + popupId);
+            if (!saved) {
+                alert('No saved ruleset found for this popup.');
+                return;
+            }
+            
+            const ruleset = JSON.parse(saved);
+            document.getElementById('conditionLogic').value = ruleset.logic;
+            document.getElementById('viewTypeSelect').value = ruleset.view;
+            
+            // Clear existing conditions
+            document.getElementById('conditionsList').innerHTML = '';
+            
+            // Add saved conditions
+            ruleset.conditions.forEach((cond, index) => {
+                const conditionHtml = `
+                    <div class="condition-row" data-id="${cond.id}">
+                        <div class="condition-drag"><i class="bi bi-grip-vertical"></i></div>
+                        <select class="condition-field">
+                            <option value="${cond.field}" selected>${cond.field}</option>
+                            <option value="url-path">current URL path</option>
+                            <option value="page-targeting">Page Targeting</option>
+                        </select>
+                        <select class="condition-operator">
+                            <option value="${cond.operator}" selected>${cond.operator}</option>
+                            <option value="is-any">is any page</option>
+                            <option value="contains">contains</option>
+                        </select>
+                        <div class="condition-actions">
+                            <button class="condition-btn" title="Duplicate" onclick="duplicateCondition(this)">
+                                <i class="bi bi-files"></i>
+                            </button>
+                            <button class="condition-btn" title="View" onclick="viewCondition(this)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="condition-btn" title="Delete" onclick="deleteCondition(this)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button class="condition-and" onclick="addCondition()">And</button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('conditionsList').insertAdjacentHTML('beforeend', conditionHtml);
+            });
+            
+            conditionCounter = Math.max(...ruleset.conditions.map(c => parseInt(c.id)));
+            alert('Ruleset imported successfully!');
+        });
     </script>
 </body>
 </html>

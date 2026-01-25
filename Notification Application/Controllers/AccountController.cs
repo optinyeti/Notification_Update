@@ -94,13 +94,13 @@ public class AccountController : Controller
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 TenantId = tenant.Id,
-                Role = UserRole.Admin // First user is admin
+                Role = UserRole.User // New registrations are regular users
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, "Admin");
+                await _userManager.AddToRoleAsync(user, "User");
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
@@ -224,6 +224,17 @@ public class AccountController : Controller
         {
             return Redirect(returnUrl);
         }
+        
+        // Redirect based on user role
+        if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+        {
+            return RedirectToAction("Index", "Admin");
+        }
+        else if (User.IsInRole("User"))
+        {
+            return RedirectToAction("Index", "UserDashboard");
+        }
+        
         return RedirectToAction("Index", "Home");
     }
 

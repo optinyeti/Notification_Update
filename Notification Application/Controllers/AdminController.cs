@@ -8,13 +8,17 @@ using Notification_Application.Data;
 
 namespace Notification_Application.Controllers;
 
+/// <summary>
+/// AdminController handles tenant-level administration tasks like managing team members,
+/// settings, blog posts, and templates for a specific tenant.
+/// Platform-level admin operations are in SuperAdminController.
+/// User-specific dashboards are in UserDashboardController.
+/// </summary>
 [Authorize(Roles = "Admin,SuperAdmin")]
 public class AdminController : Controller
 {
     private readonly ITenantService _tenantService;
-    private readonly IAnalyticsService _analyticsService;
-    private readonly ISupportService _supportService;
-    private readonly IPopupTemplateService _templateService;
+    private readonly IBillingService _billingService;
     private readonly IBlogService _blogService;
     private readonly UserManager<User> _userManager;
     private readonly ApplicationDbContext _context;
@@ -22,42 +26,48 @@ public class AdminController : Controller
 
     public AdminController(
         ITenantService tenantService,
-        IAnalyticsService analyticsService,
-        ISupportService supportService,
-        IPopupTemplateService templateService,
+        IBillingService billingService,
         IBlogService blogService,
         UserManager<User> userManager,
         ApplicationDbContext context,
         IConfiguration configuration)
     {
         _tenantService = tenantService;
-        _analyticsService = analyticsService;
-        _supportService = supportService;
-        _templateService = templateService;
+        _billingService = billingService;
         _blogService = blogService;
         _userManager = userManager;
         _context = context;
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Tenant admin dashboard - Shows team members, settings, and team analytics
+    /// </summary>
     public async Task<IActionResult> Index()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var analytics = await _analyticsService.GetAnalyticsSummaryAsync(user.TenantId);
-        var tickets = await _supportService.GetTicketsAsync(user.TenantId);
+        var tenant = await _tenantService.GetTenantAsync(user.TenantId);
+        if (tenant == null) return NotFound();
+
+        var teamMembers = await _context.Users.Where(u => u.TenantId == user.TenantId).ToListAsync();
+        var usage = await _billingService.GetUsageStatsAsync(user.TenantId);
 
         var model = new AdminDashboardViewModel
         {
-            AnalyticsSummary = analytics,
-            OpenTickets = tickets.Count(t => t.Status == TicketStatus.Open),
-            TotalTickets = tickets.Count()
+            Tenant = tenant,
+            TeamMemberCount = teamMembers.Count,
+            UsageStats = usage,
+            ActiveTeamMembers = teamMembers.Count(u => u.IsActive)
         };
 
         return View(model);
     }
 
+    /// <summary>
+    /// Manage team members for this tenant
+    /// </summary>
     public async Task<IActionResult> Users()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -66,7 +76,40 @@ public class AdminController : Controller
         var tenant = await _tenantService.GetTenantAsync(user.TenantId);
         if (tenant == null) return NotFound();
 
-        var users = tenant.Users.ToList();
+        var users = await _context.Users
+            .Where(u => u.TenantId == user.TenantId)
+            .OrderBy(u => u.FirstName)
+            .ToListAsync();
+
+        // Get roles from ASP.NET Identity and sync with database
+        foreach (var u in users)
+        {
+            var roles = await _userManager.GetRolesAsync(u);
+            if (roles.Count > 0)
+            {
+                // Update database Role to match ASP.NET Identity role
+                var identityRole = roles.FirstOrDefault();
+                var userRole = identityRole switch
+                {
+                    "SuperAdmin" => UserRole.SuperAdmin,
+                    "Admin" => UserRole.Admin,
+                    "User" => UserRole.User,
+                    _ => UserRole.User
+                };
+
+                if (u.Role != userRole)
+                {
+                    u.Role = userRole;
+                }
+            }
+        }
+
+        // Save any role updates
+        if (_context.ChangeTracker.HasChanges())
+        {
+            await _context.SaveChangesAsync();
+        }
+        
         return View(users);
     }
 
@@ -111,6 +154,23 @@ public class AdminController : Controller
         var result = await _userManager.UpdateAsync(userToEdit);
         if (result.Succeeded)
         {
+            // Update ASP.NET Identity roles
+            var currentRoles = await _userManager.GetRolesAsync(userToEdit);
+            var newRoleName = role switch
+            {
+                UserRole.SuperAdmin => "SuperAdmin",
+                UserRole.Admin => "Admin",
+                UserRole.User => "User",
+                _ => "User"
+            };
+
+            // Remove all current roles and add the new one
+            if (currentRoles.Any())
+            {
+                await _userManager.RemoveFromRolesAsync(userToEdit, currentRoles);
+            }
+            await _userManager.AddToRoleAsync(userToEdit, newRoleName);
+
             TempData["Success"] = "User updated successfully!";
         }
         else
@@ -186,13 +246,16 @@ public class AdminController : Controller
 
         var startDate = DateTime.UtcNow.AddDays(-30);
         var endDate = DateTime.UtcNow;
-        var analytics = await _analyticsService.GetTenantAnalyticsAsync(user.TenantId, startDate, endDate);
-        var summary = await _analyticsService.GetAnalyticsSummaryAsync(user.TenantId);
+
+        var analytics = await _context.PopupAnalytics
+            .Include(a => a.Popup)
+            .Where(a => a.Popup.TenantId == user.TenantId)
+            .Where(a => a.Date >= startDate && a.Date <= endDate)
+            .ToListAsync();
 
         var model = new AnalyticsViewModel
         {
-            Summary = summary,
-            PopupAnalytics = analytics.ToList(),
+            PopupAnalytics = analytics,
             StartDate = startDate,
             EndDate = endDate
         };
@@ -200,6 +263,9 @@ public class AdminController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Manage tenant settings like name, domain, and host URL
+    /// </summary>
     public async Task<IActionResult> Settings()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -264,253 +330,6 @@ public class AdminController : Controller
         TempData["Success"] = "Settings updated successfully!";
 
         return View(model);
-    }
-
-    public async Task<IActionResult> Subscription()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
-
-        var tenant = await _tenantService.GetTenantAsync(user.TenantId);
-        if (tenant == null) return NotFound();
-
-        return View(tenant);
-    }
-
-    public async Task<IActionResult> Support()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
-
-        var tickets = await _supportService.GetTicketsAsync(user.TenantId);
-        return View(tickets);
-    }
-
-    [HttpGet]
-    public IActionResult CreateSupportTicket()
-    {
-        return View();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateSupportTicket(CreateSupportTicketViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
-
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
-
-        var ticket = new SupportTicket
-        {
-            Subject = model.Subject,
-            Description = model.Description,
-            Category = model.Category,
-            Priority = model.Priority,
-            TenantId = user.TenantId,
-            CreatedById = user.Id
-        };
-
-        await _supportService.CreateTicketAsync(ticket);
-        TempData["Success"] = "Support ticket created successfully!";
-
-        return RedirectToAction("Support");
-    }
-
-    public async Task<IActionResult> SupportTicket(int id)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
-
-        var ticket = await _supportService.GetTicketAsync(id, user.TenantId);
-        if (ticket == null) return NotFound();
-
-        return View(ticket);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> AddTicketMessage(int ticketId, string message)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
-
-        await _supportService.AddMessageAsync(ticketId, message, user.Id, false);
-        TempData["Success"] = "Message added successfully!";
-
-        return RedirectToAction("SupportTicket", new { id = ticketId });
-    }
-
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> AllTenants()
-    {
-        var tenants = await _tenantService.GetAllTenantsAsync();
-        return View(tenants);
-    }
-
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> TenantDetails(int id)
-    {
-        var tenant = await _tenantService.GetTenantAsync(id);
-        if (tenant == null) return NotFound();
-
-        return View(tenant);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> SyncPopupCount()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
-
-        var success = await _tenantService.SyncPopupCountAsync(user.TenantId);
-        if (success)
-        {
-            TempData["Success"] = "Popup count synchronized with database successfully!";
-        }
-        else
-        {
-            TempData["Error"] = "Failed to synchronize popup count.";
-        }
-
-        return RedirectToAction("Subscription");
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> ResetPopupCount(int tenantId)
-    {
-        var success = await _tenantService.ResetPopupCountAsync(tenantId);
-        if (success)
-        {
-            TempData["Success"] = "Popup count reset successfully!";
-        }
-        else
-        {
-            TempData["Error"] = "Failed to reset popup count.";
-        }
-
-        return RedirectToAction("TenantDetails", new { id = tenantId });
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> SyncTenantPopupCount(int tenantId)
-    {
-        var success = await _tenantService.SyncPopupCountAsync(tenantId);
-        if (success)
-        {
-            TempData["Success"] = "Popup count synchronized successfully!";
-        }
-        else
-        {
-            TempData["Error"] = "Failed to synchronize popup count.";
-        }
-
-        return RedirectToAction("TenantDetails", new { id = tenantId });
-    }
-    
-    [HttpGet]
-    public async Task<IActionResult> Templates()
-    {
-        var templates = await _templateService.GetAllTemplatesAsync();
-        return View(templates);
-    }
-    
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> ImportDefaultTemplates()
-    {
-        try
-        {
-            // Clear existing templates (optional - comment out if you want to keep existing ones)
-            // await _context.Database.ExecuteSqlRawAsync("DELETE FROM PopupTemplates");
-            
-            // Seed the templates
-            await DatabaseSeeder.SeedPopupTemplatesAsync(_context);
-            
-            TempData["Success"] = "Default templates imported successfully!";
-        }
-        catch (Exception ex)
-        {
-            TempData["Error"] = $"Failed to import templates: {ex.Message}";
-        }
-        
-        return RedirectToAction("Templates");
-    }
-    
-    [Authorize(Roles = "Admin,SuperAdmin")]
-    public async Task<IActionResult> EditTemplate(int id)
-    {
-        var template = await _context.PopupTemplates.FindAsync(id);
-        if (template == null)
-        {
-            TempData["Error"] = "Template not found.";
-            return RedirectToAction("Templates");
-        }
-        return View(template);
-    }
-    
-    [HttpPost]
-    [Authorize(Roles = "Admin,SuperAdmin")]
-    public async Task<IActionResult> EditTemplate(PopupTemplate model)
-    {
-        try
-        {
-            var template = await _context.PopupTemplates.FindAsync(model.Id);
-            if (template == null)
-            {
-                TempData["Error"] = "Template not found.";
-                return RedirectToAction("Templates");
-            }
-            
-            template.Name = model.Name;
-            template.Description = model.Description;
-            template.Content = model.Content;
-            template.ImageUrl = model.ImageUrl;
-            template.PreviewImageUrl = model.PreviewImageUrl;
-            template.Category = model.Category;
-            template.SortOrder = model.SortOrder;
-            template.TypeSpecificOptions = model.TypeSpecificOptions;
-            template.DefaultTrigger = model.DefaultTrigger;
-            template.DefaultFrequency = model.DefaultFrequency;
-            
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Template updated successfully!";
-            return RedirectToAction("Templates");
-        }
-        catch (Exception ex)
-        {
-            TempData["Error"] = $"Failed to update template: {ex.Message}";
-            return View(model);
-        }
-    }
-    
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> DeleteTemplate(int id)
-    {
-        try
-        {
-            var template = await _context.PopupTemplates.FindAsync(id);
-            if (template != null)
-            {
-                _context.PopupTemplates.Remove(template);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Template deleted successfully!";
-            }
-            else
-            {
-                TempData["Error"] = "Template not found.";
-            }
-        }
-        catch (Exception ex)
-        {
-            TempData["Error"] = $"Failed to delete template: {ex.Message}";
-        }
-        
-        return RedirectToAction("Templates");
     }
 
     // ============ BLOG MANAGEMENT ============
@@ -733,137 +552,5 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("BlogCategories");
-    }
-
-    // Subscription Plans Management
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> Plans()
-    {
-        var plans = await _context.SubscriptionPlans.ToListAsync();
-        plans = plans.OrderBy(p => p.MonthlyPrice).ToList();
-        return View(plans);
-    }
-
-    [Authorize(Roles = "SuperAdmin")]
-    public IActionResult CreatePlan()
-    {
-        return View();
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> CreatePlan(SubscriptionPlan plan)
-    {
-        if (ModelState.IsValid)
-        {
-            plan.CreatedAt = DateTime.UtcNow;
-            plan.IsActive = true;
-            _context.SubscriptionPlans.Add(plan);
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Plan created successfully!";
-            return RedirectToAction("Plans");
-        }
-        return View(plan);
-    }
-
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> EditPlan(int id)
-    {
-        var plan = await _context.SubscriptionPlans.FindAsync(id);
-        if (plan == null)
-        {
-            TempData["Error"] = "Plan not found!";
-            return RedirectToAction("Plans");
-        }
-        return View(plan);
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> EditPlan(int id, SubscriptionPlan plan)
-    {
-        if (id != plan.Id)
-        {
-            return NotFound();
-        }
-
-        if (ModelState.IsValid)
-        {
-            try
-            {
-                var existingPlan = await _context.SubscriptionPlans.FindAsync(id);
-                if (existingPlan == null)
-                {
-                    return NotFound();
-                }
-
-                existingPlan.Name = plan.Name;
-                existingPlan.Description = plan.Description;
-                existingPlan.MonthlyPrice = plan.MonthlyPrice;
-                existingPlan.YearlyPrice = plan.YearlyPrice;
-                existingPlan.StripePriceIdMonthly = plan.StripePriceIdMonthly;
-                existingPlan.StripePriceIdYearly = plan.StripePriceIdYearly;
-                existingPlan.StripeProductId = plan.StripeProductId;
-                existingPlan.MaxPopups = plan.MaxPopups;
-                existingPlan.MaxPopupViews = plan.MaxPopupViews;
-                existingPlan.MaxUsers = plan.MaxUsers;
-                existingPlan.HasAdvancedTargeting = plan.HasAdvancedTargeting;
-                existingPlan.HasAnalytics = plan.HasAnalytics;
-                existingPlan.HasAPIAccess = plan.HasAPIAccess;
-                existingPlan.HasPrioritySupport = plan.HasPrioritySupport;
-                existingPlan.HasWhiteLabel = plan.HasWhiteLabel;
-                existingPlan.IsActive = plan.IsActive;
-
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Plan updated successfully!";
-                return RedirectToAction("Plans");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await _context.SubscriptionPlans.AnyAsync(p => p.Id == id))
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-        }
-        return View(plan);
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> TogglePlanStatus(int id)
-    {
-        var plan = await _context.SubscriptionPlans.FindAsync(id);
-        if (plan != null)
-        {
-            plan.IsActive = !plan.IsActive;
-            await _context.SaveChangesAsync();
-            TempData["Success"] = $"Plan {(plan.IsActive ? "activated" : "deactivated")} successfully!";
-        }
-        return RedirectToAction("Plans");
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> DeletePlan(int id)
-    {
-        var plan = await _context.SubscriptionPlans
-            .Include(p => p.Tenants)
-            .FirstOrDefaultAsync(p => p.Id == id);
-        
-        if (plan != null)
-        {
-            if (plan.Tenants.Any())
-            {
-                TempData["Error"] = "Cannot delete plan with active subscriptions!";
-                return RedirectToAction("Plans");
-            }
-
-            _context.SubscriptionPlans.Remove(plan);
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Plan deleted successfully!";
-        }
-        return RedirectToAction("Plans");
     }
 }

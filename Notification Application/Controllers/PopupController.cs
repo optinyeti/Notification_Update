@@ -92,7 +92,16 @@ public class PopupController : Controller
             // If templateFile is provided, load the HTML template from file system
             if (!string.IsNullOrEmpty(templateFile) && !string.IsNullOrEmpty(category))
             {
-                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", category, templateFile);
+                // Capitalize first letter of category to match folder names (Popup, FloatingBar, etc.)
+                var categoryFormatted = char.ToUpper(category[0]) + category.Substring(1).ToLower();
+                
+                // Handle special cases
+                if (categoryFormatted == "Popup") categoryFormatted = "Popup";
+                else if (categoryFormatted == "Floatingbar") categoryFormatted = "FloatingBar";
+                else if (categoryFormatted == "Slidein") categoryFormatted = "SlideIn";
+                
+                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", categoryFormatted, templateFile);
+                
                 if (System.IO.File.Exists(templatePath))
                 {
                     popup.Content = await System.IO.File.ReadAllTextAsync(templatePath);

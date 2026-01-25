@@ -1,4 +1,5 @@
 using Notification_Application.Models;
+using Notification_Application.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace Notification_Application.Models;
@@ -28,9 +29,10 @@ public class ContactFormModel
 
 public class AdminDashboardViewModel
 {
-    public object? AnalyticsSummary { get; set; }
-    public int OpenTickets { get; set; }
-    public int TotalTickets { get; set; }
+    public Tenant? Tenant { get; set; }
+    public UsageStats? UsageStats { get; set; }
+    public int TeamMemberCount { get; set; }
+    public int ActiveTeamMembers { get; set; }
 }
 
 public class TenantSettingsViewModel
@@ -238,4 +240,11 @@ public class ChangePasswordViewModel
     [Required]
     [Compare("NewPassword")]
     public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+public class TenantAnalyticsViewModel
+{
+    public int TenantId { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
 }
