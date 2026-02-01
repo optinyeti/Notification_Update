@@ -48,13 +48,14 @@
         .device-screen { width: 100%; height: 100%; background: #e5e7eb; position: relative; overflow: hidden; border-radius: inherit; pointer-events: none; }
         .device-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 60px; background: #d1d5db; border-bottom: 1px solid #9ca3af; z-index: 1; pointer-events: none; }
         .device-screen::after { content: 'Website Content Area (Locked)'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: rgba(107, 114, 128, 0.3); font-weight: 600; z-index: 0; pointer-events: none; text-align: center; }
-        .popup-canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
+        .popup-canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 10; }
         .popup-canvas.position-top { align-items: flex-start; padding-top: 0; }
         .popup-canvas.position-bottom { align-items: flex-end; padding-bottom: 0; }
-        .popup-canvas.position-center { align-items: center; background: rgba(0,0,0,0.5); }
+        .popup-canvas.position-center { align-items: center; }
+        .popup-canvas.position-center::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: -1; pointer-events: none; }
         .popup-canvas.position-fullscreen { align-items: stretch; justify-content: stretch; }
         .popup-canvas.position-side { align-items: stretch; justify-content: flex-end; }
-        .canvas-dropzone { pointer-events: all; padding: 20px; min-height: auto; border: 2px dashed #cbd5e1; background: white; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .canvas-dropzone { pointer-events: all; padding: 20px; min-height: auto; border: 2px dashed #cbd5e1; background: white; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; z-index: 20; }
         .canvas-dropzone:hover { border-color: #3b82f6; }
         /* Type-specific styling */
         .popup-canvas.position-top .canvas-dropzone,
@@ -1178,17 +1179,22 @@
     </div>
 
     <div class="modal fade" id="previewModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Preview</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content" style="background: #f9fafb;">
+                <div class="modal-header" style="background: white; border-bottom: 1px solid #e5e7eb;">
+                    <h5 class="modal-title">Live Preview</h5>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-sm btn-outline-secondary" id="previewToggleDevice" onclick="togglePreviewDevice()">
+                            <i class="bi bi-phone"></i> Toggle Device
+                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
-                <div class="modal-body" style="background: #f3f4f6; padding: 40px; display: flex; align-items: center; justify-content: center; min-height: 600px;">
+                <div class="modal-body" style="background: #f9fafb; padding: 40px; display: flex; align-items: center; justify-content: center; min-height: 600px;">
                     <div class="device-frame desktop" id="previewDeviceFrame">
                         <div class="device-screen">
-                            <div id="previewPopupCanvas" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 10;">
-                                <div id="previewContent" style="background: white; padding: 0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 600px; max-height: 90%; overflow: auto;"></div>
+                            <div class="popup-canvas" id="previewPopupCanvas">
+                                <div id="previewContent" class="canvas-dropzone" style="pointer-events: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -3866,21 +3872,65 @@
         }
 
         document.getElementById('previewBtn').addEventListener('click', function() {
+            const dropzone = document.getElementById('dropzone');
             const previewContent = document.getElementById('previewContent');
+            const previewCanvas = document.getElementById('previewPopupCanvas');
+            const currentPopupCanvas = document.getElementById('popupCanvas');
+            
+            // Copy the clean HTML
             previewContent.innerHTML = getCleanHTML();
+            
+            // Copy the popup type positioning classes
+            previewCanvas.className = currentPopupCanvas.className;
+            
+            // Copy the dropzone inline styles (dimensions, etc.)
+            const dropzoneStyles = window.getComputedStyle(dropzone);
+            previewContent.style.width = dropzoneStyles.width;
+            previewContent.style.height = dropzoneStyles.height;
+            previewContent.style.maxWidth = dropzoneStyles.maxWidth;
+            previewContent.style.maxHeight = dropzoneStyles.maxHeight;
+            previewContent.style.borderRadius = dropzoneStyles.borderRadius;
+            previewContent.style.padding = dropzoneStyles.padding;
+            
+            // Remove the dashed border for preview (make it look live)
+            previewContent.style.border = 'none';
+            previewContent.style.pointerEvents = 'none';
             
             // Ensure no editing is possible in preview
             previewContent.querySelectorAll('*').forEach(el => {
                 el.removeAttribute('contenteditable');
                 if (el.onclick) el.onclick = null;
                 if (el.style) {
-                    el.style.pointerEvents = 'auto';
                     el.style.cursor = 'default';
                 }
             });
             
+            // Remove any component wrappers and controls from preview
+            previewContent.querySelectorAll('.component-wrapper').forEach(wrapper => {
+                // Remove controls
+                const controls = wrapper.querySelector('.component-controls');
+                if (controls) controls.remove();
+                
+                // Unwrap the component
+                while (wrapper.firstChild) {
+                    wrapper.parentNode.insertBefore(wrapper.firstChild, wrapper);
+                }
+                wrapper.remove();
+            });
+            
             new bootstrap.Modal(document.getElementById('previewModal')).show();
         });
+        
+        function togglePreviewDevice() {
+            const previewFrame = document.getElementById('previewDeviceFrame');
+            if (previewFrame.classList.contains('desktop')) {
+                previewFrame.classList.remove('desktop');
+                previewFrame.classList.add('mobile');
+            } else {
+                previewFrame.classList.remove('mobile');
+                previewFrame.classList.add('desktop');
+            }
+        }
 
         document.getElementById('saveBtn').addEventListener('click', async function() {
             this.disabled = true;
