@@ -305,6 +305,121 @@ public class UserDashboardController : Controller
         var analytics = await _analyticsService.GetAnalyticsSummaryAsync(user.TenantId);
         return Json(analytics);
     }
+
+    /// <summary>
+    /// View and manage captured leads from all popups
+    /// </summary>
+    public async Task<IActionResult> Leads(int? popupId, string? search, int page = 1, int pageSize = 50)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var query = _context.EmailCaptures
+            .Include(e => e.Popup)
+            .Where(e => e.TenantId == user.TenantId)
+            .OrderByDescending(e => e.CapturedAt);
+
+        // Filter by popup if specified
+        if (popupId.HasValue)
+        {
+            query = (IOrderedQueryable<EmailCapture>)query.Where(e => e.PopupId == popupId.Value);
+        }
+
+        // Search filter
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = (IOrderedQueryable<EmailCapture>)query.Where(e => 
+                e.Email.Contains(search) || 
+                (e.FirstName != null && e.FirstName.Contains(search)) ||
+                (e.LastName != null && e.LastName.Contains(search)) ||
+                (e.Phone != null && e.Phone.Contains(search)));
+        }
+
+        var totalLeads = await query.CountAsync();
+        var leads = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var popups = await _context.Popups
+            .Where(p => p.TenantId == user.TenantId)
+            .OrderBy(p => p.Name)
+            .ToListAsync();
+
+        var model = new LeadsViewModel
+        {
+            Leads = leads,
+            TotalLeads = totalLeads,
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalLeads / (double)pageSize),
+            Popups = popups,
+            SelectedPopupId = popupId,
+            SearchQuery = search
+        };
+
+        return View(model);
+    }
+
+    /// <summary>
+    /// Export leads to CSV
+    /// </summary>
+    public async Task<IActionResult> ExportLeads(int? popupId, string? search)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var query = _context.EmailCaptures
+            .Include(e => e.Popup)
+            .Where(e => e.TenantId == user.TenantId)
+            .OrderByDescending(e => e.CapturedAt);
+
+        if (popupId.HasValue)
+        {
+            query = (IOrderedQueryable<EmailCapture>)query.Where(e => e.PopupId == popupId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = (IOrderedQueryable<EmailCapture>)query.Where(e => 
+                e.Email.Contains(search) || 
+                (e.FirstName != null && e.FirstName.Contains(search)) ||
+                (e.LastName != null && e.LastName.Contains(search)));
+        }
+
+        var leads = await query.ToListAsync();
+
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine("Email,First Name,Last Name,Phone,Popup,Captured At,IP Address,Source,Consent Given");
+
+        foreach (var lead in leads)
+        {
+            csv.AppendLine($"\"{lead.Email}\",\"{lead.FirstName}\",\"{lead.LastName}\",\"{lead.Phone}\",\"{lead.Popup?.Name}\",\"{lead.CapturedAt:yyyy-MM-dd HH:mm:ss}\",\"{lead.IpAddress}\",\"{lead.Source}\",\"{lead.ConsentGiven}\"");
+        }
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+        return File(bytes, "text/csv", $"leads_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv");
+    }
+
+    /// <summary>
+    /// Delete a lead
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> DeleteLead(int id)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var lead = await _context.EmailCaptures
+            .FirstOrDefaultAsync(e => e.Id == id && e.TenantId == user.TenantId);
+
+        if (lead == null) return NotFound();
+
+        _context.EmailCaptures.Remove(lead);
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
 }
 
 // ViewModels for User Dashboard
@@ -322,4 +437,16 @@ public class UsageDashboardViewModel
     public Dictionary<string, int> FeatureUsage { get; set; } = new();
     public List<PopupAnalytics> Analytics { get; set; } = new();
     public string DateRange { get; set; } = string.Empty;
+}
+
+public class LeadsViewModel
+{
+    public List<EmailCapture> Leads { get; set; } = new();
+    public int TotalLeads { get; set; }
+    public int CurrentPage { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages { get; set; }
+    public List<Popup> Popups { get; set; } = new();
+    public int? SelectedPopupId { get; set; }
+    public string? SearchQuery { get; set; }
 }

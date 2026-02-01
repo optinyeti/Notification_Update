@@ -1,0 +1,379 @@
+@model IEnumerable<Notification_Application.Models.Lead>
+
+@{
+    ViewData["Title"] = "Leads";
+}
+
+<style>
+    .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .stat-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card.blue { border-left-color: #3b82f6; }
+    .stat-card.green { border-left-color: #10b981; }
+    .stat-card.purple { border-left-color: #8b5cf6; }
+    .stat-card.orange { border-left-color: #f59e0b; }
+    
+    .filter-card {
+        background: linear-gradient(to bottom, #ffffff, #f9fafb);
+    }
+    
+    .table-row-hover:hover {
+        background: linear-gradient(to right, #f0f9ff, #ffffff);
+    }
+    
+    .status-badge {
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .action-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header with Gradient Background -->
+    <div class="gradient-bg rounded-2xl shadow-xl mb-8 p-8 text-white">
+        <div class="flex justify-between items-center">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                        <i class="fas fa-address-book text-3xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold tracking-tight">Lead Management</h1>
+                        <p class="text-blue-100 mt-1">Track, manage, and convert your captured leads</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a asp-action="Export" asp-route-popupId="@ViewBag.CurrentPopupId" asp-route-status="@ViewBag.CurrentStatus" 
+                   class="inline-flex items-center px-6 py-3 bg-white text-purple-700 rounded-xl text-sm font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl action-btn">
+                    <i class="fas fa-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card blue bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Total Leads</p>
+                    <p class="text-4xl font-extrabold text-gray-900 mt-2">@ViewBag.TotalLeads</p>
+                    <p class="text-xs text-gray-400 mt-2">All time</p>
+                </div>
+                <div class="bg-gradient-to-br from-blue-400 to-blue-600 p-4 rounded-2xl shadow-lg">
+                    <i class="fas fa-users text-white text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card green bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">New Leads</p>
+                    <p class="text-4xl font-extrabold text-gray-900 mt-2">@Model.Count(l => l.Status == Notification_Application.Models.LeadStatus.New)</p>
+                    <p class="text-xs text-green-500 mt-2 font-medium"><i class="fas fa-arrow-up"></i> Uncontacted</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-400 to-green-600 p-4 rounded-2xl shadow-lg">
+                    <i class="fas fa-user-plus text-white text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card purple bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Contacted</p>
+                    <p class="text-4xl font-extrabold text-gray-900 mt-2">@Model.Count(l => l.Status == Notification_Application.Models.LeadStatus.Contacted)</p>
+                    <p class="text-xs text-purple-500 mt-2 font-medium"><i class="fas fa-phone-alt"></i> In progress</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-400 to-purple-600 p-4 rounded-2xl shadow-lg">
+                    <i class="fas fa-phone text-white text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card orange bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Converted</p>
+                    <p class="text-4xl font-extrabold text-gray-900 mt-2">@Model.Count(l => l.Status == Notification_Application.Models.LeadStatus.Converted)</p>
+                    <p class="text-xs text-orange-500 mt-2 font-medium"><i class="fas fa-trophy"></i> Success</p>
+                </div>
+                <div class="bg-gradient-to-br from-orange-400 to-orange-600 p-4 rounded-2xl shadow-lg">
+                    <i class="fas fa-check-circle text-white text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl">
+                <i class="fas fa-filter text-white text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Filter Leads</h3>
+        </div>
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-bullhorn text-indigo-500 me-1"></i>Campaign
+                </label>
+                <select name="popupId" class="w-full border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 rounded-xl px-4 py-3 transition-all duration-200">
+                    <option value="">All Campaigns</option>
+                    @foreach (var popup in ViewBag.Popups)
+                    {
+                        <option value="@popup.Id" selected="@(ViewBag.CurrentPopupId == popup.Id)">@popup.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-flag text-purple-500 me-1"></i>Status
+                </label>
+                <select name="status" class="w-full border-2 border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 rounded-xl px-4 py-3 transition-all duration-200">
+                    <option value="">All Statuses</option>
+                    <option value="New" selected="@(ViewBag.CurrentStatus == "New")">New</option>
+                    <option value="Contacted" selected="@(ViewBag.CurrentStatus == "Contacted")">Contacted</option>
+                    <option value="Qualified" selected="@(ViewBag.CurrentStatus == "Qualified")">Qualified</option>
+                    <option value="Converted" selected="@(ViewBag.CurrentStatus == "Converted")">Converted</option>
+                    <option value="Unqualified" selected="@(ViewBag.CurrentStatus == "Unqualified")">Unqualified</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-search text-blue-500 me-1"></i>Search
+                </label>
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Email, name, company..." 
+                       class="w-full border-2 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 rounded-xl px-4 py-3 transition-all duration-200">
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 action-btn">
+                    <i class="fas fa-search me-2"></i>Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Leads Table -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        @if (Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <i class="fas fa-calendar-alt text-indigo-500 me-2"></i>Date
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <i class="fas fa-user text-blue-500 me-2"></i>Contact
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <i class="fas fa-bullhorn text-purple-500 me-2"></i>Campaign
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <i class="fas fa-tag text-green-500 me-2"></i>Source
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <i class="fas fa-flag text-orange-500 me-2"></i>Status
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <i class="fas fa-cog text-gray-500 me-2"></i>Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        @foreach (var lead in Model)
+                        {
+                            <tr class="table-row-hover transition-all duration-200">
+                                <td class="px-6 py-5 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <div class="bg-indigo-100 rounded-lg px-3 py-2 text-center">
+                                            <div class="text-xs font-semibold text-indigo-600">@lead.CapturedAt.ToString("MMM")</div>
+                                            <div class="text-lg font-bold text-indigo-900">@lead.CapturedAt.ToString("dd")</div>
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            <div>@lead.CapturedAt.ToString("yyyy")</div>
+                                            <div class="font-medium">@lead.CapturedAt.ToString("HH:mm")</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                            @if (!string.IsNullOrEmpty(lead.FirstName))
+                                            {
+                                                @lead.FirstName[0]
+                                            }
+                                            else if (!string.IsNullOrEmpty(lead.Email))
+                                            {
+                                                @lead.Email[0].ToString().ToUpper()
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-user"></i>
+                                            }
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-gray-900">
+                                                @if (!string.IsNullOrEmpty(lead.FirstName) || !string.IsNullOrEmpty(lead.LastName))
+                                                {
+                                                    <span>@lead.FirstName @lead.LastName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-gray-400 italic">No name</span>
+                                                }
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <i class="fas fa-envelope text-gray-400 me-1"></i>@lead.Email
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(lead.Phone))
+                                            {
+                                                <div class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-phone text-gray-400 me-1"></i>@lead.Phone
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2">
+                                        <div class="bg-purple-100 rounded-lg p-2">
+                                            <i class="fas fa-bullhorn text-purple-600"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">@lead.Popup?.Name</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    @if (!string.IsNullOrEmpty(lead.UtmSource))
+                                    {
+                                        <div class="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                            <i class="fas fa-tag text-green-600"></i>
+                                            <div>
+                                                <div class="text-sm font-semibold text-green-800">@lead.UtmSource</div>
+                                                @if (!string.IsNullOrEmpty(lead.UtmCampaign))
+                                                {
+                                                    <div class="text-xs text-green-600">@lead.UtmCampaign</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-500">
+                                            <i class="fas fa-globe"></i>Direct
+                                        </span>
+                                    }
+                                </td>
+                                <td class="px-6 py-5 whitespace-nowrap">
+                                    @switch (lead.Status)
+                                    {
+                                        case Notification_Application.Models.LeadStatus.New:
+                                            <span class="status-badge inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                                                <i class="fas fa-star"></i>New
+                                            </span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Contacted:
+                                            <span class="status-badge inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                                                <i class="fas fa-phone-alt"></i>Contacted
+                                            </span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Qualified:
+                                            <span class="status-badge inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
+                                                <i class="fas fa-check"></i>Qualified
+                                            </span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Converted:
+                                            <span class="status-badge inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white">
+                                                <i class="fas fa-trophy"></i>Converted
+                                            </span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Unqualified:
+                                            <span class="status-badge inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full bg-gradient-to-r from-gray-400 to-gray-500 text-white">
+                                                <i class="fas fa-times"></i>Unqualified
+                                            </span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="px-6 py-5 whitespace-nowrap">
+                                    <a asp-action="Details" asp-route-id="@lead.Id" 
+                                       class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 action-btn">
+                                        <i class="fas fa-eye"></i>View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm font-medium text-gray-700">
+                            <i class="fas fa-file-alt text-indigo-500 me-2"></i>
+                            Showing page <span class="font-bold text-indigo-600">@ViewBag.CurrentPage</span> of <span class="font-bold text-indigo-600">@ViewBag.TotalPages</span>
+                        </div>
+                        <div class="flex gap-3">
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" asp-route-popupId="@ViewBag.CurrentPopupId" asp-route-status="@ViewBag.CurrentStatus" asp-route-searchTerm="@ViewBag.SearchTerm"
+                                   class="inline-flex items-center gap-2 px-5 py-2 bg-white border-2 border-indigo-300 rounded-xl text-sm font-semibold text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 shadow-md hover:shadow-lg transition-all duration-200 action-btn">
+                                    <i class="fas fa-chevron-left"></i>Previous
+                                </a>
+                            }
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" asp-route-popupId="@ViewBag.CurrentPopupId" asp-route-status="@ViewBag.CurrentStatus" asp-route-searchTerm="@ViewBag.SearchTerm"
+                                   class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 action-btn">
+                                    Next<i class="fas fa-chevron-right"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-16 px-4">
+                <div class="bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <i class="fas fa-users text-indigo-600 text-6xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-3">No leads yet</h3>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto">Start capturing leads by creating and publishing your campaigns. Your leads will appear here once visitors start submitting their information.</p>
+                <a asp-controller="Popup" asp-action="CreateCampaign" 
+                   class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-200 action-btn">
+                    <i class="fas fa-plus-circle text-xl"></i>Create Your First Campaign
+                </a>
+            </div>
+        }
+    </div>
+</div>

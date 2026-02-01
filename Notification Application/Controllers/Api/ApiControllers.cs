@@ -109,6 +109,94 @@ public class PopupApiController : ControllerBase
         }
     }
 
+    [HttpPost("{id}/capture-lead")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CaptureLead(int id, [FromBody] LeadCaptureRequest request)
+    {
+        try
+        {
+            Console.WriteLine($"=== CAPTURE LEAD ENDPOINT HIT: Popup ID {id} ===");
+            
+            // Get popup to get TenantId
+            var popup = await _context.Popups.FindAsync(id);
+            if (popup == null)
+            {
+                Console.WriteLine($"ERROR: Popup {id} not found");
+                return NotFound(new { success = false, message = "Popup not found" });
+            }
+
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var referer = Request.Headers["Referer"].ToString();
+
+            // Create lead
+            var lead = new Lead
+            {
+                PopupId = id,
+                TenantId = popup.TenantId,
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Phone = request.Phone,
+                Company = request.Company,
+                CustomFields = request.CustomFields != null 
+                    ? System.Text.Json.JsonSerializer.Serialize(request.CustomFields) 
+                    : "{}",
+                CapturedAt = DateTime.UtcNow,
+                IpAddress = ipAddress,
+                UserAgent = userAgent,
+                Source = referer,
+                Referrer = request.Referrer,
+                UtmSource = request.UtmSource,
+                UtmMedium = request.UtmMedium,
+                UtmCampaign = request.UtmCampaign,
+                UtmTerm = request.UtmTerm,
+                UtmContent = request.UtmContent,
+                ConsentGiven = request.ConsentGiven,
+                ConsentDate = request.ConsentGiven ? DateTime.UtcNow : null,
+                ConsentText = request.ConsentText,
+                Status = LeadStatus.New,
+                ViewType = request.ViewType
+            };
+
+            _context.Leads.Add(lead);
+            await _context.SaveChangesAsync();
+
+            Console.WriteLine($"✓ Lead captured successfully: ID={lead.Id}, Email={lead.Email}");
+
+            // Record conversion analytics
+            await _analyticsService.RecordPopupConversionAsync(id, userAgent, ipAddress);
+
+            // Send to integrations with lead data
+            var conversionData = new Dictionary<string, object>
+            {
+                ["email"] = request.Email ?? "",
+                ["firstName"] = request.FirstName ?? "",
+                ["lastName"] = request.LastName ?? "",
+                ["phone"] = request.Phone ?? "",
+                ["company"] = request.Company ?? ""
+            };
+
+            if (request.CustomFields != null)
+            {
+                foreach (var field in request.CustomFields)
+                {
+                    conversionData[field.Key] = field.Value;
+                }
+            }
+
+            await SendToIntegrations(id, conversionData, userAgent, ipAddress);
+
+            return Ok(new { success = true, leadId = lead.Id });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR in CaptureLead: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
+    }
+
     private async Task SendToIntegrations(int popupId, Dictionary<string, object>? conversionData, string? userAgent, string? ipAddress)
     {
         try
@@ -863,4 +951,23 @@ public class TrackingBatchRequest
 {
     public int TenantId { get; set; }
     public List<TrackingEventRequest>? Events { get; set; }
+}
+
+public class LeadCaptureRequest
+{
+    public string? Email { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? Phone { get; set; }
+    public string? Company { get; set; }
+    public Dictionary<string, string>? CustomFields { get; set; }
+    public string? Referrer { get; set; }
+    public string? UtmSource { get; set; }
+    public string? UtmMedium { get; set; }
+    public string? UtmCampaign { get; set; }
+    public string? UtmTerm { get; set; }
+    public string? UtmContent { get; set; }
+    public bool ConsentGiven { get; set; }
+    public string? ConsentText { get; set; }
+    public string? ViewType { get; set; }
 }

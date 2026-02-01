@@ -44,6 +44,8 @@ public class Popup
     // Navigation properties
     public ICollection<PopupAnalytics> Analytics { get; set; } = new List<PopupAnalytics>();
     public ICollection<EmailCapture> EmailCaptures { get; set; } = new List<EmailCapture>();
+    public ICollection<PopupView> PopupViews { get; set; } = new List<PopupView>();
+    public ICollection<Lead> Leads { get; set; } = new List<Lead>();
 }
 
 public enum PopupType

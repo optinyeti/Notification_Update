@@ -43,8 +43,13 @@ public class PaymentController : Controller
 
         try
         {
-            var successUrl = Url.Action("Success", "Payment", null, Request.Scheme) ?? "";
-            var cancelUrl = Url.Action("Plans", "Payment", null, Request.Scheme) ?? "";
+            // Use production URL if available, otherwise fall back to request URL
+            var baseUrl = HttpContext.Request.Host.Host.Contains("github.dev") || HttpContext.Request.Host.Host.Contains("app.github.dev")
+                ? $"https://{HttpContext.Request.Host}"
+                : Url.ActionContext.HttpContext.Request.Scheme + "://" + HttpContext.Request.Host;
+            
+            var successUrl = $"{baseUrl}/Payment/Success";
+            var cancelUrl = $"{baseUrl}/Payment/Plans";
 
             var session = await _stripeService.CreateCheckoutSessionAsync(
                 user.TenantId,
@@ -64,10 +69,12 @@ public class PaymentController : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult Success()
     {
+        // Set success message in TempData for cases where user is redirected back to dashboard
         TempData["Success"] = "Subscription activated successfully! Welcome to your new plan.";
-        return RedirectToAction("Subscription", "Admin");
+        return View();
     }
 
     [HttpPost]
@@ -95,7 +102,12 @@ public class PaymentController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var returnUrl = Url.Action("Subscription", "Admin", null, Request.Scheme) ?? "";
+        // Use production URL if available, otherwise fall back to request URL
+        var baseUrl = HttpContext.Request.Host.Host.Contains("github.dev") || HttpContext.Request.Host.Host.Contains("app.github.dev")
+            ? $"https://{HttpContext.Request.Host}"
+            : Url.ActionContext.HttpContext.Request.Scheme + "://" + HttpContext.Request.Host;
+        
+        var returnUrl = $"{baseUrl}/Admin/Subscription";
         
         try
         {

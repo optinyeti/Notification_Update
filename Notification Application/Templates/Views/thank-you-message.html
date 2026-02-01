@@ -1,0 +1,78 @@
+<div class="thank-you-view" style="max-width: 500px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 50px 40px; border-radius: 12px; box-shadow: 0 4px 30px rgba(139, 92, 246, 0.3); text-align: center; color: white;">
+    <button class="close-btn" style="position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; font-size: 24px; width: 36px; height: 36px; border-radius: 50%; transition: all 0.2s;">&times;</button>
+    
+    <div style="margin-bottom: 30px;">
+        <div style="width: 100px; height: 100px; margin: 0 auto; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: bounceIn 0.6s ease-out; backdrop-filter: blur(10px);">
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+            </svg>
+        </div>
+    </div>
+    
+    <h2 style="font-size: 32px; margin-bottom: 16px; font-weight: 700; letter-spacing: -0.5px;">Thank You!</h2>
+    <p style="margin-bottom: 30px; font-size: 17px; line-height: 1.6; opacity: 0.95;">We appreciate you taking the time to reach out. Your message means a lot to us, and we'll get back to you shortly.</p>
+    
+    <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 8px; padding: 20px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.2);">
+        <p style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">What happens next?</p>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+            <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">1</div>
+            <p style="font-size: 14px; margin: 0; text-align: left; opacity: 0.9;">Check your email for confirmation</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+            <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">2</div>
+            <p style="font-size: 14px; margin: 0; text-align: left; opacity: 0.9;">Our team reviews your message</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">3</div>
+            <p style="font-size: 14px; margin: 0; text-align: left; opacity: 0.9;">We'll respond within 24 hours</p>
+        </div>
+    </div>
+    
+    <button type="button" onclick="closePopup()" style="width: 100%; padding: 16px; background: white; color: #7c3aed; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        Continue to Website
+    </button>
+    
+    <p style="font-size: 13px; margin-top: 20px; opacity: 0.8;">Have a question? Visit our <a href="/faq" style="color: white; text-decoration: underline; font-weight: 600;">FAQ page</a></p>
+</div>
+
+<style>
+.thank-you-view {
+    position: relative;
+    animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+    from { 
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounceIn {
+    0% { 
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% { 
+        transform: scale(1.1);
+    }
+    100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.thank-you-view button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.close-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: rotate(90deg);
+}
+</style>

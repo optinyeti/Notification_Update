@@ -420,18 +420,46 @@
         renderPopup: function(popup) {
             console.log('Rendering popup:', popup.name, 'with content:', popup.content);
             
-            // Parse content
+            // Parse content - handle multiple formats
             let contentHtml = '';
             try {
-                const content = typeof popup.content === 'string' ? JSON.parse(popup.content) : popup.content;
-                if (Array.isArray(content)) {
-                    // New designer format - array of blocks
-                    contentHtml = this.renderBlocks(content);
-                } else if (content.html) {
-                    // Old format - direct HTML
-                    contentHtml = content.html;
-                } else {
-                    contentHtml = '<div style="padding: 20px;"><p>No content</p></div>';
+                if (typeof popup.content === 'string') {
+                    // Check if it's HTML (starts with <)
+                    if (popup.content.trim().startsWith('<')) {
+                        contentHtml = popup.content;
+                    } else {
+                        // Try to parse as JSON
+                        try {
+                            const content = JSON.parse(popup.content);
+                            if (Array.isArray(content)) {
+                                // New designer format - array of blocks
+                                contentHtml = this.renderBlocks(content);
+                            } else if (content.html) {
+                                // Old format - HTML property
+                                contentHtml = content.html;
+                            } else if (content.content) {
+                                // Alternative content property
+                                contentHtml = content.content;
+                            } else if (typeof content === 'string') {
+                                // JSON string
+                                contentHtml = content;
+                            } else {
+                                contentHtml = '<div style="padding: 20px;"><p>No content</p></div>';
+                            }
+                        } catch (jsonError) {
+                            // If JSON parse fails, treat as plain HTML
+                            contentHtml = popup.content;
+                        }
+                    }
+                } else if (Array.isArray(popup.content)) {
+                    contentHtml = this.renderBlocks(popup.content);
+                } else if (typeof popup.content === 'object') {
+                    contentHtml = popup.content.html || popup.content.content || '<div style="padding: 20px;"><p>No content</p></div>';
+                }
+                
+                if (!contentHtml) {
+                    console.warn('[PopupManager] No HTML content found for popup', popup.id);
+                    contentHtml = '<div style="padding: 20px;"><p>No content available</p></div>';
                 }
             } catch (e) {
                 console.error('Failed to parse popup content:', e, popup.content);
@@ -708,15 +736,44 @@
             if (this.isShown) return;
             this.isShown = true;
 
-            // Parse content
+            // Parse content - handle multiple formats
             let htmlContent = '';
             try {
-                const content = typeof this.config.content === 'string' 
-                    ? JSON.parse(this.config.content) 
-                    : this.config.content;
-                htmlContent = content.html || '';
+                if (typeof this.config.content === 'string') {
+                    // Check if it's HTML (starts with <)
+                    if (this.config.content.trim().startsWith('<')) {
+                        htmlContent = this.config.content;
+                    } else {
+                        // Try to parse as JSON
+                        try {
+                            const content = JSON.parse(this.config.content);
+                            // Check for html property
+                            if (content.html) {
+                                htmlContent = content.html;
+                            }
+                            // Check for content property
+                            else if (content.content) {
+                                htmlContent = content.content;
+                            }
+                            // Check if it's a JSON string
+                            else if (typeof content === 'string') {
+                                htmlContent = content;
+                            }
+                        } catch (jsonError) {
+                            // If JSON parse fails, treat as plain HTML
+                            htmlContent = this.config.content;
+                        }
+                    }
+                } else if (typeof this.config.content === 'object') {
+                    htmlContent = this.config.content.html || this.config.content.content || '';
+                }
+                
+                if (!htmlContent) {
+                    console.warn('[PopupManager] No HTML content found for popup', this.config.id);
+                    return;
+                }
             } catch (e) {
-                console.error('Failed to parse popup content:', e);
+                console.error('[PopupManager] Failed to parse popup content:', e);
                 return;
             }
 
@@ -862,7 +919,47 @@
                 data[key] = value;
             });
 
-            // Record conversion
+            // Capture lead to database
+            const leadData = {
+                email: data.email || null,
+                firstName: data.firstName || data.first_name || data.name || null,
+                lastName: data.lastName || data.last_name || null,
+                phone: data.phone || data.telephone || data.tel || null,
+                company: data.company || null,
+                customFields: {},
+                consentGiven: data.consent === 'true' || data.consent === true || false,
+                consentText: data.consentText || null,
+                referrer: document.referrer || null,
+                utmSource: new URLSearchParams(window.location.search).get('utm_source') || null,
+                utmMedium: new URLSearchParams(window.location.search).get('utm_medium') || null,
+                utmCampaign: new URLSearchParams(window.location.search).get('utm_campaign') || null,
+                utmTerm: new URLSearchParams(window.location.search).get('utm_term') || null,
+                utmContent: new URLSearchParams(window.location.search).get('utm_content') || null,
+                viewType: null
+            };
+
+            // Add any custom fields that aren't standard fields
+            const standardFields = ['email', 'firstName', 'first_name', 'lastName', 'last_name', 'name', 'phone', 'telephone', 'tel', 'company', 'consent', 'consentText'];
+            for (const [key, value] of Object.entries(data)) {
+                if (!standardFields.includes(key)) {
+                    leadData.customFields[key] = value;
+                }
+            }
+
+            // Send lead capture to backend
+            const baseUrl = this.baseUrl || window.PopupManager?.baseUrl || 'http://localhost:5117';
+            fetch(`${baseUrl}/api/popup/${this.config.id}/capture-lead`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(leadData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Lead captured successfully:', result);
+            })
+            .catch(err => console.error('Failed to capture lead:', err));
+
+            // Record conversion analytics
             this.recordConversion();
 
             // Send to webhook if configured

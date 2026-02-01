@@ -25,6 +25,15 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<TicketMessage> TicketMessages { get; set; }
     public DbSet<ApiUsage> ApiUsages { get; set; }
     public DbSet<Integration> Integrations { get; set; }
+    public DbSet<Lead> Leads { get; set; }
+    public DbSet<PopupView> PopupViews { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.ConfigureWarnings(warnings => 
+            warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -195,12 +204,12 @@ public class ApplicationDbContext : IdentityDbContext<User>
             new SubscriptionPlan
             {
                 Id = 1,
-                Name = "Free",
-                Description = "Perfect for getting started",
-                MonthlyPrice = 0,
-                YearlyPrice = 0,
-                MaxPopups = 3,
-                MaxPopupViews = 1000,
+                Name = "Basic Plan",
+                Description = "Best for individuals just getting started",
+                MonthlyPrice = 7,
+                YearlyPrice = 70,
+                MaxPopups = 10,
+                MaxPopupViews = 10000,
                 MaxUsers = 1,
                 HasAdvancedTargeting = false,
                 HasAnalytics = false,
@@ -211,26 +220,42 @@ public class ApplicationDbContext : IdentityDbContext<User>
             new SubscriptionPlan
             {
                 Id = 2,
-                Name = "Professional",
-                Description = "For growing businesses",
-                MonthlyPrice = 29,
-                YearlyPrice = 290,
+                Name = "Plus Plan",
+                Description = "Best for growing businesses and creators",
+                MonthlyPrice = 17,
+                YearlyPrice = 170,
                 MaxPopups = 25,
                 MaxPopupViews = 50000,
-                MaxUsers = 5,
+                MaxUsers = 3,
                 HasAdvancedTargeting = true,
                 HasAnalytics = true,
-                HasAPIAccess = true,
+                HasAPIAccess = false,
                 HasPrioritySupport = false,
                 HasWhiteLabel = false
             },
             new SubscriptionPlan
             {
                 Id = 3,
-                Name = "Enterprise",
-                Description = "For large organizations",
-                MonthlyPrice = 99,
-                YearlyPrice = 990,
+                Name = "Pro Plan",
+                Description = "Best for professionals and power users",
+                MonthlyPrice = 25,
+                YearlyPrice = 250,
+                MaxPopups = -1,
+                MaxPopupViews = -1,
+                MaxUsers = 5,
+                HasAdvancedTargeting = true,
+                HasAnalytics = true,
+                HasAPIAccess = true,
+                HasPrioritySupport = true,
+                HasWhiteLabel = false
+            },
+            new SubscriptionPlan
+            {
+                Id = 4,
+                Name = "Growth Plan",
+                Description = "Best for teams and scaling businesses",
+                MonthlyPrice = 37,
+                YearlyPrice = 370,
                 MaxPopups = -1, // Unlimited
                 MaxPopupViews = -1, // Unlimited
                 MaxUsers = -1, // Unlimited

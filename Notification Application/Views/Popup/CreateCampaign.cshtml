@@ -15,16 +15,88 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Blurred Background using iframe */
+        .dashboard-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .dashboard-background iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            filter: blur(8px);
+            -webkit-filter: blur(8px);
+            transform: scale(1.05);
+        }
+
+        /* Dark overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Modal Container */
+        .campaign-modal-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            padding: 20px;
+            overflow: hidden;
         }
 
         .campaign-modal {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 900px;
+            width: 90%;
+            margin: auto;
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.4s ease-out;
+            position: relative;
+        }
+
+        @@keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .modal-header-custom {
@@ -60,6 +132,10 @@
 
         .close-btn:hover {
             background: rgba(255, 255, 255, 0.1);
+        }
+
+        body.modal-open {
+            overflow: hidden;
         }
 
         .modal-body-custom {
@@ -181,12 +257,21 @@
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <!-- Blurred Dashboard Background -->
+    <div class="dashboard-background">
+        <iframe id="dashboardIframe" src="/UserDashboard/Index"></iframe>
+    </div>
+
+    <!-- Dark Overlay -->
+    <div class="modal-overlay" onclick="goBack()"></div>
+
+    <!-- Modal Wrapper -->
+    <div class="campaign-modal-wrapper">
         <div class="campaign-modal">
             <!-- Header -->
             <div class="modal-header-custom">
                 <h1>Create New Campaign</h1>
-                <button class="close-btn" onclick="window.location.href='/UserDashboard/Index'">&times;</button>
+                <button class="close-btn" onclick="goBack()">&times;</button>
             </div>
 
             <!-- Body -->
@@ -252,7 +337,7 @@
                     </a>
 
                     <!-- Canvas -->
-                    <a href="/Popup/Designer" class="option-card">
+                    <a href="#" onclick="showPopupTypeSelector(event)" class="option-card">
                         <div class="option-icon">
                             <div class="icon-bg"></div>
                             <svg viewBox="0 0 200 200">
@@ -278,6 +363,282 @@
         </div>
     </div>
 
+    <!-- Popup Type Selector Modal -->
+    <div id="popupTypeModal" class="popup-type-modal" style="display: none;">
+        <div class="popup-type-overlay" onclick="closePopupTypeSelector()"></div>
+        <div class="popup-type-container">
+            <div class="popup-type-header">
+                <h2>Choose Popup Type</h2>
+                <button onclick="closePopupTypeSelector()" class="close-btn">&times;</button>
+            </div>
+            <div class="popup-type-body">
+                <p class="popup-type-description">Select the type of popup you want to create</p>
+                
+                <div class="popup-types-grid">
+                    <!-- Modal/Lightbox -->
+                    <div class="popup-type-card" onclick="selectPopupType('Modal')">
+                        <div class="type-icon modal-icon">
+                            <svg viewBox="0 0 100 100" width="60" height="60">
+                                <rect x="15" y="20" width="70" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+                                <rect x="20" y="25" width="60" height="8" rx="2" fill="currentColor"/>
+                                <line x1="25" y1="40" x2="75" y2="40" stroke="currentColor" stroke-width="2"/>
+                                <line x1="25" y1="50" x2="65" y2="50" stroke="currentColor" stroke-width="2"/>
+                                <rect x="25" y="60" width="25" height="8" rx="2" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Modal/Lightbox</h3>
+                        <p>Center overlay popup with dark background</p>
+                    </div>
+
+                    <!-- Floating Bar -->
+                    <div class="popup-type-card" onclick="selectPopupType('FloatingBar')">
+                        <div class="type-icon bar-icon">
+                            <svg viewBox="0 0 100 100" width="60" height="60">
+                                <rect x="10" y="15" width="80" height="20" rx="3" fill="currentColor"/>
+                                <circle cx="20" cy="25" r="3" fill="white"/>
+                                <line x1="30" y1="22" x2="70" y2="22" stroke="white" stroke-width="2"/>
+                                <line x1="30" y1="28" x2="60" y2="28" stroke="white" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <h3>Floating Bar</h3>
+                        <p>Top or bottom bar notification</p>
+                    </div>
+
+                    <!-- Slide-in -->
+                    <div class="popup-type-card" onclick="selectPopupType('SlideIn')">
+                        <div class="type-icon slidein-icon">
+                            <svg viewBox="0 0 100 100" width="60" height="60">
+                                <rect x="50" y="20" width="40" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+                                <path d="M 50 50 L 40 50 M 45 45 L 40 50 L 45 55" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <line x1="55" y1="30" x2="85" y2="30" stroke="currentColor" stroke-width="2"/>
+                                <line x1="55" y1="40" x2="75" y2="40" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <h3>Slide-in</h3>
+                        <p>Corner slide-in notification</p>
+                    </div>
+
+                    <!-- Fullscreen -->
+                    <div class="popup-type-card" onclick="selectPopupType('Fullscreen')">
+                        <div class="type-icon fullscreen-icon">
+                            <svg viewBox="0 0 100 100" width="60" height="60">
+                                <rect x="10" y="10" width="80" height="80" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+                                <path d="M 15 15 L 25 15 L 25 25 M 75 15 L 85 15 L 85 25 M 15 85 L 25 85 L 25 75 M 75 85 L 85 85 L 85 75" stroke="currentColor" stroke-width="3" fill="none"/>
+                                <circle cx="50" cy="50" r="15" fill="currentColor" opacity="0.3"/>
+                            </svg>
+                        </div>
+                        <h3>Fullscreen</h3>
+                        <p>Take over entire screen</p>
+                    </div>
+
+                    <!-- Side Panel -->
+                    <div class="popup-type-card" onclick="selectPopupType('SidePanel')">
+                        <div class="type-icon sidepanel-icon">
+                            <svg viewBox="0 0 100 100" width="60" height="60">
+                                <rect x="55" y="10" width="35" height="80" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+                                <rect x="60" y="20" width="25" height="8" rx="2" fill="currentColor"/>
+                                <line x1="60" y1="35" x2="80" y2="35" stroke="currentColor" stroke-width="2"/>
+                                <line x1="60" y1="45" x2="80" y2="45" stroke="currentColor" stroke-width="2"/>
+                                <rect x="10" y="10" width="40" height="80" rx="2" fill="currentColor" opacity="0.1"/>
+                            </svg>
+                        </div>
+                        <h3>Side Panel</h3>
+                        <p>Full-height side drawer</p>
+                    </div>
+
+                    <!-- Notification -->
+                    <div class="popup-type-card" onclick="selectPopupType('Notification')">
+                        <div class="type-icon notification-icon">
+                            <svg viewBox="0 0 100 100" width="60" height="60">
+                                <rect x="55" y="15" width="35" height="25" rx="3" fill="none" stroke="currentColor" stroke-width="3"/>
+                                <circle cx="62" cy="23" r="2" fill="currentColor"/>
+                                <line x1="68" y1="20" x2="85" y2="20" stroke="currentColor" stroke-width="2"/>
+                                <line x1="68" y1="26" x2="80" y2="26" stroke="currentColor" stroke-width="2"/>
+                                <path d="M 75 50 L 75 55 L 65 65 L 85 65 L 75 55" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Notification Toast</h3>
+                        <p>Small corner notification</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .popup-type-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-type-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .popup-type-container {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+        }
+
+        .popup-type-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .popup-type-header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .popup-type-body {
+            padding: 32px;
+        }
+
+        .popup-type-description {
+            text-align: center;
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .popup-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .popup-type-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .popup-type-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .type-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .popup-type-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #1e293b;
+        }
+
+        .popup-type-card p {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show popup type selector
+        function showPopupTypeSelector(event) {
+            event.preventDefault();
+            document.getElementById('popupTypeModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close popup type selector
+        function closePopupTypeSelector() {
+            document.getElementById('popupTypeModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Select popup type and navigate to designer
+        function selectPopupType(type) {
+            window.location.href = `/Popup/Designer?type=${type}`;
+        }
+
+        // Detect if we came from dashboard or admin
+        const referrer = document.referrer;
+        const iframe = document.getElementById('dashboardIframe');
+        
+        // Set iframe source based on referrer
+        if (referrer.includes('/Admin')) {
+            iframe.src = referrer || '/Admin/Index';
+        } else if (referrer.includes('/UserDashboard')) {
+            iframe.src = referrer || '/UserDashboard/Index';
+        } else {
+            iframe.src = '/UserDashboard/Index';
+        }
+
+        // Handle back navigation
+        function goBack() {
+            if (referrer && (referrer.includes('/UserDashboard') || referrer.includes('/Admin'))) {
+                window.history.back();
+            } else {
+                window.location.href = '/UserDashboard/Index';
+            }
+        }
+
+        // Handle ESC key to close modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                goBack();
+            }
+        });
+
+        // Prevent interactions with iframe
+        iframe.addEventListener('load', function() {
+            try {
+                // Disable pointer events on iframe content
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (iframeDoc && iframeDoc.body) {
+                    iframeDoc.body.style.pointerEvents = 'none';
+                    iframeDoc.body.style.userSelect = 'none';
+                }
+            } catch (e) {
+                // Cross-origin restriction - iframe is from different domain
+                console.log('Cannot access iframe content due to cross-origin restrictions');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -305,27 +305,56 @@
                     {
                         try
                         {
-                            var contentJson = System.Text.Json.JsonDocument.Parse(Model.Content);
-                            if (contentJson.RootElement.TryGetProperty("html", out var htmlElement))
+                            // First try to render as plain HTML
+                            if (Model.Content.TrimStart().StartsWith("<"))
                             {
-                                @Html.Raw(htmlElement.GetString())
+                                @Html.Raw(Model.Content)
+                            }
+                            else
+                            {
+                                // Try to parse as JSON
+                                var contentJson = System.Text.Json.JsonDocument.Parse(Model.Content);
+                                
+                                // Check for html property
+                                if (contentJson.RootElement.TryGetProperty("html", out var htmlElement))
+                                {
+                                    @Html.Raw(htmlElement.GetString())
+                                }
+                                // Check for content property
+                                else if (contentJson.RootElement.TryGetProperty("content", out var contentElement))
+                                {
+                                    @Html.Raw(contentElement.GetString())
+                                }
+                                // Try to get the root as string if it's a JSON string
+                                else if (contentJson.RootElement.ValueKind == System.Text.Json.JsonValueKind.String)
+                                {
+                                    @Html.Raw(contentJson.RootElement.GetString())
+                                }
+                                else
+                                {
+                                    <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
+                                        <i class="bi bi-inbox" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                                        <p>No content designed yet</p>
+                                        <p style="font-size: 14px; margin-top: 8px;">Go back to the designer to add content blocks</p>
+                                    </div>
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // If JSON parsing fails, try to render as plain HTML
+                            if (Model.Content.TrimStart().StartsWith("<"))
+                            {
+                                @Html.Raw(Model.Content)
                             }
                             else
                             {
                                 <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
                                     <i class="bi bi-inbox" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
-                                    <p>No content designed yet</p>
-                                    <p style="font-size: 14px; margin-top: 8px;">Go back to the designer to add content blocks</p>
+                                    <p>Content format error</p>
+                                    <p style="font-size: 14px; margin-top: 8px;">Go back to the designer to fix the content</p>
                                 </div>
                             }
-                        }
-                        catch
-                        {
-                            <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
-                                <i class="bi bi-inbox" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
-                                <p>No content designed yet</p>
-                                <p style="font-size: 14px; margin-top: 8px;">Go back to the designer to add content blocks</p>
-                            </div>
                         }
                     }
                     else
@@ -400,7 +429,74 @@
             setTimeout(() => {
                 content.style.animation = 'popupAppear 0.3s ease-out';
             }, 10);
+            
+            // Initialize form submission handler for lead capture
+            initializeFormHandler();
         });
+
+        function initializeFormHandler() {
+            const forms = document.querySelectorAll('#popupContent form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(form);
+                    const data = {};
+                    formData.forEach((value, key) => {
+                        data[key] = value;
+                    });
+
+                    // Capture lead to database
+                    const leadData = {
+                        email: data.email || null,
+                        firstName: data.firstName || data.first_name || data.name || null,
+                        lastName: data.lastName || data.last_name || null,
+                        phone: data.phone || data.telephone || data.tel || null,
+                        company: data.company || null,
+                        customFields: {},
+                        consentGiven: data.consent === 'true' || data.consent === true || false,
+                        consentText: data.consentText || null,
+                        referrer: document.referrer || null,
+                        utmSource: new URLSearchParams(window.location.search).get('utm_source') || null,
+                        utmMedium: new URLSearchParams(window.location.search).get('utm_medium') || null,
+                        utmCampaign: new URLSearchParams(window.location.search).get('utm_campaign') || null,
+                        utmTerm: new URLSearchParams(window.location.search).get('utm_term') || null,
+                        utmContent: new URLSearchParams(window.location.search).get('utm_content') || null,
+                        viewType: null
+                    };
+
+                    // Add any custom fields that aren't standard fields
+                    const standardFields = ['email', 'firstName', 'first_name', 'lastName', 'last_name', 'name', 'phone', 'telephone', 'tel', 'company', 'consent', 'consentText'];
+                    for (const [key, value] of Object.entries(data)) {
+                        if (!standardFields.includes(key)) {
+                            leadData.customFields[key] = value;
+                        }
+                    }
+
+                    // Send lead capture to backend
+                    const baseUrl = window.location.origin;
+                    const popupId = @Model.Id;
+                    
+                    console.log('Submitting lead capture:', leadData);
+                    
+                    fetch(`${baseUrl}/api/popup/${popupId}/capture-lead`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(leadData)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log('Lead captured successfully:', result);
+                        alert('✅ Lead captured successfully! Check the /Leads page to see the captured lead.');
+                        form.reset();
+                    })
+                    .catch(err => {
+                        console.error('Failed to capture lead:', err);
+                        alert('❌ Failed to capture lead. Check console for details.');
+                    });
+                });
+            });
+        }
     </script>
 </body>
 </html>
