@@ -79,23 +79,58 @@ public class LeadsController : Controller
             .ToListAsync();
         
         // Manually load popups for leads that have a valid PopupId
-        var popupIds = leads.Where(l => l.PopupId > 0).Select(l => l.PopupId).Distinct().ToList();
+        var popupIds = leads.Where(l => l.PopupId.HasValue && l.PopupId > 0).Select(l => l.PopupId!.Value).Distinct().ToList();
         var popupDict = await _context.Popups
             .Where(p => popupIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id);
         
         foreach (var lead in leads)
         {
-            if (lead.PopupId > 0 && popupDict.TryGetValue(lead.PopupId, out var popup))
+            if (lead.PopupId.HasValue && lead.PopupId > 0 && popupDict.TryGetValue(lead.PopupId.Value, out var popup))
             {
                 lead.Popup = popup;
             }
+        }
+        
+        // Load tasks for leads
+        var leadIds = leads.Select(l => l.Id).ToList();
+        var tasks = await _context.CrmTasks
+            .Where(t => t.LeadId.HasValue && leadIds.Contains(t.LeadId.Value))
+            .ToListAsync();
+        
+        foreach (var lead in leads)
+        {
+            lead.Tasks = tasks.Where(t => t.LeadId == lead.Id).ToList();
         }
 
         ViewBag.TotalPages = (int)Math.Ceiling(totalLeads / (double)pageSize);
         ViewBag.TotalLeads = totalLeads;
 
         return View(leads);
+    }
+
+    // GET: Leads/GetLeadsJson - AJAX endpoint for getting leads
+    [HttpGet]
+    public async Task<IActionResult> GetLeadsJson()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var leads = await _context.Leads
+            .Where(l => l.TenantId == user.TenantId)
+            .OrderByDescending(l => l.CapturedAt)
+            .Take(100)
+            .Select(l => new
+            {
+                id = l.Id,
+                firstName = l.FirstName,
+                lastName = l.LastName,
+                email = l.Email,
+                company = l.Company
+            })
+            .ToListAsync();
+
+        return Json(leads);
     }
 
     // GET: Leads/Details/5
@@ -179,6 +214,9 @@ public class LeadsController : Controller
             lead.LastContactedAt = DateTime.UtcNow;
         }
 
+        // Auto-assign to pipeline stage based on status
+        await AssignLeadToPipelineStage(lead, status, user.TenantId);
+
         // Log activity
         _context.LeadActivities.Add(new LeadActivity
         {
@@ -195,6 +233,73 @@ public class LeadsController : Controller
 
         TempData["SuccessMessage"] = "Lead status updated successfully.";
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // Helper method to assign lead to appropriate pipeline stage based on status
+    private async System.Threading.Tasks.Task AssignLeadToPipelineStage(Lead lead, LeadStatus status, int tenantId)
+    {
+        // Get or create default pipeline
+        var pipeline = await _context.Pipelines
+            .Include(p => p.Stages)
+            .FirstOrDefaultAsync(p => p.TenantId == tenantId && p.IsDefault && p.IsActive);
+
+        if (pipeline == null)
+        {
+            // Create default pipeline if none exists
+            pipeline = new Pipeline
+            {
+                TenantId = tenantId,
+                Name = "Sales Pipeline",
+                Description = "Default sales pipeline",
+                IsDefault = true,
+                IsActive = true,
+                Order = 0
+            };
+            _context.Pipelines.Add(pipeline);
+            await _context.SaveChangesAsync();
+
+            // Create default stages
+            var stages = new[]
+            {
+                new PipelineStage { PipelineId = pipeline.Id, Name = "New Lead", Color = "#94a3b8", Order = 0, IsActive = true },
+                new PipelineStage { PipelineId = pipeline.Id, Name = "Contacted", Color = "#0ea5e9", Order = 1, IsActive = true },
+                new PipelineStage { PipelineId = pipeline.Id, Name = "Qualified", Color = "#8b5cf6", Order = 2, IsActive = true },
+                new PipelineStage { PipelineId = pipeline.Id, Name = "Proposal Sent", Color = "#f59e0b", Order = 3, IsActive = true },
+                new PipelineStage { PipelineId = pipeline.Id, Name = "Negotiation", Color = "#ec4899", Order = 4, IsActive = true },
+                new PipelineStage { PipelineId = pipeline.Id, Name = "Won", Color = "#10b981", Order = 5, IsActive = true, IsWonStage = true },
+                new PipelineStage { PipelineId = pipeline.Id, Name = "Lost", Color = "#ef4444", Order = 6, IsActive = true, IsLostStage = true }
+            };
+            _context.PipelineStages.AddRange(stages);
+            await _context.SaveChangesAsync();
+
+            // Reload pipeline with stages
+            pipeline = await _context.Pipelines
+                .Include(p => p.Stages)
+                .FirstOrDefaultAsync(p => p.Id == pipeline.Id);
+        }
+
+        if (pipeline == null) return;
+
+        // Map status to stage name
+        string stageName = status switch
+        {
+            LeadStatus.New => "New Lead",
+            LeadStatus.Contacted => "Contacted",
+            LeadStatus.Qualified => "Qualified",
+            LeadStatus.Converted => "Won",
+            LeadStatus.Unqualified => "Lost",
+            LeadStatus.Archived => "Lost",
+            _ => "New Lead"
+        };
+
+        var stage = pipeline.Stages.FirstOrDefault(s => s.Name.Equals(stageName, StringComparison.OrdinalIgnoreCase) && s.IsActive);
+        
+        if (stage != null)
+        {
+            lead.PipelineId = pipeline.Id;
+            lead.StageId = stage.Id;
+            lead.StageEnteredAt = DateTime.UtcNow;
+        }
     }
 
     // POST: Leads/UpdateDisposition
@@ -501,6 +606,147 @@ public class LeadsController : Controller
 
         TempData["SuccessMessage"] = "Note added successfully.";
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // POST: Leads/CreateTask
+    [HttpPost]
+    public async Task<IActionResult> CreateTask(int leadId, string title, string? description, DateTime dueDate, string priority, string? taskType)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var lead = await _context.Leads
+            .FirstOrDefaultAsync(l => l.Id == leadId && l.TenantId == user.TenantId);
+
+        if (lead == null)
+        {
+            TempData["ErrorMessage"] = "Lead not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Parse priority
+        if (!Enum.TryParse<TaskPriority>(priority, out var taskPriority))
+        {
+            taskPriority = TaskPriority.Medium;
+        }
+
+        var task = new CrmTask
+        {
+            TenantId = user.TenantId,
+            LeadId = leadId,
+            Title = title,
+            Description = description + (taskType != null ? $"\n[Type: {taskType}]" : ""),
+            DueDate = dueDate,
+            Priority = taskPriority,
+            Status = CrmTaskStatus.Pending,
+            CreatedByUserId = user.Id,
+            AssignedToUserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.CrmTasks.Add(task);
+
+        // Log activity
+        _context.LeadActivities.Add(new LeadActivity
+        {
+            LeadId = leadId,
+            TenantId = user.TenantId,
+            Type = ActivityType.Task,
+            Title = $"Task created: {title}",
+            Description = $"Due: {dueDate:MMM dd, yyyy HH:mm} | Priority: {taskPriority}",
+            PerformedByUserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = $"Task '{title}' created successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // POST: Leads/CompleteTask
+    [HttpPost]
+    public async Task<IActionResult> CompleteTask(int taskId, int leadId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var task = await _context.CrmTasks
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.TenantId == user.TenantId);
+
+        if (task == null)
+        {
+            TempData["ErrorMessage"] = "Task not found.";
+            return RedirectToAction(nameof(Details), new { id = leadId });
+        }
+
+        task.Status = CrmTaskStatus.Completed;
+        task.CompletedAt = DateTime.UtcNow;
+
+        // Log activity
+        _context.LeadActivities.Add(new LeadActivity
+        {
+            LeadId = leadId,
+            TenantId = user.TenantId,
+            Type = ActivityType.Task,
+            Title = $"Task completed: {task.Title}",
+            PerformedByUserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Task marked as completed.";
+        return RedirectToAction(nameof(Details), new { id = leadId });
+    }
+
+    // GET: Leads/ExportCsv
+    public async Task<IActionResult> ExportCsv()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var leads = await _context.Leads
+            .Where(l => l.TenantId == user.TenantId)
+            .Include(l => l.Popup)
+            .OrderByDescending(l => l.CapturedAt)
+            .ToListAsync();
+
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine("Date,Email,First Name,Last Name,Phone,Company,Job Title,Source,Popup,Status,Score,UTM Source,UTM Campaign,Notes");
+
+        foreach (var lead in leads)
+        {
+            csv.AppendLine($"{lead.CapturedAt:yyyy-MM-dd HH:mm:ss}," +
+                          $"\"{EscapeCsv(lead.Email)}\"," +
+                          $"\"{EscapeCsv(lead.FirstName)}\"," +
+                          $"\"{EscapeCsv(lead.LastName)}\"," +
+                          $"\"{EscapeCsv(lead.Phone)}\"," +
+                          $"\"{EscapeCsv(lead.Company)}\"," +
+                          $"\"{EscapeCsv(lead.JobTitle)}\"," +
+                          $"\"{EscapeCsv(lead.LeadSource)}\"," +
+                          $"\"{EscapeCsv(lead.Popup?.Name)}\"," +
+                          $"{lead.Status}," +
+                          $"{lead.Score}," +
+                          $"\"{EscapeCsv(lead.UtmSource)}\"," +
+                          $"\"{EscapeCsv(lead.UtmCampaign)}\"," +
+                          $"\"{EscapeCsv(lead.Notes)}\"");
+        }
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+        return File(bytes, "text/csv", $"leads_export_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv");
+    }
+
+    // GET: Leads/ExportExcel - Same as CSV for now
+    public async Task<IActionResult> ExportExcel()
+    {
+        return await ExportCsv();
+    }
+
+    private string EscapeCsv(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        return value.Replace("\"", "\"\"").Replace("\n", " ").Replace("\r", "");
     }
 
     // POST: Leads/Delete/5

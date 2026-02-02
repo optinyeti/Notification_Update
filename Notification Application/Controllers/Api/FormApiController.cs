@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Notification_Application.Data;
 using Notification_Application.Models;
+using Notification_Application.Services;
 using System.Text.Json;
 
 namespace Notification_Application.Controllers.Api;
@@ -11,10 +12,12 @@ namespace Notification_Application.Controllers.Api;
 public class FormApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IPipelineService _pipelineService;
 
-    public FormApiController(ApplicationDbContext context)
+    public FormApiController(ApplicationDbContext context, IPipelineService pipelineService)
     {
         _context = context;
+        _pipelineService = pipelineService;
     }
 
     // GET: api/FormApi/render/{embedCode}
@@ -295,6 +298,12 @@ public class FormApiController : ControllerBase
 
             _context.Leads.Add(lead);
             await _context.SaveChangesAsync();
+
+            // Auto-assign to default pipeline if not already assigned
+            if (!lead.PipelineId.HasValue)
+            {
+                await _pipelineService.AssignLeadToPipelineAsync(lead, form.TenantId);
+            }
 
             submission.LeadId = lead.Id;
 

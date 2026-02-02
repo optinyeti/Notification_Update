@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Notification_Application.Data;
 using Notification_Application.Models;
+using Notification_Application.Services;
 using System.Text.Json;
 
 namespace Notification_Application.Controllers.Api;
@@ -12,11 +13,13 @@ public class PixelController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<PixelController> _logger;
+    private readonly IPipelineService _pipelineService;
 
-    public PixelController(ApplicationDbContext context, ILogger<PixelController> logger)
+    public PixelController(ApplicationDbContext context, ILogger<PixelController> logger, IPipelineService pipelineService)
     {
         _context = context;
         _logger = logger;
+        _pipelineService = pipelineService;
     }
 
     // POST: api/Pixel/Track
@@ -176,6 +179,9 @@ public class PixelController : ControllerBase
 
                 _context.Leads.Add(lead);
                 await _context.SaveChangesAsync();
+
+                // Auto-assign lead to pipeline
+                await _pipelineService.AssignLeadToPipelineAsync(lead, tenant.Id);
 
                 // Create lead created activity
                 var activity = new LeadActivity

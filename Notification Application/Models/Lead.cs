@@ -3,7 +3,7 @@ namespace Notification_Application.Models;
 public class Lead
 {
     public int Id { get; set; }
-    public int PopupId { get; set; }
+    public int? PopupId { get; set; }
     public Popup? Popup { get; set; }
     
     public int TenantId { get; set; }

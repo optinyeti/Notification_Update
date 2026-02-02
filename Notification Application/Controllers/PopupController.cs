@@ -110,13 +110,18 @@ public class PopupController : Controller
             // If templateFile is provided, load the HTML template from file system
             if (!string.IsNullOrEmpty(templateFile) && !string.IsNullOrEmpty(category))
             {
-                // Capitalize first letter of category to match folder names (Popup, FloatingBar, etc.)
-                var categoryFormatted = char.ToUpper(category[0]) + category.Substring(1).ToLower();
+                // Use category as-is since it should match folder names exactly
+                // Handle special case formatting only if needed
+                var categoryFormatted = category;
                 
-                // Handle special cases
-                if (categoryFormatted == "Popup") categoryFormatted = "Popup";
-                else if (categoryFormatted == "Floatingbar") categoryFormatted = "FloatingBar";
-                else if (categoryFormatted == "Slidein") categoryFormatted = "SlideIn";
+                // Handle special cases for known multi-word categories
+                if (category.Equals("floatingbar", StringComparison.OrdinalIgnoreCase)) categoryFormatted = "FloatingBar";
+                else if (category.Equals("slidein", StringComparison.OrdinalIgnoreCase)) categoryFormatted = "SlideIn";
+                else if (category.Equals("homeservices", StringComparison.OrdinalIgnoreCase)) categoryFormatted = "HomeServices";
+                else if (category.Equals("professionalservices", StringComparison.OrdinalIgnoreCase)) categoryFormatted = "ProfessionalServices";
+                else if (category.Equals("realestate", StringComparison.OrdinalIgnoreCase)) categoryFormatted = "RealEstate";
+                else if (category.Equals("leadcapture", StringComparison.OrdinalIgnoreCase)) categoryFormatted = "LeadCapture";
+                else if (category.Equals("nonprofit", StringComparison.OrdinalIgnoreCase)) categoryFormatted = "NonProfit";
                 
                 var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", categoryFormatted, templateFile);
                 

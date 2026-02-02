@@ -6,6 +6,29 @@
 }
 
 <div class="container-fluid px-4">
+    <!-- Toast Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>@TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -17,14 +40,22 @@
         <div class="d-flex align-items-center gap-2">
             @if (pipelines.Count > 1)
             {
-                <select class="form-select" id="pipelineSelector" onchange="changePipeline(this.value)">
+                <select class="form-select form-select-sm" id="pipelineSelector" onchange="changePipeline(this.value)" style="width: auto;">
                     @foreach (var pipeline in pipelines)
                     {
                         <option value="@pipeline.Id" selected="@(pipeline.Id == selectedPipeline?.Id)">@pipeline.Name</option>
                     }
                 </select>
             }
-            <a href="@Url.Action("Index", "Crm")" class="btn btn-outline-secondary">
+            <form asp-action="AssignAllLeadsToPipeline" method="post" class="d-inline">
+                <button type="submit" class="btn btn-success btn-sm" title="Assign all unassigned leads to the 'New Lead' stage">
+                    <i class="bi bi-plus-circle me-1"></i>Add All Leads
+                </button>
+            </form>
+            <a href="@Url.Action("Deals", "Crm")" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-briefcase me-1"></i>Deals
+            </a>
+            <a href="@Url.Action("Index", "Crm")" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Dashboard
             </a>
         </div>
@@ -33,108 +64,87 @@
     @if (selectedPipeline != null && selectedPipeline.Stages?.Any() == true)
     {
         <!-- Pipeline Board -->
-        <div class="pipeline-board d-flex gap-3 overflow-auto pb-3" style="min-height: 70vh;">
+        <div class="pipeline-board" id="pipelineBoard">
             @foreach (var stage in selectedPipeline.Stages.OrderBy(s => s.Order))
             {
                 var leadsInStage = ViewData[$"LeadsInStage_{stage.Id}"] as List<Notification_Application.Models.Lead> ?? new List<Notification_Application.Models.Lead>();
                 var totalValue = leadsInStage.Sum(l => l.Deals?.Where(d => d.Status == Notification_Application.Models.DealStatus.Open).Sum(d => d.Amount) ?? 0);
                 
-                <div class="pipeline-column flex-shrink-0" style="width: 300px;">
+                <div class="pipeline-column" data-stage-id="@stage.Id">
                     <!-- Stage Header -->
-                    <div class="card border-0 shadow-sm mb-2">
-                        <div class="card-body py-2 px-3" style="border-top: 4px solid @stage.Color;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0 fw-semibold">@stage.Name</h6>
-                                    <small class="text-muted">@leadsInStage.Count leads</small>
-                                </div>
-                                @if (totalValue > 0)
-                                {
-                                    <span class="badge bg-success">$@totalValue.ToString("N0")</span>
-                                }
+                    <div class="stage-header" style="--stage-color: @stage.Color;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0 fw-semibold">@stage.Name</h6>
+                                <small class="text-muted">@leadsInStage.Count leads</small>
                             </div>
+                            @if (totalValue > 0)
+                            {
+                                <span class="badge bg-success-subtle text-success">$@totalValue.ToString("N0")</span>
+                            }
                         </div>
                     </div>
 
-                    <!-- Leads List -->
-                    <div class="pipeline-leads" data-stage-id="@stage.Id" style="min-height: 200px;">
+                    <!-- Leads Container (Drop Zone) -->
+                    <div class="leads-container" data-stage-id="@stage.Id">
                         @foreach (var lead in leadsInStage)
                         {
                             var dealValue = lead.Deals?.Where(d => d.Status == Notification_Application.Models.DealStatus.Open).Sum(d => d.Amount) ?? 0;
                             var daysInStage = lead.StageEnteredAt.HasValue ? (int)(DateTime.UtcNow - lead.StageEnteredAt.Value).TotalDays : 0;
                             
-                            <div class="card border-0 shadow-sm mb-2 lead-card" data-lead-id="@lead.Id">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <a href="@Url.Action("LeadDetail", "Crm", new { id = lead.Id })" class="text-decoration-none">
-                                            <h6 class="mb-0 fw-semibold text-dark">@lead.FirstName @lead.LastName</h6>
-                                        </a>
-                                        @if (lead.Score > 0)
-                                        {
-                                            <span class="badge @(lead.Score >= 70 ? "bg-success" : lead.Score >= 40 ? "bg-warning" : "bg-secondary")">
-                                                @lead.Score
-                                            </span>
-                                        }
+                            <div class="lead-card" draggable="true" data-lead-id="@lead.Id"
+                                 data-lead-name="@lead.FirstName @lead.LastName"
+                                 data-lead-email="@lead.Email"
+                                 data-lead-phone="@lead.Phone"
+                                 data-lead-company="@lead.Company"
+                                 data-lead-score="@lead.Score"
+                                 data-lead-status="@lead.Status"
+                                 data-stage-id="@lead.StageId">
+                                <!-- Lead Name & Score -->
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="lead-name" onclick="openLeadModal(@lead.Id)">
+                                        @lead.FirstName @lead.LastName
                                     </div>
+                                    @if (lead.Score > 0)
+                                    {
+                                        <span class="lead-score @(lead.Score >= 70 ? "score-hot" : lead.Score >= 40 ? "score-warm" : "score-cold")">
+                                            @lead.Score
+                                        </span>
+                                    }
+                                </div>
+                                
+                                <!-- Company -->
+                                @if (!string.IsNullOrEmpty(lead.Company))
+                                {
+                                    <div class="lead-company">
+                                        <i class="bi bi-building"></i> @lead.Company
+                                    </div>
+                                }
+
+                                <!-- Bottom Info -->
+                                <div class="lead-meta">
+                                    @if (dealValue > 0)
+                                    {
+                                        <span class="lead-value">$@dealValue.ToString("N0")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="lead-days">@daysInStage days</span>
+                                    }
                                     
-                                    @if (!string.IsNullOrEmpty(lead.Company))
-                                    {
-                                        <p class="small text-muted mb-2">
-                                            <i class="bi bi-building me-1"></i>@lead.Company
-                                        </p>
-                                    }
-
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="small text-muted">
-                                            @if (dealValue > 0)
-                                            {
-                                                <span class="text-success fw-semibold">$@dealValue.ToString("N0")</span>
-                                            }
-                                            else
-                                            {
-                                                <span>@daysInStage days</span>
-                                            }
-                                        </div>
-                                        <div>
-                                            @if (lead.Owner != null)
-                                            {
-                                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" 
-                                                     style="width: 24px; height: 24px; font-size: 10px;"
-                                                     title="@lead.Owner.FirstName @lead.Owner.LastName">
-                                                    @lead.Owner.FirstName?.Substring(0, 1)@lead.Owner.LastName?.Substring(0, 1)
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-
-                                    @if (!string.IsNullOrEmpty(lead.Email))
-                                    {
-                                        <div class="mt-2 pt-2 border-top">
-                                            <div class="d-flex gap-1">
-                                                <a href="mailto:@lead.Email" class="btn btn-sm btn-outline-primary flex-fill" title="Send Email">
-                                                    <i class="bi bi-envelope"></i>
-                                                </a>
-                                                @if (!string.IsNullOrEmpty(lead.Phone))
-                                                {
-                                                    <a href="tel:@lead.Phone" class="btn btn-sm btn-outline-success flex-fill" title="Call">
-                                                        <i class="bi bi-telephone"></i>
-                                                    </a>
-                                                }
-                                                <a href="@Url.Action("LeadDetail", "Crm", new { id = lead.Id })" class="btn btn-sm btn-outline-secondary flex-fill" title="View Details">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    }
+                                    <!-- Quick View Button -->
+                                    <button type="button" class="btn-quick-view" onclick="openLeadModal(@lead.Id)" title="Quick View">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                 </div>
                             </div>
                         }
 
                         @if (!leadsInStage.Any())
                         {
-                            <div class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1"></i>
-                                <p class="small mt-2 mb-0">No leads in this stage</p>
+                            <div class="empty-stage">
+                                <i class="bi bi-inbox"></i>
+                                <span>Drop leads here</span>
                             </div>
                         }
                     </div>
@@ -152,9 +162,99 @@
     }
 </div>
 
+<!-- Lead Detail Modal -->
+<div class="modal fade" id="leadDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-circle me-2"></i>
+                    <span id="modalLeadName">Lead Details</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Left Column - Contact Info -->
+                    <div class="col-md-5">
+                        <div class="card border-0 bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted small fw-bold mb-3">Contact Information</h6>
+                                <div class="mb-2">
+                                    <i class="bi bi-envelope text-muted me-2"></i>
+                                    <span id="modalLeadEmail">-</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-telephone text-muted me-2"></i>
+                                    <span id="modalLeadPhone">-</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-building text-muted me-2"></i>
+                                    <span id="modalLeadCompany">-</span>
+                                </div>
+                                <div class="mb-0">
+                                    <i class="bi bi-star text-muted me-2"></i>
+                                    Score: <span id="modalLeadScore" class="badge bg-secondary">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Stage Dropdown -->
+                        <div class="mb-3">
+                            <label class="form-label small text-muted fw-bold">PIPELINE STAGE</label>
+                            <select class="form-select" id="modalStageSelect">
+                                @if (selectedPipeline?.Stages != null)
+                                {
+                                    @foreach (var stage in selectedPipeline.Stages.OrderBy(s => s.Order))
+                                    {
+                                        <option value="@stage.Id">@stage.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="d-flex gap-2">
+                            <a id="modalEmailLink" href="#" class="btn btn-outline-primary flex-fill">
+                                <i class="bi bi-envelope me-1"></i>Email
+                            </a>
+                            <a id="modalPhoneLink" href="#" class="btn btn-outline-success flex-fill">
+                                <i class="bi bi-telephone me-1"></i>Call
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Activity -->
+                    <div class="col-md-7">
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Recent Activity</h6>
+                        <div id="modalActivityList" class="activity-timeline">
+                            <div class="text-center text-muted py-4">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Loading activity...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a id="modalViewFullLink" href="#" class="btn btn-primary">
+                    <i class="bi bi-arrow-right me-1"></i>View Full Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .pipeline-board {
-        scrollbar-width: thin;
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 20px;
+        min-height: calc(100vh - 200px);
     }
     
     .pipeline-board::-webkit-scrollbar {
@@ -170,91 +270,446 @@
         background: #c1c1c1;
         border-radius: 4px;
     }
-    
+
     .pipeline-column {
+        flex-shrink: 0;
+        width: 280px;
         background: #f8f9fa;
-        border-radius: 8px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stage-header {
+        padding: 12px 16px;
+        background: white;
+        border-radius: 12px 12px 0 0;
+        border-top: 4px solid var(--stage-color, #6c757d);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .leads-container {
+        flex: 1;
         padding: 8px;
+        min-height: 200px;
+        overflow-y: auto;
+        max-height: calc(100vh - 300px);
     }
     
-    .lead-card {
-        cursor: grab;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .lead-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-    }
-    
-    .lead-card.dragging {
-        opacity: 0.5;
-        cursor: grabbing;
-    }
-    
-    .pipeline-leads.drag-over {
+    .leads-container.drag-over {
         background: #e3f2fd;
         border-radius: 8px;
     }
+
+    .lead-card {
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        cursor: grab;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        border: 2px solid transparent;
+    }
+
+    .lead-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .lead-card.dragging {
+        opacity: 0.5;
+        transform: rotate(2deg);
+        cursor: grabbing;
+    }
+
+    .lead-card.drag-preview {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+    }
+
+    .lead-name {
+        font-weight: 600;
+        color: #1a1a1a;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .lead-name:hover {
+        color: #0d6efd;
+    }
+
+    .lead-score {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .score-hot {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .score-warm {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .score-cold {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .lead-company {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+
+    .lead-company i {
+        font-size: 0.7rem;
+    }
+
+    .lead-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+    }
+
+    .lead-value {
+        color: #059669;
+        font-weight: 600;
+    }
+
+    .lead-days {
+        color: #9ca3af;
+    }
+
+    .btn-quick-view {
+        background: none;
+        border: none;
+        padding: 4px 8px;
+        color: #9ca3af;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.15s;
+    }
+
+    .btn-quick-view:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .empty-stage {
+        text-align: center;
+        padding: 40px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-stage i {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    /* Activity Timeline */
+    .activity-timeline {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.8rem;
+    }
+
+    .activity-icon.page-view { background: #dbeafe; color: #2563eb; }
+    .activity-icon.form-submit { background: #dcfce7; color: #16a34a; }
+    .activity-icon.email { background: #fef3c7; color: #d97706; }
+    .activity-icon.call { background: #e0e7ff; color: #4f46e5; }
+    .activity-icon.stage-change { background: #f3e8ff; color: #9333ea; }
+    .activity-icon.default { background: #f1f5f9; color: #64748b; }
+
+    .activity-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .activity-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #1f2937;
+        margin-bottom: 2px;
+    }
+
+    .activity-time {
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
 </style>
 
+@section Scripts {
 <script>
+    let currentLeadId = null;
+    let leadDetailModal = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        leadDetailModal = new bootstrap.Modal(document.getElementById('leadDetailModal'));
+        initDragAndDrop();
+    });
+
     function changePipeline(pipelineId) {
         window.location.href = '@Url.Action("Pipeline", "Crm")' + '?pipelineId=' + pipelineId;
     }
 
-    // Drag and drop functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const leadCards = document.querySelectorAll('.lead-card');
-        const pipelineLeads = document.querySelectorAll('.pipeline-leads');
-
-        leadCards.forEach(card => {
-            card.setAttribute('draggable', true);
+    function openLeadModal(leadId) {
+        currentLeadId = leadId;
+        const card = document.querySelector(`.lead-card[data-lead-id="${leadId}"]`);
+        
+        if (card) {
+            document.getElementById('modalLeadName').textContent = card.dataset.leadName || 'Lead Details';
+            document.getElementById('modalLeadEmail').textContent = card.dataset.leadEmail || '-';
+            document.getElementById('modalLeadPhone').textContent = card.dataset.leadPhone || '-';
+            document.getElementById('modalLeadCompany').textContent = card.dataset.leadCompany || '-';
+            document.getElementById('modalLeadScore').textContent = card.dataset.leadScore || '0';
             
+            // Set score badge color
+            const score = parseInt(card.dataset.leadScore) || 0;
+            const scoreBadge = document.getElementById('modalLeadScore');
+            scoreBadge.className = 'badge ' + (score >= 70 ? 'bg-success' : score >= 40 ? 'bg-warning text-dark' : 'bg-secondary');
+            
+            // Set stage dropdown
+            document.getElementById('modalStageSelect').value = card.dataset.stageId;
+            
+            // Set links
+            const email = card.dataset.leadEmail;
+            const phone = card.dataset.leadPhone;
+            document.getElementById('modalEmailLink').href = email ? `mailto:${email}` : '#';
+            document.getElementById('modalPhoneLink').href = phone ? `tel:${phone}` : '#';
+            document.getElementById('modalViewFullLink').href = '@Url.Action("LeadDetail", "Crm")/' + leadId;
+        }
+        
+        // Show modal
+        leadDetailModal.show();
+        
+        // Load activity
+        loadLeadActivity(leadId);
+    }
+
+    function loadLeadActivity(leadId) {
+        const container = document.getElementById('modalActivityList');
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <p class="mt-2 mb-0">Loading activity...</p>
+            </div>
+        `;
+
+        fetch(`@Url.Action("GetLeadActivity", "Crm")?leadId=${leadId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(a => `
+                        <div class="activity-item">
+                            <div class="activity-icon ${getActivityIconClass(a.type)}">
+                                <i class="bi ${getActivityIcon(a.type)}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">${escapeHtml(a.title)}</div>
+                                <div class="activity-time">${formatDate(a.createdAt)}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center text-muted py-4">No activity recorded yet</div>';
+                }
+            })
+            .catch(err => {
+                container.innerHTML = '<div class="text-center text-muted py-4">Could not load activity</div>';
+            });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function getActivityIconClass(type) {
+        const classes = {
+            'PageView': 'page-view',
+            'FormSubmitted': 'form-submit',
+            'Email': 'email',
+            'Call': 'call',
+            'StageChanged': 'stage-change'
+        };
+        return classes[type] || 'default';
+    }
+
+    function getActivityIcon(type) {
+        const icons = {
+            'PageView': 'bi-eye',
+            'FormSubmitted': 'bi-file-earmark-check',
+            'Email': 'bi-envelope',
+            'Call': 'bi-telephone',
+            'StageChanged': 'bi-arrow-right-circle',
+            'LeadCreated': 'bi-person-plus',
+            'Note': 'bi-chat-text'
+        };
+        return icons[type] || 'bi-circle';
+    }
+
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
+        if (diff < 604800000) return `${Math.floor(diff / 86400000)} days ago`;
+        
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // Stage change in modal
+    document.getElementById('modalStageSelect').addEventListener('change', function() {
+        if (!currentLeadId) return;
+        
+        const stageId = this.value;
+        updateLeadStage(currentLeadId, stageId);
+    });
+
+    function updateLeadStage(leadId, stageId) {
+        fetch('@Url.Action("UpdateStage", "Crm")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `leadId=${leadId}&stageId=${stageId}`
+        }).then(response => {
+            if (response.ok || response.redirected) {
+                window.location.reload();
+            }
+        }).catch(err => {
+            console.error('Error updating stage:', err);
+            alert('Failed to update lead stage');
+        });
+    }
+
+    // ============================================
+    // DRAG AND DROP IMPLEMENTATION
+    // ============================================
+    
+    function initDragAndDrop() {
+        const leadCards = document.querySelectorAll('.lead-card');
+        const dropZones = document.querySelectorAll('.leads-container');
+
+        // Drag start
+        leadCards.forEach(card => {
             card.addEventListener('dragstart', function(e) {
                 this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/plain', this.dataset.leadId);
+                
+                // Hide the original after a slight delay
+                setTimeout(() => {
+                    this.style.opacity = '0.4';
+                }, 0);
             });
 
             card.addEventListener('dragend', function() {
                 this.classList.remove('dragging');
+                this.style.opacity = '1';
+                
+                // Remove all drag-over states
+                dropZones.forEach(zone => zone.classList.remove('drag-over'));
             });
         });
 
-        pipelineLeads.forEach(column => {
-            column.addEventListener('dragover', function(e) {
+        // Drop zones
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', function(e) {
                 e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
                 this.classList.add('drag-over');
+                
+                // Visual feedback for drop position
+                const draggingCard = document.querySelector('.dragging');
+                if (draggingCard) {
+                    const afterElement = getDragAfterElement(this, e.clientY);
+                    if (afterElement == null) {
+                        this.appendChild(draggingCard);
+                    } else {
+                        this.insertBefore(draggingCard, afterElement);
+                    }
+                }
             });
 
-            column.addEventListener('dragleave', function() {
-                this.classList.remove('drag-over');
+            zone.addEventListener('dragleave', function(e) {
+                // Only remove if actually leaving the container
+                if (!this.contains(e.relatedTarget)) {
+                    this.classList.remove('drag-over');
+                }
             });
 
-            column.addEventListener('drop', function(e) {
+            zone.addEventListener('drop', function(e) {
                 e.preventDefault();
                 this.classList.remove('drag-over');
                 
                 const leadId = e.dataTransfer.getData('text/plain');
                 const stageId = this.dataset.stageId;
+                const card = document.querySelector(`.lead-card[data-lead-id="${leadId}"]`);
                 
-                // Update stage via AJAX
-                fetch('@Url.Action("UpdateStage", "Crm")', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                    },
-                    body: `leadId=${leadId}&stageId=${stageId}`
-                }).then(response => {
-                    if (response.ok || response.redirected) {
-                        window.location.reload();
-                    }
-                }).catch(err => {
-                    console.error('Error updating stage:', err);
-                    window.location.reload();
-                });
+                if (card && card.dataset.stageId !== stageId) {
+                    // Move card visually
+                    this.appendChild(card);
+                    card.dataset.stageId = stageId;
+                    
+                    // Remove empty state if exists
+                    const emptyState = this.querySelector('.empty-stage');
+                    if (emptyState) emptyState.remove();
+                    
+                    // Update server
+                    updateLeadStage(leadId, stageId);
+                }
             });
         });
-    });
+
+        // Helper function to determine drop position
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.lead-card:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+    }
 </script>
+}

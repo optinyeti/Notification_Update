@@ -45,6 +45,8 @@ builder.Services.AddScoped<IApiUsageService, ApiUsageService>();
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
+builder.Services.AddScoped<IUnsplashService, UnsplashService>();
+builder.Services.AddScoped<IPipelineService, PipelineService>();
 
 // Add MVC
 builder.Services.AddControllersWithViews();

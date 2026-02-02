@@ -93,6 +93,28 @@ public class CrmController : Controller
         return View();
     }
 
+    // GET: CRM/GetLeadActivity
+    [HttpGet]
+    public async Task<IActionResult> GetLeadActivity(int leadId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var activities = await _context.LeadActivities
+            .Where(a => a.LeadId == leadId && a.TenantId == user.TenantId)
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(10)
+            .Select(a => new
+            {
+                type = a.Type.ToString(),
+                title = a.Title,
+                createdAt = a.CreatedAt
+            })
+            .ToListAsync();
+
+        return Json(activities);
+    }
+
     // GET: CRM/LeadDetail/5
     public async Task<IActionResult> LeadDetail(int id)
     {
@@ -454,8 +476,30 @@ public class CrmController : Controller
             ? pipelines.FirstOrDefault(p => p.Id == pipelineId.Value)
             : pipelines.FirstOrDefault(p => p.IsDefault) ?? pipelines.First();
 
+        // Auto-assign any unassigned leads to the default pipeline's "New Lead" stage
         if (selectedPipeline != null)
         {
+            var newLeadStage = selectedPipeline.Stages?
+                .FirstOrDefault(s => s.Name.Equals("New Lead", StringComparison.OrdinalIgnoreCase) && s.IsActive);
+
+            if (newLeadStage != null)
+            {
+                var unassignedLeads = await _context.Leads
+                    .Where(l => l.TenantId == user.TenantId && (l.PipelineId == null || l.StageId == null))
+                    .ToListAsync();
+
+                if (unassignedLeads.Any())
+                {
+                    foreach (var lead in unassignedLeads)
+                    {
+                        lead.PipelineId = selectedPipeline.Id;
+                        lead.StageId = newLeadStage.Id;
+                        lead.StageEnteredAt = DateTime.UtcNow;
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             // Load leads for each stage
             foreach (var stage in selectedPipeline.Stages)
             {
@@ -503,6 +547,67 @@ public class CrmController : Controller
 
         _context.PipelineStages.AddRange(stages);
         await _context.SaveChangesAsync();
+    }
+
+    // POST: CRM/AssignAllLeadsToPipeline - Assign all unassigned leads to default pipeline
+    [HttpPost]
+    public async Task<IActionResult> AssignAllLeadsToPipeline()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        // Get or create default pipeline
+        var pipeline = await _context.Pipelines
+            .Include(p => p.Stages)
+            .FirstOrDefaultAsync(p => p.TenantId == user.TenantId && p.IsDefault && p.IsActive);
+
+        if (pipeline == null)
+        {
+            await CreateDefaultPipeline(user.TenantId);
+            pipeline = await _context.Pipelines
+                .Include(p => p.Stages)
+                .FirstOrDefaultAsync(p => p.TenantId == user.TenantId && p.IsDefault && p.IsActive);
+        }
+
+        if (pipeline == null)
+        {
+            TempData["Error"] = "Could not create or find default pipeline.";
+            return RedirectToAction(nameof(Pipeline));
+        }
+
+        // Find the "New Lead" stage
+        var newLeadStage = pipeline.Stages?
+            .FirstOrDefault(s => s.Name.Equals("New Lead", StringComparison.OrdinalIgnoreCase) && s.IsActive);
+
+        if (newLeadStage == null)
+        {
+            TempData["Error"] = "Could not find 'New Lead' stage in pipeline.";
+            return RedirectToAction(nameof(Pipeline));
+        }
+
+        // Get all leads without a pipeline/stage assignment
+        var unassignedLeads = await _context.Leads
+            .Where(l => l.TenantId == user.TenantId && (l.PipelineId == null || l.StageId == null))
+            .ToListAsync();
+
+        if (!unassignedLeads.Any())
+        {
+            TempData["Info"] = "All leads are already assigned to the pipeline.";
+            return RedirectToAction(nameof(Pipeline));
+        }
+
+        // Assign each lead to the pipeline
+        foreach (var lead in unassignedLeads)
+        {
+            lead.PipelineId = pipeline.Id;
+            lead.StageId = newLeadStage.Id;
+            lead.StageEnteredAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = $"Successfully assigned {unassignedLeads.Count} lead(s) to the pipeline.";
+        return RedirectToAction(nameof(Pipeline));
     }
 
     // GET: CRM/Analytics
@@ -558,5 +663,100 @@ public class CrmController : Controller
         ViewBag.StageMetrics = JsonSerializer.Serialize(stageMetrics);
 
         return View();
+    }
+
+    // GET: CRM/Deals
+    public async Task<IActionResult> Deals(string? status, string? search, int page = 1, int pageSize = 20)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var query = _context.Deals
+            .Include(d => d.Lead)
+            .Include(d => d.Owner)
+            .Where(d => d.TenantId == user.TenantId);
+
+        // Filter by status
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<DealStatus>(status, out var dealStatus))
+        {
+            query = query.Where(d => d.Status == dealStatus);
+        }
+
+        // Search
+        if (!string.IsNullOrEmpty(search))
+        {
+            search = search.ToLower();
+            query = query.Where(d => 
+                d.Name.ToLower().Contains(search) ||
+                (d.Lead != null && (d.Lead.FirstName + " " + d.Lead.LastName).ToLower().Contains(search)) ||
+                (d.Lead != null && d.Lead.Company != null && d.Lead.Company.ToLower().Contains(search)));
+        }
+
+        var totalDeals = await query.CountAsync();
+        var deals = await query
+            .OrderByDescending(d => d.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // Summary stats
+        ViewBag.TotalDeals = await _context.Deals.Where(d => d.TenantId == user.TenantId).CountAsync();
+        ViewBag.OpenDeals = await _context.Deals.Where(d => d.TenantId == user.TenantId && d.Status == DealStatus.Open).CountAsync();
+        ViewBag.WonDeals = await _context.Deals.Where(d => d.TenantId == user.TenantId && d.Status == DealStatus.Won).CountAsync();
+        ViewBag.LostDeals = await _context.Deals.Where(d => d.TenantId == user.TenantId && d.Status == DealStatus.Lost).CountAsync();
+        ViewBag.TotalValue = await _context.Deals.Where(d => d.TenantId == user.TenantId && d.Status == DealStatus.Open).SumAsync(d => d.Amount);
+        ViewBag.WonValue = await _context.Deals.Where(d => d.TenantId == user.TenantId && d.Status == DealStatus.Won).SumAsync(d => d.Amount);
+
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages = (int)Math.Ceiling((double)totalDeals / pageSize);
+        ViewBag.SearchTerm = search;
+        ViewBag.StatusFilter = status;
+
+        // Get pipeline stages for deals
+        var pipeline = await _context.Pipelines
+            .Include(p => p.Stages.OrderBy(s => s.Order))
+            .FirstOrDefaultAsync(p => p.TenantId == user.TenantId && p.IsDefault);
+        ViewBag.PipelineStages = pipeline?.Stages?.ToList() ?? new List<PipelineStage>();
+
+        return View(deals);
+    }
+
+    // POST: CRM/UpdateDealStatus
+    [HttpPost]
+    public async Task<IActionResult> UpdateDealStatus(int dealId, DealStatus status)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var deal = await _context.Deals
+            .FirstOrDefaultAsync(d => d.Id == dealId && d.TenantId == user.TenantId);
+
+        if (deal == null) return NotFound();
+
+        deal.Status = status;
+        deal.UpdatedAt = DateTime.UtcNow;
+
+        if (status == DealStatus.Won || status == DealStatus.Lost)
+        {
+            deal.ActualCloseDate = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Deals));
+    }
+
+    // POST: CRM/UpdateDealStage - Deals don't have stages, so redirect to Deals page
+    [HttpPost]
+    public async Task<IActionResult> UpdateDealStage(int dealId, int stageId)
+    {
+        // Note: Deal model doesn't have StageId - this is a placeholder for future enhancement
+        // For now, just return success
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            return Json(new { success = true, message = "Deals don't have stages in current model" });
+        }
+
+        return RedirectToAction(nameof(Deals));
     }
 }

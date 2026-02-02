@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Notification_Application.Data;
 using Notification_Application.Models;
+using Notification_Application.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
@@ -15,15 +16,18 @@ namespace Notification_Application.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly IWebHostEnvironment _environment;
+        private readonly IUnsplashService _unsplashService;
 
         public MediaController(
             ApplicationDbContext context,
             UserManager<User> userManager,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IUnsplashService unsplashService)
         {
             _context = context;
             _userManager = userManager;
             _environment = environment;
+            _unsplashService = unsplashService;
         }
 
         [HttpGet]
@@ -175,6 +179,113 @@ namespace Notification_Application.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+
+        // Unsplash API endpoints
+        [HttpGet]
+        [Route("api/unsplash/search")]
+        public async Task<IActionResult> SearchUnsplash(string query, int page = 1, int perPage = 20)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(query))
+                    return BadRequest(new { error = "Query is required" });
+
+                var result = await _unsplashService.SearchPhotosAsync(query, page, perPage);
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("api/unsplash/random")]
+        public async Task<IActionResult> GetRandomUnsplash(string? query = null)
+        {
+            try
+            {
+                var photo = await _unsplashService.GetRandomPhotoAsync(query);
+                if (photo == null)
+                    return NotFound(new { error = "No photo found" });
+
+                return Json(photo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("api/unsplash/collections")]
+        public async Task<IActionResult> GetUnsplashCollections(int page = 1, int perPage = 10)
+        {
+            try
+            {
+                var collections = await _unsplashService.GetCollectionsAsync(page, perPage);
+                return Json(collections);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("api/unsplash/collections/{collectionId}")]
+        public async Task<IActionResult> GetCollectionPhotos(string collectionId, int page = 1, int perPage = 20)
+        {
+            try
+            {
+                var result = await _unsplashService.GetCollectionPhotosAsync(collectionId, page, perPage);
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("api/unsplash/photo/{photoId}")]
+        public async Task<IActionResult> GetUnsplashPhoto(string photoId)
+        {
+            try
+            {
+                var photo = await _unsplashService.GetPhotoAsync(photoId);
+                if (photo == null)
+                    return NotFound(new { error = "Photo not found" });
+
+                return Json(photo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        // Suggested search terms for popups
+        [HttpGet]
+        [Route("api/unsplash/suggestions")]
+        public IActionResult GetSearchSuggestions()
+        {
+            var suggestions = new[]
+            {
+                new { Category = "Marketing", Terms = new[] { "business", "marketing", "success", "teamwork", "growth", "startup" } },
+                new { Category = "E-commerce", Terms = new[] { "shopping", "product", "sale", "discount", "gift", "delivery" } },
+                new { Category = "Newsletter", Terms = new[] { "email", "newsletter", "communication", "subscribe", "inbox" } },
+                new { Category = "Lead Capture", Terms = new[] { "contact", "handshake", "meeting", "office", "professional" } },
+                new { Category = "Seasonal", Terms = new[] { "christmas", "halloween", "summer", "spring", "autumn", "winter" } },
+                new { Category = "Abstract", Terms = new[] { "gradient", "abstract", "pattern", "geometric", "minimal", "texture" } },
+                new { Category = "Food", Terms = new[] { "food", "restaurant", "cooking", "cafe", "coffee", "dessert" } },
+                new { Category = "Technology", Terms = new[] { "technology", "computer", "laptop", "coding", "digital", "innovation" } },
+                new { Category = "Health", Terms = new[] { "health", "fitness", "wellness", "yoga", "meditation", "nature" } },
+                new { Category = "Real Estate", Terms = new[] { "house", "interior", "architecture", "home", "apartment", "living room" } }
+            };
+
+            return Json(suggestions);
         }
     }
 }
