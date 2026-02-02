@@ -25,8 +25,28 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<TicketMessage> TicketMessages { get; set; }
     public DbSet<ApiUsage> ApiUsages { get; set; }
     public DbSet<Integration> Integrations { get; set; }
+    public DbSet<IntegrationLog> IntegrationLogs { get; set; }
     public DbSet<Lead> Leads { get; set; }
     public DbSet<PopupView> PopupViews { get; set; }
+    public DbSet<MediaLibraryImage> MediaLibraryImages { get; set; }
+    public DbSet<Playbook> Playbooks { get; set; }
+    
+    // CRM DbSets
+    public DbSet<LeadActivity> LeadActivities { get; set; }
+    public DbSet<Pipeline> Pipelines { get; set; }
+    public DbSet<PipelineStage> PipelineStages { get; set; }
+    public DbSet<LeadStageHistory> LeadStageHistories { get; set; }
+    public DbSet<LeadScore> LeadScores { get; set; }
+    public DbSet<LeadTag> LeadTags { get; set; }
+    public DbSet<LeadCustomField> LeadCustomFields { get; set; }
+    public DbSet<CrmTask> CrmTasks { get; set; }
+    public DbSet<Deal> Deals { get; set; }
+    
+    // Website Forms DbSets
+    public DbSet<WebsiteForm> WebsiteForms { get; set; }
+    public DbSet<FormField> FormFields { get; set; }
+    public DbSet<FormSubmission> FormSubmissions { get; set; }
+    public DbSet<FormAnalytics> FormAnalytics { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -197,6 +217,35 @@ public class ApplicationDbContext : IdentityDbContext<User>
                   .WithMany()
                   .HasForeignKey(i => i.TenantId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure Deal relationships
+        builder.Entity<Deal>(entity =>
+        {
+            // Deal belongs to a Lead (one-to-many: Lead has many Deals)
+            entity.HasOne(d => d.Lead)
+                  .WithMany(l => l.Deals)
+                  .HasForeignKey(d => d.LeadId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.Tenant)
+                  .WithMany()
+                  .HasForeignKey(d => d.TenantId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Owner)
+                  .WithMany()
+                  .HasForeignKey(d => d.OwnerId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure Lead's AssignedDeal (separate optional relationship)
+        builder.Entity<Lead>(entity =>
+        {
+            entity.HasOne(l => l.AssignedDeal)
+                  .WithMany()
+                  .HasForeignKey(l => l.AssignedDealId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Seed default subscription plans

@@ -1,3 +1,4 @@
+@model List<Notification_Application.Models.Playbook>
 @{
     ViewData["Title"] = "Playbooks - Choose Your Campaign Type";
     Layout = null;
@@ -504,300 +505,46 @@
             <h1 class="main-title">Choose Your Playbook</h1>
             <p class="subtitle">
                 Select from proven campaign playbooks designed by conversion experts. 
-                Each playbook includes pre-configured settings, best practices, and optimized templates.
+                Each playbook includes pre-configured settings, best practices, and optimized templates for your industry and goal.
             </p>
         </div>
 
         <div class="playbook-grid">
-            <!-- Newsletter Signup -->
-            <div class="playbook-card">
-                <span class="popular-badge">⭐ Most Popular</span>
-                <div class="playbook-icon icon-blue">
-                    <i class="bi bi-envelope-fill text-white"></i>
+            @foreach (var playbook in Model)
+            {
+                <div class="playbook-card">
+                    @if (playbook.IsPopular)
+                    {
+                        <span class="popular-badge">⭐ Popular</span>
+                    }
+                    <div class="playbook-icon icon-@playbook.IconColor">
+                        <i class="@playbook.Icon text-white"></i>
+                    </div>
+                    <h3 class="playbook-title">@playbook.Name</h3>
+                    <p class="playbook-description">
+                        @playbook.Description
+                    </p>
+                    <div class="playbook-meta">
+                        <span class="meta-item">
+                            <i class="bi bi-building"></i>
+                            @playbook.Industry
+                        </span>
+                        <span class="meta-item">
+                            <i class="bi bi-bullseye"></i>
+                            @playbook.Tactic
+                        </span>
+                    </div>
+                    <div class="playbook-buttons">
+                        <a href="/Popup/PlaybookDetail/@playbook.Id" class="btn-use-playbook">
+                            <i class="bi bi-rocket-takeoff"></i> Use Playbook
+                        </a>
+                        <button class="btn-preview" onclick="showPlaybookDetails(@playbook.Id)">
+                            <i class="bi bi-eye"></i> Details
+                        </button>
+                    </div>
                 </div>
-                <h3 class="playbook-title">Newsletter Signup</h3>
-                <p class="playbook-description">
-                    Grow your email list with high-converting signup forms. Perfect for building your audience.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-star-fill"></i>
-                        Most Popular
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        25K+ uses
-                    </span>
-                </div>
-                <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook">
-                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
-                    </a>
-                    <a href="#" class="btn-preview">
-                        <i class="bi bi-eye"></i> Preview
-                    </a>
-                </div>
-            </div>
-
-            <!-- Welcome Discount -->
-            <div class="playbook-card">
-                <span class="popular-badge" style="background: linear-gradient(135deg, #34d399 0%, #059669 100%);">💰 High ROI</span>
-                <div class="playbook-icon icon-green">
-                    <i class="bi bi-gift-fill text-white"></i>
-                </div>
-                <h3 class="playbook-title">Welcome Discount</h3>
-                <p class="playbook-description">
-                    Offer first-time visitors a special discount to boost conversions and build loyalty.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-graph-up"></i>
-                        High ROI
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        18K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook">
-                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
-                    </a>
-                    <a href="#" class="btn-preview">
-                        <i class="bi bi-eye"></i> Preview
-                    </a>
-                </div>
-            </div>
-
-            <!-- Exit Intent -->
-            <div class="playbook-card">
-                <span class="popular-badge" style="background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);">🏆 Proven</span>
-                <div class="playbook-icon icon-orange">
-                    <i class="bi bi-box-arrow-right text-white"></i>
-                </div>
-                <h3 class="playbook-title">Exit Intent</h3>
-                <p class="playbook-description">
-                    Capture leaving visitors with last-minute offers. Reduce bounce rate and recover sales.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-trophy"></i>
-                        Proven Results
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        22K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">
-                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
-                    </a>
-                    <a href="#" class="btn-preview">
-                        <i class="bi bi-eye"></i> Preview
-                    </a>
-                </div>
-            </div>
-
-            <!-- Flash Sale -->
-            <div class="playbook-card">
-                <span class="popular-badge" style="background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);">⚡ Urgent</span>
-                <div class="playbook-icon icon-red">
-                    <i class="bi bi-lightning-fill text-white"></i>
-                </div>
-                <h3 class="playbook-title">Flash Sale Promotion</h3>
-                <p class="playbook-description">
-                    Create urgency with time-limited offers. Drive immediate action with countdown timers.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-clock"></i>
-                        Time-Sensitive
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        15K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook">
-                        <i class="bi bi-rocket-takeoff"></i> Use Playbook
-                    </a>
-                    <a href="#" class="btn-preview">
-                        <i class="bi bi-eye"></i> Preview
-                    </a>
-                </div>
-            </div>
-
-            <!-- Spin to Win -->
-            <div class="playbook-card">
-                <div class="playbook-icon icon-purple">
-                    <i class="bi bi-circle text-white"></i>
-                </div>
-                <h3 class="playbook-title">Spin to Win</h3>
-                <p class="playbook-description">
-                    Gamify your offers with an interactive spinning wheel. Boost engagement and conversions.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-controller"></i>
-                        Interactive
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        12K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
-                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
-                </div>
-            </div>
-
-            <!-- Product Launch -->
-            <div class="playbook-card">
-                <div class="playbook-icon icon-pink">
-                    <i class="bi bi-rocket-fill text-white"></i>
-                </div>
-                <h3 class="playbook-title">Product Launch</h3>
-                <p class="playbook-description">
-                    Announce new products with eye-catching visuals. Build anticipation and drive sales.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-megaphone"></i>
-                        Announcement
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        9K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=3" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
-                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
-                </div>
-            </div>
-
-            <!-- Free Shipping -->
-            <div class="playbook-card">
-                <div class="playbook-icon icon-teal">
-                    <i class="bi bi-truck text-white"></i>
-                </div>
-                <h3 class="playbook-title">Free Shipping Offer</h3>
-                <p class="playbook-description">
-                    Promote free shipping thresholds. Increase average order value and reduce cart abandonment.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-cart-check"></i>
-                        E-commerce
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        14K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=1" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
-                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
-                </div>
-            </div>
-
-            <!-- Webinar Registration -->
-            <div class="playbook-card">
-                <div class="playbook-icon icon-indigo">
-                    <i class="bi bi-camera-video-fill text-white"></i>
-                </div>
-                <h3 class="playbook-title">Webinar Registration</h3>
-                <p class="playbook-description">
-                    Drive registrations for your webinars and events. Collect leads and build your audience.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-calendar-event"></i>
-                        Event
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        8K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=6" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
-                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
-                </div>
-            </div>
-
-            <!-- Lead Magnet -->
-            <div class="playbook-card">
-                <div class="playbook-icon icon-yellow">
-                    <i class="bi bi-file-earmark-text-fill text-white"></i>
-                </div>
-                <h3 class="playbook-title">Lead Magnet Download</h3>
-                <p class="playbook-description">
-                    Offer valuable content in exchange for email addresses. Build your email list effectively.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-download"></i>
-                        Content
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        11K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
-                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
-                </div>
-            </div>
-
-            <!-- Survey/Feedback -->
-            <div class="playbook-card">
-                <div class="playbook-icon icon-blue">
-                    <i class="bi bi-clipboard-check-fill text-white"></i>
-                </div>
-                <h3 class="playbook-title">Customer Feedback</h3>
-                <p class="playbook-description">
-                    Collect valuable customer insights with surveys. Improve your products and services.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-chat-dots"></i>
-                        Feedback
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        7K+ uses
-                    </span>
-                </div>
-                            <div class="playbook-buttons">
-                    <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
-                    <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>
-                </div>
-            </div>
-
-            <!-- Holiday Campaign -->
-            <div class="playbook-card">
-                <div class="playbook-icon icon-red">
-                    <i class="bi bi-balloon-heart-fill text-white"></i>
-                </div>
-                <h3 class="playbook-title">Holiday Campaign</h3>
-                <p class="playbook-description">
-                    Seasonal campaigns for holidays. Drive sales during peak shopping seasons.
-                </p>
-                <div class="playbook-meta">
-                    <span class="meta-item">
-                        <i class="bi bi-calendar3"></i>
-                        Seasonal
-                    </span>
-                    <span class="meta-item">
-                        <i class="bi bi-people"></i>
-                        10K+ uses
-                    </span>
-                </div>
+            }
+        </div>
                             <div class="playbook-buttons">
                     <a href="/Popup/SelectTemplate?type=0" class="btn-use-playbook"><i class="bi bi-rocket-takeoff"></i> Use Playbook</a>
                     <a href="#" class="btn-preview"><i class="bi bi-eye"></i> Preview</a>

@@ -1,0 +1,59 @@
+<div class="popup-coupon" style="max-width: 480px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(236, 72, 153, 0.3); position: relative; text-align: center; color: white;">
+    <button class="close-btn" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 20px; cursor: pointer; color: white;">&times;</button>
+    
+    <div style="font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; opacity: 0.9; margin-bottom: 12px;">🎉 EXCLUSIVE OFFER</div>
+    
+    <h2 style="font-size: 56px; font-weight: 900; margin: 0 0 8px 0;">25% OFF</h2>
+    <p style="font-size: 18px; opacity: 0.95; margin: 0 0 28px 0;">Your First Order</p>
+    
+    <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 12px 0; font-weight: 600;">YOUR COUPON CODE</p>
+        <div style="display: flex; align-items: center; gap: 12px; justify-content: center;">
+            <span style="font-size: 28px; font-weight: 800; letter-spacing: 3px; color: #1e293b; background: #f8fafc; padding: 12px 24px; border-radius: 8px; border: 2px dashed #e2e8f0;">WELCOME25</span>
+            <button onclick="navigator.clipboard.writeText('WELCOME25')" style="padding: 12px; background: #f8fafc; border: none; border-radius: 8px; cursor: pointer;" title="Copy">
+                <svg width="20" height="20" fill="#64748b" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            </button>
+        </div>
+    </div>
+    
+    <form class="popup-form">
+        <input type="email" name="email" placeholder="Enter your email to claim" style="width: 100%; padding: 16px 20px; border: none; border-radius: 10px; font-size: 15px; margin-bottom: 12px;" required>
+        <button type="submit" style="width: 100%; padding: 16px; background: white; color: #ec4899; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s;">Claim My Discount</button>
+    </form>
+    
+    <p style="font-size: 12px; opacity: 0.8; margin-top: 16px;">*Valid for new customers only. Expires in 48 hours.</p>
+</div>
+
+<style>
+.popup-coupon {
+    animation: popBounce 0.4s ease-out;
+}
+
+@keyframes popBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    60% {
+        transform: scale(1.03);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.popup-form input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+}
+
+.popup-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.close-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+</style>

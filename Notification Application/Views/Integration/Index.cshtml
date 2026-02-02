@@ -1,262 +1,621 @@
+@model IntegrationIndexViewModel
 @{
     ViewData["Title"] = "Integrations";
+    
+    // Helper to get icon for integration type
+    string GetIntegrationIcon(IntegrationType type)
+    {
+        return type switch
+        {
+            IntegrationType.Mailchimp => "fas fa-mail-bulk",
+            IntegrationType.Brevo => "fas fa-envelope",
+            IntegrationType.ConvertKit => "fas fa-paper-plane",
+            IntegrationType.MailerLite => "fas fa-envelope-open-text",
+            IntegrationType.ActiveCampaign => "fas fa-bullseye",
+            IntegrationType.Klaviyo => "fas fa-chart-line",
+            IntegrationType.CampaignMonitor => "fas fa-broadcast-tower",
+            IntegrationType.Listrak => "fas fa-list",
+            IntegrationType.Marketo => "fas fa-marker",
+            IntegrationType.HubSpot => "fab fa-hubspot",
+            IntegrationType.Salesforce => "fab fa-salesforce",
+            IntegrationType.Pipedrive => "fas fa-funnel-dollar",
+            IntegrationType.Zoho => "fas fa-database",
+            IntegrationType.Freshsales => "fas fa-leaf",
+            IntegrationType.Keap => "fas fa-key",
+            IntegrationType.HighLevel => "fas fa-level-up-alt",
+            IntegrationType.Close => "fas fa-handshake",
+            IntegrationType.Zapier => "fas fa-bolt",
+            IntegrationType.Make => "fas fa-cogs",
+            IntegrationType.n8n => "fas fa-project-diagram",
+            IntegrationType.Pabbly => "fas fa-link",
+            IntegrationType.GoogleAnalytics4 => "fab fa-google",
+            IntegrationType.FacebookPixel => "fab fa-facebook",
+            IntegrationType.GoogleTagManager => "fas fa-tags",
+            IntegrationType.MicrosoftClarity => "fab fa-microsoft",
+            IntegrationType.Hotjar => "fas fa-fire",
+            IntegrationType.Mixpanel => "fas fa-chart-pie",
+            IntegrationType.Segment => "fas fa-random",
+            IntegrationType.Slack => "fab fa-slack",
+            IntegrationType.Discord => "fab fa-discord",
+            IntegrationType.MicrosoftTeams => "fab fa-microsoft",
+            IntegrationType.Twilio => "fas fa-sms",
+            IntegrationType.Shopify => "fab fa-shopify",
+            IntegrationType.WooCommerce => "fab fa-wordpress",
+            IntegrationType.Webhook => "fas fa-code",
+            IntegrationType.CustomAPI => "fas fa-plug",
+            _ => "fas fa-puzzle-piece"
+        };
+    }
+    
+    string GetCategoryColor(IntegrationCategory category)
+    {
+        return category switch
+        {
+            IntegrationCategory.EmailMarketing => "blue",
+            IntegrationCategory.CRM => "purple",
+            IntegrationCategory.Automation => "orange",
+            IntegrationCategory.Analytics => "green",
+            IntegrationCategory.Communication => "pink",
+            IntegrationCategory.eCommerce => "teal",
+            IntegrationCategory.Custom => "gray",
+            _ => "gray"
+        };
+    }
+    
+    string GetCategoryGradient(IntegrationCategory category)
+    {
+        return category switch
+        {
+            IntegrationCategory.EmailMarketing => "from-blue-500 to-blue-700",
+            IntegrationCategory.CRM => "from-purple-500 to-purple-700",
+            IntegrationCategory.Automation => "from-orange-500 to-orange-700",
+            IntegrationCategory.Analytics => "from-green-500 to-green-700",
+            IntegrationCategory.Communication => "from-pink-500 to-pink-700",
+            IntegrationCategory.eCommerce => "from-teal-500 to-teal-700",
+            IntegrationCategory.Custom => "from-gray-500 to-gray-700",
+            _ => "from-gray-500 to-gray-700"
+        };
+    }
 }
+
+<style>
+    .integration-card {
+        transition: all 0.3s ease;
+    }
+    .integration-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .category-tab {
+        transition: all 0.2s ease;
+    }
+    .category-tab.active {
+        border-bottom: 3px solid #6366f1;
+        color: #4f46e5;
+        font-weight: 600;
+    }
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    .status-dot.connected {
+        background: #10b981;
+    }
+    .status-dot.disconnected {
+        background: #ef4444;
+    }
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+</style>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="mb-8">
-        <div class="flex items-center gap-4 mb-3">
-            <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-4 shadow-lg">
-                <i class="fas fa-plug text-white text-3xl"></i>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-4 shadow-lg">
+                    <i class="fas fa-plug text-white text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900">Integrations</h1>
+                    <p class="text-gray-600 mt-1">Connect your favorite tools and automate workflows</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                    <span class="status-dot connected"></span>
+                    @Model.ConnectedIntegrations.Count(i => i.IsConnected) Connected
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connected Integrations -->
+    @if (Model.ConnectedIntegrations.Any())
+    {
+        <div class="mb-10">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-check-circle text-green-500"></i>
+                Your Connected Integrations
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach (var integration in Model.ConnectedIntegrations)
+                {
+                    var color = GetCategoryColor(integration.Category);
+                    <div class="integration-card bg-white rounded-xl border-2 border-gray-100 p-5 shadow-md">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br @GetCategoryGradient(integration.Category) flex items-center justify-center shadow">
+                                    <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">@integration.Name</h3>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        @if (integration.IsConnected)
+                                        {
+                                            <span class="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                                <i class="fas fa-check-circle"></i> Connected
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
+                                                <i class="fas fa-exclamation-triangle"></i> Pending
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                            <div class="text-xs text-gray-500">
+                                @if (integration.LastSyncAt.HasValue)
+                                {
+                                    <span>Last sync: @integration.LastSyncAt.Value.ToString("MMM d, h:mm tt")</span>
+                                }
+                                else
+                                {
+                                    <span>Syncs: @integration.SyncCount</span>
+                                }
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a asp-action="Configure" asp-route-type="@integration.Type" 
+                                   class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <i class="fas fa-cog"></i> Settings
+                                </a>
+                                <form asp-action="Disconnect" asp-route-id="@integration.Id" method="post" class="inline"
+                                      onsubmit="return confirm('Are you sure you want to disconnect this integration?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                        <i class="fas fa-unlink"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Category Tabs -->
+    <div class="mb-6 border-b border-gray-200">
+        <nav class="flex space-x-8 overflow-x-auto" aria-label="Tabs">
+            <button onclick="showCategory('all')" class="category-tab active px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" data-tab="all">
+                <i class="fas fa-th-large me-2"></i>All Integrations
+            </button>
+            <button onclick="showCategory('email')" class="category-tab px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" data-tab="email">
+                <i class="fas fa-envelope me-2"></i>Email Marketing
+            </button>
+            <button onclick="showCategory('crm')" class="category-tab px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" data-tab="crm">
+                <i class="fas fa-address-book me-2"></i>CRM
+            </button>
+            <button onclick="showCategory('automation')" class="category-tab px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" data-tab="automation">
+                <i class="fas fa-bolt me-2"></i>Automation
+            </button>
+            <button onclick="showCategory('analytics')" class="category-tab px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" data-tab="analytics">
+                <i class="fas fa-chart-bar me-2"></i>Analytics
+            </button>
+            <button onclick="showCategory('communication')" class="category-tab px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" data-tab="communication">
+                <i class="fas fa-comments me-2"></i>Communication
+            </button>
+            <button onclick="showCategory('ecommerce')" class="category-tab px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" data-tab="ecommerce">
+                <i class="fas fa-shopping-cart me-2"></i>eCommerce
+            </button>
+        </nav>
+    </div>
+
+    <!-- Email Marketing Section -->
+    <div class="category-section" data-category="email">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="bg-blue-100 rounded-xl p-3">
+                <i class="fas fa-envelope text-blue-600 text-xl"></i>
             </div>
             <div>
-                <h1 class="text-4xl font-bold text-gray-900">Integrations</h1>
-                <p class="text-gray-600 mt-1">Connect your favorite tools and automate workflows</p>
+                <h2 class="text-2xl font-bold text-gray-900">Email Marketing</h2>
+                <p class="text-gray-600 text-sm">Sync leads with your email marketing platforms</p>
             </div>
         </div>
-    </div>
-
-    <!-- Integration Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Email Service Card -->
-        <div class="bg-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-blue-300 transition-all duration-200">
-            <div class="flex items-start gap-4">
-                <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <i class="fas fa-envelope text-white text-2xl"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Email Service</h3>
-                    <p class="text-sm text-gray-600 mb-4" id="emailStatus">Connect to send captured emails</p>
-                    <button onclick="openEmailModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
-                        <i class="fas fa-cog"></i>Configure
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Zapier Card -->
-        <div class="bg-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-orange-300 transition-all duration-200">
-            <div class="flex items-start gap-4">
-                <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <i class="fas fa-bolt text-white text-2xl"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Zapier</h3>
-                    <p class="text-sm text-gray-600 mb-4" id="zapierStatus">Automate workflows with 5000+ apps</p>
-                    <button onclick="openZapierModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
-                        <i class="fas fa-cog"></i>Configure
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Webhook Card -->
-        <div class="bg-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-purple-300 transition-all duration-200">
-            <div class="flex items-start gap-4">
-                <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <i class="fas fa-code text-white text-2xl"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Webhook</h3>
-                    <p class="text-sm text-gray-600 mb-4" id="webhookStatus">Send data to custom endpoint</p>
-                    <button onclick="openWebhookModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
-                        <i class="fas fa-cog"></i>Configure
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Integration Info Section -->
-    <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-8">
-        <div class="flex items-start gap-4">
-            <div class="flex-shrink-0">
-                <i class="fas fa-info-circle text-blue-600 text-3xl"></i>
-            </div>
-            <div class="flex-1">
-                <h3 class="text-xl font-bold text-gray-900 mb-3">How Integrations Work</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <div class="bg-white rounded-lg p-4 shadow-sm">
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="bg-blue-100 rounded-lg p-2">
-                                    <i class="fas fa-envelope text-blue-600"></i>
-                                </div>
-                                <h4 class="font-semibold text-gray-900">Email Service</h4>
-                            </div>
-                            <p class="text-sm text-gray-600">Automatically add captured emails to your preferred email marketing platform like Mailchimp or SendinBlue.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+            @foreach (var integration in Model.AvailableEmailIntegrations)
+            {
+                var isConnected = Model.ConnectedIntegrations.Any(c => c.Type == integration.Type && c.IsConnected);
+                <div class="integration-card bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow">
+                            <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-900 truncate">@integration.Name</h3>
+                            @if (isConnected)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                            }
                         </div>
                     </div>
-                    <div>
-                        <div class="bg-white rounded-lg p-4 shadow-sm">
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="bg-orange-100 rounded-lg p-2">
-                                    <i class="fas fa-bolt text-orange-600"></i>
-                                </div>
-                                <h4 class="font-semibold text-gray-900">Zapier</h4>
-                            </div>
-                            <p class="text-sm text-gray-600">Connect to thousands of apps. Trigger workflows when users submit forms, view popups, or take actions.</p>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">@integration.Description</p>
+                    <a asp-action="Configure" asp-route-type="@integration.Type"
+                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 @(isConnected ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-blue-600 text-white hover:bg-blue-700") rounded-lg text-sm font-semibold transition-all">
+                        @if (isConnected)
+                        {
+                            <i class="fas fa-cog"></i>
+                            <span>Manage</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Connect</span>
+                        }
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- CRM Section -->
+    <div class="category-section" data-category="crm">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="bg-purple-100 rounded-xl p-3">
+                <i class="fas fa-address-book text-purple-600 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">CRM Integrations</h2>
+                <p class="text-gray-600 text-sm">Push leads directly to your CRM system</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+            @foreach (var integration in Model.AvailableCrmIntegrations)
+            {
+                var isConnected = Model.ConnectedIntegrations.Any(c => c.Type == integration.Type && c.IsConnected);
+                <div class="integration-card bg-white rounded-xl border border-gray-200 p-5 hover:border-purple-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow">
+                            <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-900 truncate">@integration.Name</h3>
+                            @if (integration.IsPremium && Model.PlanId < 3)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-yellow-600">
+                                    <i class="fas fa-crown"></i> Pro+
+                                </span>
+                            }
+                            else if (isConnected)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                            }
                         </div>
                     </div>
-                    <div>
-                        <div class="bg-white rounded-lg p-4 shadow-sm">
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="bg-purple-100 rounded-lg p-2">
-                                    <i class="fas fa-code text-purple-600"></i>
-                                </div>
-                                <h4 class="font-semibold text-gray-900">Webhook</h4>
-                            </div>
-                            <p class="text-sm text-gray-600">Send real-time data to your own server or API endpoint. Perfect for custom integrations and workflows.</p>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">@integration.Description</p>
+                    @if (integration.IsPremium && Model.PlanId < 3)
+                    {
+                        <a asp-controller="Payment" asp-action="Upgrade"
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 rounded-lg text-sm font-semibold transition-all hover:shadow-lg">
+                            <i class="fas fa-crown"></i>
+                            <span>Upgrade to Pro</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-action="Configure" asp-route-type="@integration.Type"
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 @(isConnected ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-purple-600 text-white hover:bg-purple-700") rounded-lg text-sm font-semibold transition-all">
+                            @if (isConnected)
+                            {
+                                <i class="fas fa-cog"></i>
+                                <span>Manage</span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Connect</span>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Automation Section -->
+    <div class="category-section" data-category="automation">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="bg-orange-100 rounded-xl p-3">
+                <i class="fas fa-bolt text-orange-600 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Automation Platforms</h2>
+                <p class="text-gray-600 text-sm">Connect to thousands of apps with automation tools</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+            @foreach (var integration in Model.AvailableAutomationIntegrations)
+            {
+                var isConnected = Model.ConnectedIntegrations.Any(c => c.Type == integration.Type && c.IsConnected);
+                <div class="integration-card bg-white rounded-xl border border-gray-200 p-5 hover:border-orange-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow">
+                            <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-900 truncate">@integration.Name</h3>
+                            @if (isConnected)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                            }
                         </div>
                     </div>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">@integration.Description</p>
+                    <a asp-action="Configure" asp-route-type="@integration.Type"
+                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 @(isConnected ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-orange-600 text-white hover:bg-orange-700") rounded-lg text-sm font-semibold transition-all">
+                        @if (isConnected)
+                        {
+                            <i class="fas fa-cog"></i>
+                            <span>Manage</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Connect</span>
+                        }
+                    </a>
                 </div>
-            </div>
+            }
         </div>
     </div>
-</div>
 
-<!-- Email Service Modal -->
-<div class="modal fade" id="emailModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-2xl">
-            <div class="modal-header bg-gradient-to-r from-blue-600 to-blue-700 text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-envelope me-2"></i>Email Service Configuration</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <!-- Analytics Section -->
+    <div class="category-section" data-category="analytics">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="bg-green-100 rounded-xl p-3">
+                <i class="fas fa-chart-bar text-green-600 text-xl"></i>
             </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Email Provider</label>
-                    <select class="form-select" id="emailProvider">
-                        <option value="">Select Provider</option>
-                        <option value="mailchimp">Mailchimp</option>
-                        <option value="sendinblue">SendinBlue</option>
-                        <option value="mailerlite">MailerLite</option>
-                        <option value="convertkit">ConvertKit</option>
-                        <option value="custom">Custom SMTP</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">API Key</label>
-                    <input type="password" class="form-control" id="emailApiKey" placeholder="Enter your API key">
-                    <small class="text-muted">Your API key will be encrypted and stored securely</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">List/Audience ID</label>
-                    <input type="text" class="form-control" id="emailListId" placeholder="Enter list ID">
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="emailDoubleOptIn">
-                    <label class="form-check-label" for="emailDoubleOptIn">Enable double opt-in</label>
-                </div>
-            </div>
-            <div class="modal-footer border-0 bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveEmailConfig()">
-                    <i class="fas fa-save me-1"></i>Save Configuration
-                </button>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Analytics & Tracking</h2>
+                <p class="text-gray-600 text-sm">Track popup performance across your analytics platforms</p>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Zapier Modal -->
-<div class="modal fade" id="zapierModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-2xl">
-            <div class="modal-header bg-gradient-to-r from-orange-600 to-orange-700 text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-bolt me-2"></i>Zapier Integration</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="alert alert-info d-flex align-items-start">
-                    <i class="fas fa-info-circle me-2 mt-1"></i>
-                    <div>
-                        <strong>Connect to 5,000+ apps</strong><br>
-                        <small>Use Zapier to connect this popup to thousands of apps like Google Sheets, Slack, and more.</small>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+            @foreach (var integration in Model.AvailableAnalyticsIntegrations)
+            {
+                var isConnected = Model.ConnectedIntegrations.Any(c => c.Type == integration.Type && c.IsConnected);
+                <div class="integration-card bg-white rounded-xl border border-gray-200 p-5 hover:border-green-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center shadow">
+                            <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-900 truncate">@integration.Name</h3>
+                            @if (isConnected)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                            }
+                        </div>
                     </div>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">@integration.Description</p>
+                    <a asp-action="Configure" asp-route-type="@integration.Type"
+                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 @(isConnected ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-green-600 text-white hover:bg-green-700") rounded-lg text-sm font-semibold transition-all">
+                        @if (isConnected)
+                        {
+                            <i class="fas fa-cog"></i>
+                            <span>Manage</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Connect</span>
+                        }
+                    </a>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Zapier Webhook URL <span class="text-danger">*</span></label>
-                    <input type="url" class="form-control" id="zapierWebhook" placeholder="https://hooks.zapier.com/hooks/catch/...">
-                    <small class="text-muted">Get this URL from your Zapier account</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Trigger Event</label>
-                    <select class="form-select" id="zapierEvent">
-                        <option value="submission">Form Submission</option>
-                        <option value="view">Popup View</option>
-                        <option value="click">Button Click</option>
-                        <option value="close">Popup Close</option>
-                    </select>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="zapierEnabled" checked>
-                    <label class="form-check-label" for="zapierEnabled">Enable Zapier integration</label>
-                </div>
-            </div>
-            <div class="modal-footer border-0 bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveZapierConfig()">
-                    <i class="fas fa-save me-1"></i>Save Configuration
-                </button>
-            </div>
+            }
         </div>
     </div>
-</div>
 
-<!-- Webhook Modal -->
-<div class="modal fade" id="webhookModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-2xl">
-            <div class="modal-header bg-gradient-to-r from-purple-600 to-purple-700 text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-code me-2"></i>Webhook Configuration</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <!-- Communication Section -->
+    <div class="category-section" data-category="communication">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="bg-pink-100 rounded-xl p-3">
+                <i class="fas fa-comments text-pink-600 text-xl"></i>
             </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Webhook URL <span class="text-danger">*</span></label>
-                    <input type="url" class="form-control" id="webhookUrl" placeholder="https://your-server.com/webhook" required>
-                    <small class="text-muted">POST requests will be sent to this URL when events occur</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">HTTP Method</label>
-                    <select class="form-select" id="webhookMethod">
-                        <option value="POST">POST</option>
-                        <option value="PUT">PUT</option>
-                        <option value="PATCH">PATCH</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Custom Headers (JSON)</label>
-                    <textarea class="form-control font-monospace" id="webhookHeaders" rows="3" placeholder='{"Authorization": "Bearer YOUR_TOKEN"}'></textarea>
-                    <small class="text-muted">Optional: Add custom headers for authentication</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Trigger Event</label>
-                    <select class="form-select" id="webhookEvent">
-                        <option value="submission">Form Submission</option>
-                        <option value="view">Popup View</option>
-                        <option value="click">Button Click</option>
-                        <option value="conversion">Conversion</option>
-                    </select>
-                </div>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" id="webhookRetry" checked>
-                    <label class="form-check-label" for="webhookRetry">Retry on failure (up to 3 times)</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="webhookEnabled" checked>
-                    <label class="form-check-label" for="webhookEnabled">Enable webhook</label>
-                </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Communication</h2>
+                <p class="text-gray-600 text-sm">Get notified when leads convert</p>
             </div>
-            <div class="modal-footer border-0 bg-light">
-                <button type="button" class="btn btn-outline-secondary" onclick="testWebhook()">
-                    <i class="fas fa-play-circle me-1"></i>Test Webhook
-                </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveWebhookConfig()">
-                    <i class="fas fa-save me-1"></i>Save Configuration
-                </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+            @foreach (var integration in Model.AvailableCommunicationIntegrations)
+            {
+                var isConnected = Model.ConnectedIntegrations.Any(c => c.Type == integration.Type && c.IsConnected);
+                <div class="integration-card bg-white rounded-xl border border-gray-200 p-5 hover:border-pink-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow">
+                            <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-900 truncate">@integration.Name</h3>
+                            @if (isConnected)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">@integration.Description</p>
+                    <a asp-action="Configure" asp-route-type="@integration.Type"
+                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 @(isConnected ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-pink-600 text-white hover:bg-pink-700") rounded-lg text-sm font-semibold transition-all">
+                        @if (isConnected)
+                        {
+                            <i class="fas fa-cog"></i>
+                            <span>Manage</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Connect</span>
+                        }
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- eCommerce Section -->
+    <div class="category-section" data-category="ecommerce">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="bg-teal-100 rounded-xl p-3">
+                <i class="fas fa-shopping-cart text-teal-600 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">eCommerce</h2>
+                <p class="text-gray-600 text-sm">Connect your online store</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+            @foreach (var integration in Model.AvailableEcommerceIntegrations)
+            {
+                var isConnected = Model.ConnectedIntegrations.Any(c => c.Type == integration.Type && c.IsConnected);
+                <div class="integration-card bg-white rounded-xl border border-gray-200 p-5 hover:border-teal-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow">
+                            <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-900 truncate">@integration.Name</h3>
+                            @if (isConnected)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">@integration.Description</p>
+                    <a asp-action="Configure" asp-route-type="@integration.Type"
+                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 @(isConnected ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-teal-600 text-white hover:bg-teal-700") rounded-lg text-sm font-semibold transition-all">
+                        @if (isConnected)
+                        {
+                            <i class="fas fa-cog"></i>
+                            <span>Manage</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Connect</span>
+                        }
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Custom Webhook Section -->
+    <div class="category-section" data-category="all">
+        <div class="mb-6 flex items-center gap-3">
+            <div class="bg-gray-100 rounded-xl p-3">
+                <i class="fas fa-code text-gray-600 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Custom Integrations</h2>
+                <p class="text-gray-600 text-sm">Build your own integrations with webhooks and APIs</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+            @foreach (var integration in Model.CustomIntegrations)
+            {
+                var isConnected = Model.ConnectedIntegrations.Any(c => c.Type == integration.Type && c.IsConnected);
+                <div class="integration-card bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-400">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-500 to-gray-700 flex items-center justify-center shadow">
+                            <i class="@GetIntegrationIcon(integration.Type) text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-900 truncate">@integration.Name</h3>
+                            @if (isConnected)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Connected
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">@integration.Description</p>
+                    <a asp-action="Configure" asp-route-type="@integration.Type"
+                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 @(isConnected ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-gray-700 text-white hover:bg-gray-800") rounded-lg text-sm font-semibold transition-all">
+                        @if (isConnected)
+                        {
+                            <i class="fas fa-cog"></i>
+                            <span>Manage</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Configure</span>
+                        }
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 border border-indigo-100">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <i class="fas fa-info-circle text-indigo-600"></i>
+            How Integrations Work
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
+                    <i class="fas fa-plug text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-2">1. Connect</h3>
+                <p class="text-sm text-gray-600">Choose an integration and enter your API credentials or authorize via OAuth.</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
+                    <i class="fas fa-sync-alt text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-2">2. Sync Automatically</h3>
+                <p class="text-sm text-gray-600">New leads from popups and forms are automatically synced to your connected platforms.</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
+                    <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 mb-2">3. Track Performance</h3>
+                <p class="text-sm text-gray-600">Monitor sync status, view logs, and track how popups drive conversions in your tools.</p>
             </div>
         </div>
     </div>
@@ -264,257 +623,23 @@
 
 @section Scripts {
 <script>
-    // Integration configurations storage
-    let integrationConfigs = {
-        email: null,
-        zapier: null,
-        webhook: null
-    };
-
-    // Load saved configurations from localStorage
-    function loadIntegrationConfigs() {
-        const saved = localStorage.getItem('integrationConfigs');
-        if (saved) {
-            try {
-                integrationConfigs = JSON.parse(saved);
-                updateIntegrationStatus();
-            } catch (e) {
-                console.error('Error loading integration configs:', e);
+    function showCategory(category) {
+        // Update tab styles
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.tab === category) {
+                tab.classList.add('active');
             }
-        }
-    }
-
-    // Save configurations to localStorage
-    function saveIntegrationConfigs() {
-        localStorage.setItem('integrationConfigs', JSON.stringify(integrationConfigs));
-    }
-
-    // Email Modal Functions
-    function openEmailModal() {
-        new bootstrap.Modal(document.getElementById('emailModal')).show();
-        if (integrationConfigs.email) {
-            document.getElementById('emailProvider').value = integrationConfigs.email.provider || '';
-            document.getElementById('emailApiKey').value = integrationConfigs.email.apiKey || '';
-            document.getElementById('emailListId').value = integrationConfigs.email.listId || '';
-            document.getElementById('emailDoubleOptIn').checked = integrationConfigs.email.doubleOptIn || false;
-        }
-    }
-
-    function saveEmailConfig() {
-        const provider = document.getElementById('emailProvider').value;
-        const apiKey = document.getElementById('emailApiKey').value;
-        const listId = document.getElementById('emailListId').value;
-
-        if (!provider || !apiKey || !listId) {
-            alert('Please fill in all required fields');
-            return;
-        }
-
-        integrationConfigs.email = {
-            provider: provider,
-            apiKey: apiKey,
-            listId: listId,
-            doubleOptIn: document.getElementById('emailDoubleOptIn').checked,
-            enabled: true,
-            configuredAt: new Date().toISOString()
-        };
+        });
         
-        saveIntegrationConfigs();
-        bootstrap.Modal.getInstance(document.getElementById('emailModal')).hide();
-        updateIntegrationStatus();
-        
-        // Show success message
-        showSuccessToast('Email service configured successfully!');
-    }
-
-    // Zapier Modal Functions
-    function openZapierModal() {
-        new bootstrap.Modal(document.getElementById('zapierModal')).show();
-        if (integrationConfigs.zapier) {
-            document.getElementById('zapierWebhook').value = integrationConfigs.zapier.webhookUrl || '';
-            document.getElementById('zapierEvent').value = integrationConfigs.zapier.event || 'submission';
-            document.getElementById('zapierEnabled').checked = integrationConfigs.zapier.enabled !== false;
-        }
-    }
-
-    function saveZapierConfig() {
-        const webhook = document.getElementById('zapierWebhook').value;
-        
-        if (!webhook) {
-            alert('Please enter a Zapier webhook URL');
-            return;
-        }
-
-        integrationConfigs.zapier = {
-            webhookUrl: webhook,
-            event: document.getElementById('zapierEvent').value,
-            enabled: document.getElementById('zapierEnabled').checked,
-            configuredAt: new Date().toISOString()
-        };
-        
-        saveIntegrationConfigs();
-        bootstrap.Modal.getInstance(document.getElementById('zapierModal')).hide();
-        updateIntegrationStatus();
-        
-        showSuccessToast('Zapier integration configured successfully!');
-    }
-
-    // Webhook Modal Functions
-    function openWebhookModal() {
-        new bootstrap.Modal(document.getElementById('webhookModal')).show();
-        if (integrationConfigs.webhook) {
-            document.getElementById('webhookUrl').value = integrationConfigs.webhook.url || '';
-            document.getElementById('webhookMethod').value = integrationConfigs.webhook.method || 'POST';
-            document.getElementById('webhookHeaders').value = integrationConfigs.webhook.headers || '';
-            document.getElementById('webhookEvent').value = integrationConfigs.webhook.event || 'submission';
-            document.getElementById('webhookRetry').checked = integrationConfigs.webhook.retry !== false;
-            document.getElementById('webhookEnabled').checked = integrationConfigs.webhook.enabled !== false;
-        }
-    }
-
-    function saveWebhookConfig() {
-        const url = document.getElementById('webhookUrl').value;
-        
-        if (!url) {
-            alert('Please enter a webhook URL');
-            return;
-        }
-
-        // Validate headers if provided
-        const headers = document.getElementById('webhookHeaders').value;
-        if (headers) {
-            try {
-                JSON.parse(headers);
-            } catch (e) {
-                alert('Invalid JSON in custom headers. Please check the format.');
-                return;
-            }
-        }
-
-        integrationConfigs.webhook = {
-            url: url,
-            method: document.getElementById('webhookMethod').value,
-            headers: headers,
-            event: document.getElementById('webhookEvent').value,
-            retry: document.getElementById('webhookRetry').checked,
-            enabled: document.getElementById('webhookEnabled').checked,
-            configuredAt: new Date().toISOString()
-        };
-        
-        saveIntegrationConfigs();
-        bootstrap.Modal.getInstance(document.getElementById('webhookModal')).hide();
-        updateIntegrationStatus();
-        
-        showSuccessToast('Webhook configured successfully!');
-    }
-
-    function testWebhook() {
-        const url = document.getElementById('webhookUrl').value;
-        
-        if (!url) {
-            alert('Please enter a webhook URL first');
-            return;
-        }
-
-        // Create test payload
-        const testPayload = {
-            test: true,
-            event: 'test',
-            timestamp: new Date().toISOString(),
-            data: {
-                message: 'This is a test webhook from Popup Manager Pro'
-            }
-        };
-
-        // Show loading state
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending...';
-
-        // Send test request
-        fetch(url, {
-            method: document.getElementById('webhookMethod').value,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(document.getElementById('webhookHeaders').value ? JSON.parse(document.getElementById('webhookHeaders').value) : {})
-            },
-            body: JSON.stringify(testPayload)
-        })
-        .then(response => {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-            if (response.ok) {
-                alert('✅ Test webhook sent successfully!\n\nStatus: ' + response.status + '\nCheck your server logs for the incoming request.');
+        // Show/hide sections
+        document.querySelectorAll('.category-section').forEach(section => {
+            if (category === 'all') {
+                section.style.display = 'block';
             } else {
-                alert('⚠️ Webhook sent but received error response.\n\nStatus: ' + response.status + '\nCheck your server configuration.');
+                section.style.display = section.dataset.category === category ? 'block' : 'none';
             }
-        })
-        .catch(error => {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-            alert('❌ Failed to send test webhook.\n\nError: ' + error.message + '\n\nPlease check the URL and try again.');
         });
     }
-
-    // Update integration status displays
-    function updateIntegrationStatus() {
-        // Email status
-        if (integrationConfigs.email && integrationConfigs.email.enabled) {
-            document.getElementById('emailStatus').innerHTML = 
-                '<i class="fas fa-check-circle text-success me-1"></i>Connected to ' + 
-                integrationConfigs.email.provider.charAt(0).toUpperCase() + integrationConfigs.email.provider.slice(1);
-        } else {
-            document.getElementById('emailStatus').textContent = 'Connect to send captured emails';
-        }
-
-        // Zapier status
-        if (integrationConfigs.zapier && integrationConfigs.zapier.enabled) {
-            document.getElementById('zapierStatus').innerHTML = 
-                '<i class="fas fa-check-circle text-success me-1"></i>Active - Workflows enabled';
-        } else {
-            document.getElementById('zapierStatus').textContent = 'Automate workflows with 5000+ apps';
-        }
-
-        // Webhook status
-        if (integrationConfigs.webhook && integrationConfigs.webhook.enabled) {
-            document.getElementById('webhookStatus').innerHTML = 
-                '<i class="fas fa-check-circle text-success me-1"></i>Configured and active';
-        } else {
-            document.getElementById('webhookStatus').textContent = 'Send data to custom endpoint';
-        }
-    }
-
-    // Success toast notification
-    function showSuccessToast(message) {
-        // Create toast element
-        const toastHtml = `
-            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11000">
-                <div class="toast align-items-center text-white bg-success border-0 show" role="alert">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <i class="fas fa-check-circle me-2"></i>${message}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Add to page
-        const div = document.createElement('div');
-        div.innerHTML = toastHtml;
-        document.body.appendChild(div);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            div.remove();
-        }, 3000);
-    }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        loadIntegrationConfigs();
-    });
 </script>
 }

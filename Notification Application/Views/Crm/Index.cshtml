@@ -1,0 +1,310 @@
+@{
+    ViewData["Title"] = "CRM Dashboard";
+    var pipelines = ViewBag.Pipelines as List<Notification_Application.Models.Pipeline> ?? new List<Notification_Application.Models.Pipeline>();
+    var recentActivities = ViewBag.RecentActivities as List<Notification_Application.Models.LeadActivity> ?? new List<Notification_Application.Models.LeadActivity>();
+    var upcomingTasks = ViewBag.UpcomingTasks as List<Notification_Application.Models.CrmTask> ?? new List<Notification_Application.Models.CrmTask>();
+}
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-diagram-3 me-2"></i>CRM Dashboard
+            </h1>
+            <p class="text-muted mb-0">Manage your leads, pipeline, and customer relationships</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Pipeline", "Crm")" class="btn btn-outline-primary me-2">
+                <i class="bi bi-kanban me-1"></i>Pipeline View
+            </a>
+            <a href="@Url.Action("Analytics", "Crm")" class="btn btn-outline-secondary">
+                <i class="bi bi-graph-up me-1"></i>Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Total Leads</div>
+                            <div class="h2 mb-0 fw-bold text-primary">@ViewBag.TotalLeads</div>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-people text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">New Today</div>
+                            <div class="h2 mb-0 fw-bold text-success">@ViewBag.NewLeadsToday</div>
+                        </div>
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-person-plus text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Qualified</div>
+                            <div class="h2 mb-0 fw-bold text-info">@ViewBag.QualifiedLeads</div>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-star text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Conversion Rate</div>
+                            <div class="h2 mb-0 fw-bold text-warning">@(((double)ViewBag.ConversionRate).ToString("F1"))%</div>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-graph-up-arrow text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deal Values -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-white-50 text-uppercase fw-semibold">Open Pipeline Value</div>
+                            <div class="h2 mb-0 fw-bold">$@(((decimal)ViewBag.TotalDealValue).ToString("N0"))</div>
+                        </div>
+                        <i class="bi bi-currency-dollar fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100 bg-gradient" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-white-50 text-uppercase fw-semibold">Won Deals Value</div>
+                            <div class="h2 mb-0 fw-bold">$@(((decimal)ViewBag.WonDealsValue).ToString("N0"))</div>
+                        </div>
+                        <i class="bi bi-trophy fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Pipeline Overview -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-semibold">
+                            <i class="bi bi-kanban me-2 text-primary"></i>Pipeline Overview
+                        </h5>
+                        <a href="@Url.Action("Pipeline", "Crm")" class="btn btn-sm btn-outline-primary">
+                            View Full Pipeline
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (pipelines.Any())
+                    {
+                        var defaultPipeline = pipelines.FirstOrDefault(p => p.IsDefault) ?? pipelines.First();
+                        <div class="d-flex gap-2 flex-wrap">
+                            @foreach (var stage in defaultPipeline.Stages?.OrderBy(s => s.Order) ?? Enumerable.Empty<Notification_Application.Models.PipelineStage>())
+                            {
+                                var leadsInStage = defaultPipeline.Leads?.Count(l => l.StageId == stage.Id) ?? 0;
+                                <div class="flex-fill" style="min-width: 120px;">
+                                    <div class="p-3 rounded-3 text-center" style="background-color: @(stage.Color)20; border-left: 4px solid @stage.Color;">
+                                        <div class="h4 mb-0 fw-bold" style="color: @stage.Color;">@leadsInStage</div>
+                                        <div class="small text-muted">@stage.Name</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-diagram-3 fs-1 text-muted"></i>
+                            <p class="text-muted mt-2">No pipeline configured yet</p>
+                            <a href="@Url.Action("Pipeline", "Crm")" class="btn btn-primary">Setup Pipeline</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-list-check me-2 text-warning"></i>Upcoming Tasks
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (upcomingTasks.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var task in upcomingTasks)
+                            {
+                                var priorityClass = task.Priority switch
+                                {
+                                    Notification_Application.Models.TaskPriority.Urgent => "danger",
+                                    Notification_Application.Models.TaskPriority.High => "warning",
+                                    Notification_Application.Models.TaskPriority.Medium => "info",
+                                    _ => "secondary"
+                                };
+                                var isOverdue = task.DueDate.HasValue && task.DueDate.Value < DateTime.UtcNow;
+                                <a href="@(task.LeadId.HasValue ? Url.Action("LeadDetail", "Crm", new { id = task.LeadId }) : "#")" 
+                                   class="list-group-item list-group-item-action @(isOverdue ? "border-start border-danger border-3" : "")">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-semibold">@task.Title</div>
+                                            @if (task.Lead != null)
+                                            {
+                                                <small class="text-muted">@task.Lead.FirstName @task.Lead.LastName</small>
+                                            }
+                                        </div>
+                                        <span class="badge bg-@priorityClass">@task.Priority</span>
+                                    </div>
+                                    @if (task.DueDate.HasValue)
+                                    {
+                                        <small class="@(isOverdue ? "text-danger" : "text-muted")">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @(isOverdue ? "Overdue: " : "Due: ")@task.DueDate.Value.ToString("MMM dd, yyyy")
+                                        </small>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-check-circle fs-1 text-success"></i>
+                            <p class="text-muted mt-2 mb-0">No pending tasks</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-activity me-2 text-info"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (recentActivities.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Activity</th>
+                                        <th>Lead</th>
+                                        <th>Type</th>
+                                        <th>By</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var activity in recentActivities)
+                                    {
+                                        var typeIcon = activity.Type switch
+                                        {
+                                            Notification_Application.Models.ActivityType.Email => "bi-envelope",
+                                            Notification_Application.Models.ActivityType.Call => "bi-telephone",
+                                            Notification_Application.Models.ActivityType.Meeting => "bi-calendar-event",
+                                            Notification_Application.Models.ActivityType.Note => "bi-sticky",
+                                            Notification_Application.Models.ActivityType.StageChanged => "bi-arrow-right",
+                                            Notification_Application.Models.ActivityType.LeadCreated => "bi-person-plus",
+                                            Notification_Application.Models.ActivityType.PageView => "bi-eye",
+                                            Notification_Application.Models.ActivityType.FormSubmitted => "bi-ui-checks",
+                                            _ => "bi-circle"
+                                        };
+                                        var typeColor = activity.Type switch
+                                        {
+                                            Notification_Application.Models.ActivityType.Email => "primary",
+                                            Notification_Application.Models.ActivityType.Call => "success",
+                                            Notification_Application.Models.ActivityType.Meeting => "warning",
+                                            Notification_Application.Models.ActivityType.StageChanged => "info",
+                                            Notification_Application.Models.ActivityType.LeadCreated => "success",
+                                            _ => "secondary"
+                                        };
+                                        <tr>
+                                            <td>
+                                                <i class="bi @typeIcon text-@typeColor me-2"></i>
+                                                @activity.Title
+                                            </td>
+                                            <td>
+                                                @if (activity.Lead != null)
+                                                {
+                                                    <a href="@Url.Action("LeadDetail", "Crm", new { id = activity.LeadId })" class="text-decoration-none">
+                                                        @activity.Lead.FirstName @activity.Lead.LastName
+                                                    </a>
+                                                }
+                                            </td>
+                                            <td><span class="badge bg-@typeColor-subtle text-@typeColor">@activity.Type</span></td>
+                                            <td>
+                                                @if (activity.PerformedBy != null)
+                                                {
+                                                    <span>@activity.PerformedBy.FirstName @activity.PerformedBy.LastName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">System</span>
+                                                }
+                                            </td>
+                                            <td class="text-muted">@activity.CreatedAt.ToString("MMM dd, HH:mm")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-clock-history fs-1 text-muted"></i>
+                            <p class="text-muted mt-2 mb-0">No recent activities</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

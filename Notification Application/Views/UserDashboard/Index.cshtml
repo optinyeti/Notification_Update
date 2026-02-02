@@ -1,5 +1,82 @@
+@using Notification_Application.Models
+@using Notification_Application.Controllers
+@model UserDashboardViewModel
+
 @{
     ViewData["Title"] = "Dashboard";
+}
+
+@functions {
+    string GetStatusClass(LeadStatus status)
+    {
+        return status switch
+        {
+            LeadStatus.New => "bg-blue-100 text-blue-800",
+            LeadStatus.Contacted => "bg-yellow-100 text-yellow-800",
+            LeadStatus.Qualified => "bg-green-100 text-green-800",
+            LeadStatus.Converted => "bg-purple-100 text-purple-800",
+            LeadStatus.Unqualified => "bg-red-100 text-red-800",
+            LeadStatus.Archived => "bg-gray-100 text-gray-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+
+    string GetActivityIcon(ActivityType type)
+    {
+        return type switch
+        {
+            ActivityType.LeadCreated => "fas fa-plus",
+            ActivityType.StatusChanged => "fas fa-exchange-alt",
+            ActivityType.StageChanged => "fas fa-arrow-right",
+            ActivityType.Note => "fas fa-sticky-note",
+            ActivityType.Email => "fas fa-envelope",
+            ActivityType.Call => "fas fa-phone",
+            ActivityType.Meeting => "fas fa-calendar",
+            ActivityType.Task => "fas fa-check",
+            ActivityType.DealCreated => "fas fa-handshake",
+            ActivityType.DealUpdated => "fas fa-edit",
+            ActivityType.FormSubmitted => "fas fa-file-alt",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+    string GetActivityIconClass(ActivityType type)
+    {
+        return type switch
+        {
+            ActivityType.LeadCreated => "bg-green-100 text-green-600",
+            ActivityType.StatusChanged => "bg-blue-100 text-blue-600",
+            ActivityType.StageChanged => "bg-indigo-100 text-indigo-600",
+            ActivityType.Note => "bg-yellow-100 text-yellow-600",
+            ActivityType.Email => "bg-purple-100 text-purple-600",
+            ActivityType.Call => "bg-orange-100 text-orange-600",
+            ActivityType.Meeting => "bg-pink-100 text-pink-600",
+            ActivityType.Task => "bg-emerald-100 text-emerald-600",
+            ActivityType.DealCreated => "bg-cyan-100 text-cyan-600",
+            ActivityType.DealUpdated => "bg-teal-100 text-teal-600",
+            ActivityType.FormSubmitted => "bg-lime-100 text-lime-600",
+            _ => "bg-gray-100 text-gray-600"
+        };
+    }
+
+    string GetActivityDescription(ActivityType type)
+    {
+        return type switch
+        {
+            ActivityType.LeadCreated => "created lead",
+            ActivityType.StatusChanged => "changed status of",
+            ActivityType.StageChanged => "moved to new stage",
+            ActivityType.Note => "added a note to",
+            ActivityType.Email => "sent email to",
+            ActivityType.Call => "called",
+            ActivityType.Meeting => "scheduled meeting with",
+            ActivityType.Task => "completed task for",
+            ActivityType.DealCreated => "created deal for",
+            ActivityType.DealUpdated => "updated deal for",
+            ActivityType.FormSubmitted => "submitted form for",
+            _ => "updated"
+        };
+    }
 }
 
 <div class="max-w-7xl mx-auto px-4 py-8">
@@ -116,6 +193,447 @@
             </a>
         </div>
     </div>
+
+    <!-- Leads & CRM Activity Section -->
+    <div class="bg-white rounded-lg shadow border p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-users me-2 text-blue-600"></i>Leads Activity
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Overview of your lead capture and CRM pipeline</p>
+            </div>
+            <a asp-controller="Leads" asp-action="Index" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                View All Leads <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <!-- Lead Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-blue-600">Total Leads</span>
+                    <i class="fas fa-users text-blue-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-blue-900">@(Model?.TotalLeads ?? 0)</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-green-600">New This Week</span>
+                    <i class="fas fa-calendar-week text-green-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-green-900">@(Model?.NewLeadsThisWeek ?? 0)</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-purple-600">Qualified</span>
+                    <i class="fas fa-star text-purple-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-purple-900">@(Model?.QualifiedLeads ?? 0)</p>
+            </div>
+            <div class="bg-orange-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-orange-600">Today</span>
+                    <i class="fas fa-bolt text-orange-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-orange-900">@(Model?.NewLeadsToday ?? 0)</p>
+            </div>
+        </div>
+
+        @if (Model?.HasCrmAccess == true)
+        {
+            <!-- CRM Stats (Pro+ Only) -->
+            <div class="border-t pt-4 mb-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                    <i class="fas fa-chart-line me-1"></i>CRM Pipeline
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-indigo-100 p-2 rounded-full">
+                            <i class="fas fa-stream text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">In Pipeline</p>
+                            <p class="text-lg font-semibold text-gray-900">@(Model?.LeadsInPipeline ?? 0)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-emerald-100 p-2 rounded-full">
+                            <i class="fas fa-dollar-sign text-emerald-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Pipeline Value</p>
+                            <p class="text-lg font-semibold text-gray-900">@(Model?.TotalPipelineValue.ToString("C0") ?? "$0")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- CRM Upgrade Prompt -->
+            <div class="border-t pt-4 mb-6">
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-purple-100 p-2 rounded-full">
+                            <i class="fas fa-rocket text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">Unlock CRM Features</p>
+                            <p class="text-sm text-gray-600">Pipeline management, deals, and reports with Pro plan</p>
+                        </div>
+                    </div>
+                    <a asp-controller="UserDashboard" asp-action="Subscription" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                        Upgrade
+                    </a>
+                </div>
+            </div>
+        }
+
+        <!-- Recent Leads Table -->
+        @if (Model?.RecentLeads != null && Model.RecentLeads.Any())
+        {
+            <div class="border-t pt-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Recent Leads</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Captured</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach (var lead in Model.RecentLeads)
+                            {
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <span class="text-blue-600 font-medium text-sm">
+                                                    @((!string.IsNullOrEmpty(lead.FirstName) ? lead.FirstName.Substring(0, 1) : 
+                                                       !string.IsNullOrEmpty(lead.Email) ? lead.Email.Substring(0, 1) : "?").ToUpper())
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">
+                                                    @(!string.IsNullOrEmpty(lead.FirstName) || !string.IsNullOrEmpty(lead.LastName) 
+                                                        ? $"{lead.FirstName} {lead.LastName}".Trim() 
+                                                        : lead.Email ?? "Unknown")
+                                                </p>
+                                                @if (!string.IsNullOrEmpty(lead.Email))
+                                                {
+                                                    <p class="text-xs text-gray-500">@lead.Email</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="text-sm text-gray-600">@(lead.Popup?.Name ?? "Direct")</span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-1 text-xs rounded-full @GetStatusClass(lead.Status)">
+                                            @lead.Status
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-500">
+                                        @lead.CapturedAt.ToString("MMM dd, h:mm tt")
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <a asp-controller="Leads" asp-action="Details" asp-route-id="@lead.Id" 
+                                           class="text-blue-600 hover:text-blue-800 text-sm">
+                                            View <i class="fas fa-chevron-right ms-1"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+                <p>No leads captured yet</p>
+                <p class="text-sm mt-1">Create a popup campaign to start capturing leads</p>
+            </div>
+        }
+    </div>
+
+    <!-- Forms Section -->
+    <div class="bg-white rounded-lg shadow border p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-file-alt me-2 text-green-600"></i>Website Forms
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Capture leads with embeddable forms</p>
+            </div>
+            <a asp-controller="Form" asp-action="Index" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                Manage Forms <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <!-- Forms Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-green-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-green-600">Total Forms</span>
+                    <i class="fas fa-file-alt text-green-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-green-900">@(Model?.TotalForms ?? 0)</p>
+            </div>
+            <div class="bg-emerald-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-emerald-600">Published</span>
+                    <i class="fas fa-check-circle text-emerald-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-emerald-900">@(Model?.PublishedForms ?? 0)</p>
+            </div>
+            <div class="bg-teal-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-teal-600">Submissions</span>
+                    <i class="fas fa-inbox text-teal-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-teal-900">@(Model?.TotalFormSubmissions ?? 0)</p>
+            </div>
+            <div class="bg-cyan-50 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-cyan-600">This Week</span>
+                    <i class="fas fa-calendar-week text-cyan-400"></i>
+                </div>
+                <p class="text-2xl font-bold text-cyan-900">@(Model?.FormSubmissionsThisWeek ?? 0)</p>
+            </div>
+        </div>
+
+        <!-- Recent Forms -->
+        @if (Model?.RecentForms != null && Model.RecentForms.Any())
+        {
+            <div class="border-t pt-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Recent Forms</h3>
+                <div class="space-y-2">
+                    @foreach (var form in Model.RecentForms)
+                    {
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file-alt text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">@form.Name</p>
+                                    <p class="text-xs text-gray-500">@form.Submissions submissions • @form.Views views</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 text-xs rounded-full @(form.Status == FormStatus.Published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")">
+                                    @form.Status
+                                </span>
+                                <a asp-controller="Form" asp-action="Builder" asp-route-id="@form.Id" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-6 text-gray-500">
+                <i class="fas fa-file-alt text-3xl text-gray-300 mb-2"></i>
+                <p>No forms created yet</p>
+                <a asp-controller="Form" asp-action="Create" class="text-green-600 hover:text-green-800 text-sm mt-1 inline-block">
+                    Create your first form <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (Model?.HasCrmAccess == true)
+    {
+        <!-- Pipeline & Deals Section (Pro+ Only) -->
+        <div class="bg-white rounded-lg shadow border p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-funnel-dollar me-2 text-indigo-600"></i>Pipelines & Deals
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Track your sales pipeline and deals</p>
+                </div>
+                <a asp-controller="Crm" asp-action="Pipelines" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    Manage Pipelines <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            <!-- Pipeline Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-indigo-600">Open Deals</span>
+                        <i class="fas fa-handshake text-indigo-400"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-indigo-900">@(Model?.OpenDeals ?? 0)</p>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-emerald-600">Won Deals</span>
+                        <i class="fas fa-trophy text-emerald-400"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-emerald-900">@(Model?.WonDeals ?? 0)</p>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-amber-600">Total Value</span>
+                        <i class="fas fa-dollar-sign text-amber-400"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-amber-900">@((Model?.TotalDealValue ?? 0).ToString("C0"))</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-green-600">Won Value</span>
+                        <i class="fas fa-check-circle text-green-400"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-green-900">@((Model?.WonDealValue ?? 0).ToString("C0"))</p>
+                </div>
+            </div>
+
+            <!-- Pipeline Overview -->
+            @if (Model?.Pipelines != null && Model.Pipelines.Any())
+            {
+                <div class="border-t pt-4 mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Pipeline Overview</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach (var pipeline in Model.Pipelines.Take(3))
+                        {
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-medium text-gray-900">@pipeline.Name</h4>
+                                    <span class="text-xs text-gray-500">@pipeline.Stages?.Count stages</span>
+                                </div>
+                                @if (pipeline.Stages != null && pipeline.Stages.Any())
+                                {
+                                    <div class="flex gap-1">
+                                        @foreach (var stage in pipeline.Stages.OrderBy(s => s.Order).Take(5))
+                                        {
+                                            <div class="flex-1 h-2 rounded-full" style="background-color: @(stage.Color ?? "#6366f1");" title="@stage.Name"></div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Recent Deals -->
+            @if (Model?.RecentDeals != null && Model.RecentDeals.Any())
+            {
+                <div class="border-t pt-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Recent Deals</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Deal</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lead</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Probability</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach (var deal in Model.RecentDeals)
+                                {
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3">
+                                            <span class="font-medium text-gray-900">@deal.Name</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">
+                                            @(deal.Lead != null ? $"{deal.Lead.FirstName} {deal.Lead.LastName}".Trim() : "N/A")
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                                            @deal.Amount.ToString("C0")
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="text-sm text-gray-500">@((deal.Probability).ToString("0"))%</span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 text-xs rounded-full @(deal.Status == DealStatus.Won ? "bg-green-100 text-green-800" : deal.Status == DealStatus.Lost ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800")">
+                                                @deal.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-6 text-gray-500">
+                    <i class="fas fa-handshake text-3xl text-gray-300 mb-2"></i>
+                    <p>No deals yet</p>
+                    <p class="text-sm mt-1">Deals are created when you qualify leads in your pipeline</p>
+                </div>
+            }
+        </div>
+
+        <!-- Recent Activity Section (Pro+ Only) -->
+        <div class="bg-white rounded-lg shadow border p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-history me-2 text-purple-600"></i>Recent Activity
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">@(Model?.ActivitiesToday ?? 0) activities today</p>
+                </div>
+            </div>
+
+            @if (Model?.RecentActivities != null && Model.RecentActivities.Any())
+            {
+                <div class="space-y-3">
+                    @foreach (var activity in Model.RecentActivities.Take(8))
+                    {
+                        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center @GetActivityIconClass(activity.Type)">
+                                <i class="@GetActivityIcon(activity.Type) text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">
+                                    <span class="font-medium">@(activity.PerformedBy?.FirstName ?? "System")</span>
+                                    @GetActivityDescription(activity.Type)
+                                    @if (activity.Lead != null)
+                                    {
+                                        <a asp-controller="Leads" asp-action="Details" asp-route-id="@activity.LeadId" class="text-blue-600 hover:underline">
+                                            @(!string.IsNullOrEmpty(activity.Lead.FirstName) ? $"{activity.Lead.FirstName} {activity.Lead.LastName}".Trim() : activity.Lead.Email)
+                                        </a>
+                                    }
+                                </p>
+                                @if (!string.IsNullOrEmpty(activity.Description))
+                                {
+                                    <p class="text-xs text-gray-500 mt-1">@activity.Description</p>
+                                }
+                                <p class="text-xs text-gray-400 mt-1">@activity.CreatedAt.ToString("MMM dd, h:mm tt")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-6 text-gray-500">
+                    <i class="fas fa-history text-3xl text-gray-300 mb-2"></i>
+                    <p>No recent activity</p>
+                </div>
+            }
+        </div>
+    }
 
     <!-- Integrations Section -->
     <div class="bg-white rounded-lg shadow border p-6">

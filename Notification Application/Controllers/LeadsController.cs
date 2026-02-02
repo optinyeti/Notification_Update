@@ -26,27 +26,27 @@ public class LeadsController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var query = _context.Leads
+        // Start with base query - no Include to avoid INNER JOIN issues
+        var baseQuery = _context.Leads
             .Where(l => l.TenantId == user.TenantId)
-            .Include(l => l.Popup)
             .AsQueryable();
 
         // Filter by popup
         if (popupId.HasValue)
         {
-            query = query.Where(l => l.PopupId == popupId.Value);
+            baseQuery = baseQuery.Where(l => l.PopupId == popupId.Value);
         }
 
         // Filter by status
         if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeadStatus>(status, out var leadStatus))
         {
-            query = query.Where(l => l.Status == leadStatus);
+            baseQuery = baseQuery.Where(l => l.Status == leadStatus);
         }
 
         // Search
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            query = query.Where(l => 
+            baseQuery = baseQuery.Where(l => 
                 (l.Email != null && l.Email.Contains(searchTerm)) ||
                 (l.FirstName != null && l.FirstName.Contains(searchTerm)) ||
                 (l.LastName != null && l.LastName.Contains(searchTerm)) ||
@@ -69,12 +69,28 @@ public class LeadsController : Controller
 
         // Pagination
         int pageSize = 50;
-        var totalLeads = await query.CountAsync();
-        var leads = await query
+        var totalLeads = await baseQuery.CountAsync();
+        
+        // Get leads with optional Popup (LEFT JOIN)
+        var leads = await baseQuery
             .OrderByDescending(l => l.CapturedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+        
+        // Manually load popups for leads that have a valid PopupId
+        var popupIds = leads.Where(l => l.PopupId > 0).Select(l => l.PopupId).Distinct().ToList();
+        var popupDict = await _context.Popups
+            .Where(p => popupIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id);
+        
+        foreach (var lead in leads)
+        {
+            if (lead.PopupId > 0 && popupDict.TryGetValue(lead.PopupId, out var popup))
+            {
+                lead.Popup = popup;
+            }
+        }
 
         ViewBag.TotalPages = (int)Math.Ceiling(totalLeads / (double)pageSize);
         ViewBag.TotalLeads = totalLeads;
@@ -91,6 +107,10 @@ public class LeadsController : Controller
         var lead = await _context.Leads
             .Include(l => l.Popup)
             .Include(l => l.Tenant)
+            .Include(l => l.Pipeline)
+            .Include(l => l.Stage)
+            .Include(l => l.AssignedDeal)
+            .Include(l => l.Activities.OrderByDescending(a => a.CreatedAt).Take(10))
             .FirstOrDefaultAsync(l => l.Id == id && l.TenantId == user.TenantId);
 
         if (lead == null)
@@ -108,6 +128,26 @@ public class LeadsController : Controller
         {
             ViewBag.CustomFields = new Dictionary<string, object>();
         }
+
+        // Get pipelines for dropdown
+        ViewBag.Pipelines = await _context.Pipelines
+            .Where(p => p.TenantId == user.TenantId && p.IsActive)
+            .Include(p => p.Stages.OrderBy(s => s.Order))
+            .ToListAsync();
+
+        // Get deals for dropdown
+        ViewBag.Deals = await _context.Deals
+            .Where(d => d.TenantId == user.TenantId)
+            .OrderByDescending(d => d.CreatedAt)
+            .Take(50)
+            .ToListAsync();
+
+        // Check if user has CRM access (Pro plan or above)
+        var tenant = await _context.Tenants
+            .Include(t => t.SubscriptionPlan)
+            .FirstOrDefaultAsync(t => t.Id == user.TenantId);
+        ViewBag.HasCrmAccess = tenant?.SubscriptionPlanId >= 3;
+        ViewBag.PlanId = tenant?.SubscriptionPlanId ?? 1;
 
         return View(lead);
     }
@@ -127,6 +167,7 @@ public class LeadsController : Controller
             return NotFound();
         }
 
+        var oldStatus = lead.Status;
         lead.Status = status;
         if (!string.IsNullOrEmpty(notes))
         {
@@ -138,9 +179,327 @@ public class LeadsController : Controller
             lead.LastContactedAt = DateTime.UtcNow;
         }
 
+        // Log activity
+        _context.LeadActivities.Add(new LeadActivity
+        {
+            LeadId = lead.Id,
+            TenantId = user.TenantId,
+            Type = ActivityType.StatusChanged,
+            Title = $"Status changed from {oldStatus} to {status}",
+            Description = notes,
+            PerformedByUserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+
         await _context.SaveChangesAsync();
 
         TempData["SuccessMessage"] = "Lead status updated successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // POST: Leads/UpdateDisposition
+    [HttpPost]
+    public async Task<IActionResult> UpdateDisposition(int id, LeadDisposition disposition, string? notes)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var lead = await _context.Leads
+            .FirstOrDefaultAsync(l => l.Id == id && l.TenantId == user.TenantId);
+
+        if (lead == null)
+        {
+            return NotFound();
+        }
+
+        var oldDisposition = lead.Disposition;
+        lead.Disposition = disposition;
+        
+        if (!string.IsNullOrEmpty(notes))
+        {
+            lead.Notes = (lead.Notes ?? "") + "\n[" + DateTime.UtcNow.ToString("g") + "] " + notes;
+        }
+
+        // Log activity
+        _context.LeadActivities.Add(new LeadActivity
+        {
+            LeadId = lead.Id,
+            TenantId = user.TenantId,
+            Type = ActivityType.Note,
+            Title = $"Disposition changed from {oldDisposition} to {disposition}",
+            Description = notes,
+            PerformedByUserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Lead disposition updated successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // POST: Leads/AssignToPipeline
+    [HttpPost]
+    public async Task<IActionResult> AssignToPipeline(int id, int pipelineId, int? stageId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        // Check CRM access
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == user.TenantId);
+        if (tenant?.SubscriptionPlanId < 3)
+        {
+            TempData["ErrorMessage"] = "Pipeline assignment requires a Pro plan or above.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var lead = await _context.Leads
+            .FirstOrDefaultAsync(l => l.Id == id && l.TenantId == user.TenantId);
+
+        if (lead == null)
+        {
+            return NotFound();
+        }
+
+        var pipeline = await _context.Pipelines
+            .Include(p => p.Stages.OrderBy(s => s.Order))
+            .FirstOrDefaultAsync(p => p.Id == pipelineId && p.TenantId == user.TenantId);
+
+        if (pipeline == null)
+        {
+            return NotFound("Pipeline not found");
+        }
+
+        lead.PipelineId = pipelineId;
+        lead.Pipeline = pipeline;
+
+        // If no stage specified, use the first stage
+        if (stageId.HasValue)
+        {
+            lead.StageId = stageId.Value;
+        }
+        else if (pipeline.Stages.Any())
+        {
+            lead.StageId = pipeline.Stages.First().Id;
+        }
+
+        lead.StageEnteredAt = DateTime.UtcNow;
+
+        // Log activity
+        _context.LeadActivities.Add(new LeadActivity
+        {
+            LeadId = lead.Id,
+            TenantId = user.TenantId,
+            Type = ActivityType.StageChanged,
+            Title = $"Assigned to pipeline: {pipeline.Name}",
+            PerformedByUserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        // Add stage history
+        if (lead.StageId.HasValue)
+        {
+            _context.LeadStageHistories.Add(new LeadStageHistory
+            {
+                LeadId = lead.Id,
+                ToStageId = lead.StageId.Value,
+                MovedAt = DateTime.UtcNow,
+                MovedByUserId = user.Id
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Lead assigned to pipeline successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // POST: Leads/UpdateStage
+    [HttpPost]
+    public async Task<IActionResult> UpdateStage(int id, int stageId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        // Check CRM access
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == user.TenantId);
+        if (tenant?.SubscriptionPlanId < 3)
+        {
+            TempData["ErrorMessage"] = "Stage management requires a Pro plan or above.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var lead = await _context.Leads
+            .Include(l => l.Stage)
+            .FirstOrDefaultAsync(l => l.Id == id && l.TenantId == user.TenantId);
+
+        if (lead == null)
+        {
+            return NotFound();
+        }
+
+        var newStage = await _context.PipelineStages
+            .FirstOrDefaultAsync(s => s.Id == stageId);
+
+        if (newStage == null)
+        {
+            return NotFound("Stage not found");
+        }
+
+        var oldStage = lead.Stage?.Name ?? "None";
+        var oldStageId = lead.StageId;
+
+        lead.StageId = stageId;
+        lead.StageEnteredAt = DateTime.UtcNow;
+
+        // Log activity
+        _context.LeadActivities.Add(new LeadActivity
+        {
+            LeadId = lead.Id,
+            TenantId = user.TenantId,
+            Type = ActivityType.StageChanged,
+            Title = $"Stage changed from {oldStage} to {newStage.Name}",
+            PerformedByUserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        // Add new stage history
+        _context.LeadStageHistories.Add(new LeadStageHistory
+        {
+            LeadId = lead.Id,
+            FromStageId = oldStageId,
+            ToStageId = stageId,
+            MovedAt = DateTime.UtcNow,
+            MovedByUserId = user.Id
+        });
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Lead stage updated successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // POST: Leads/AssignDeal
+    [HttpPost]
+    public async Task<IActionResult> AssignDeal(int id, int? dealId, decimal? potentialValue, string? dealTitle)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        // Check CRM access
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == user.TenantId);
+        if (tenant?.SubscriptionPlanId < 3)
+        {
+            TempData["ErrorMessage"] = "Deal assignment requires a Pro plan or above.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var lead = await _context.Leads
+            .FirstOrDefaultAsync(l => l.Id == id && l.TenantId == user.TenantId);
+
+        if (lead == null)
+        {
+            return NotFound();
+        }
+
+        lead.PotentialValue = potentialValue;
+
+        if (dealId.HasValue && dealId.Value > 0)
+        {
+            // Assign existing deal
+            var deal = await _context.Deals
+                .FirstOrDefaultAsync(d => d.Id == dealId.Value && d.TenantId == user.TenantId);
+            
+            if (deal != null)
+            {
+                lead.AssignedDealId = deal.Id;
+                
+                // Log activity
+                _context.LeadActivities.Add(new LeadActivity
+                {
+                    LeadId = lead.Id,
+                    TenantId = user.TenantId,
+                    Type = ActivityType.DealCreated,
+                    Title = $"Assigned to deal: {deal.Name}",
+                    Description = $"Deal value: {deal.Amount:C}",
+                    PerformedByUserId = user.Id,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+        else if (!string.IsNullOrEmpty(dealTitle))
+        {
+            // Create new deal
+            var newDeal = new Deal
+            {
+                Name = dealTitle,
+                Amount = potentialValue ?? 0,
+                TenantId = user.TenantId,
+                LeadId = lead.Id,
+                OwnerId = user.Id,
+                Status = DealStatus.Open,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            _context.Deals.Add(newDeal);
+            await _context.SaveChangesAsync();
+            
+            lead.AssignedDealId = newDeal.Id;
+
+            // Log activity
+            _context.LeadActivities.Add(new LeadActivity
+            {
+                LeadId = lead.Id,
+                TenantId = user.TenantId,
+                Type = ActivityType.DealCreated,
+                Title = $"New deal created: {dealTitle}",
+                Description = $"Deal value: {potentialValue:C}",
+                PerformedByUserId = user.Id,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Deal assignment updated successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // POST: Leads/AddNote
+    [HttpPost]
+    public async Task<IActionResult> AddNote(int id, string note)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var lead = await _context.Leads
+            .FirstOrDefaultAsync(l => l.Id == id && l.TenantId == user.TenantId);
+
+        if (lead == null)
+        {
+            return NotFound();
+        }
+
+        if (!string.IsNullOrEmpty(note))
+        {
+            lead.Notes = (lead.Notes ?? "") + "\n[" + DateTime.UtcNow.ToString("g") + "] " + note;
+
+            // Log activity
+            _context.LeadActivities.Add(new LeadActivity
+            {
+                LeadId = lead.Id,
+                TenantId = user.TenantId,
+                Type = ActivityType.Note,
+                Title = "Note added",
+                Description = note,
+                PerformedByUserId = user.Id,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
+        TempData["SuccessMessage"] = "Note added successfully.";
         return RedirectToAction(nameof(Details), new { id });
     }
 

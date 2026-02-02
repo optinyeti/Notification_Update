@@ -19,9 +19,19 @@ namespace Notification_Application.Controllers
 
         // GET: /Template/SelectTemplate
         [HttpGet]
-        public IActionResult SelectTemplate()
+        public async Task<IActionResult> SelectTemplate()
         {
             var categories = _templateService.GetAllCategories();
+            
+            // Pre-load all templates for all categories
+            var allTemplates = new Dictionary<string, IEnumerable<TemplateInfo>>();
+            foreach (var category in categories)
+            {
+                var templates = await _templateService.GetTemplatesByCategoryAsync(category.Id);
+                allTemplates[category.Id] = templates;
+            }
+            
+            ViewBag.AllTemplates = allTemplates;
             return View(categories);
         }
 

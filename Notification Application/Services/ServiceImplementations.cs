@@ -319,7 +319,7 @@ public class IntegrationService : IIntegrationService
 
         // In a real implementation, this would test the actual integration
         // For now, just return true for enabled integrations
-        return integration.IsEnabled;
+        return integration.IsActive && integration.IsConnected;
     }
 
     public async Task TriggerZapierWebhookAsync(int tenantId, string eventType, object data)
@@ -327,7 +327,7 @@ public class IntegrationService : IIntegrationService
         var zapierIntegrations = await _context.Integrations
             .Where(i => i.TenantId == tenantId && 
                        i.Type == IntegrationType.Zapier && 
-                       i.IsEnabled && 
+                       i.IsActive && 
                        !string.IsNullOrEmpty(i.WebhookUrl))
             .ToListAsync();
 

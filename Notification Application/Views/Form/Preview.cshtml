@@ -1,0 +1,391 @@
+@model Notification_Application.Models.WebsiteForm
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@Model.Name - Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: @(Model.FontFamily ?? "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+            font-size: @(Model.FontSize)px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .form-container {
+            background: @(Model.BackgroundColor ?? "#ffffff");
+            color: @(Model.TextColor ?? "#1f2937");
+            border: 1px solid @(Model.BorderColor ?? "#e5e7eb");
+            border-radius: @(Model.BorderRadius)px;
+            padding: 32px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .form-header {
+            margin-bottom: 24px;
+        }
+        
+        .form-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+        
+        .form-header p {
+            opacity: 0.8;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        .required {
+            color: #ef4444;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid @(Model.BorderColor ?? "#e5e7eb");
+            border-radius: @(Model.BorderRadius)px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: @(Model.ButtonColor ?? "#3b82f6");
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .help-text {
+            margin-top: 4px;
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+        
+        .form-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .form-check input {
+            margin-top: 4px;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 12px 24px;
+            background: @(Model.ButtonColor ?? "#3b82f6");
+            color: @(Model.ButtonTextColor ?? "#ffffff");
+            border: none;
+            border-radius: @(Model.BorderRadius)px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+        
+        .form-footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+        
+        .powered-by {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.75em;
+            opacity: 0.5;
+        }
+        
+        .powered-by a {
+            color: inherit;
+        }
+        
+        .form-message {
+            display: none;
+            padding: 16px;
+            border-radius: @(Model.BorderRadius)px;
+            text-align: center;
+            margin-top: 16px;
+        }
+        
+        .form-message.success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .form-message.error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        @@media (max-width: 600px) {
+            .form-container {
+                padding: 24px;
+            }
+        }
+        
+        @Html.Raw(Model.CustomCss ?? "")
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        @if (!string.IsNullOrEmpty(Model.HeaderText))
+        {
+            <div class="form-header">
+                <h1>@Model.HeaderText</h1>
+                @if (!string.IsNullOrEmpty(Model.SubheaderText))
+                {
+                    <p>@Model.SubheaderText</p>
+                }
+            </div>
+        }
+        
+        <form id="previewForm">
+            @if (Model.EnableHoneypot)
+            {
+                <input type="text" name="_hp_field" style="display:none !important" tabindex="-1" autocomplete="off">
+            }
+            <input type="hidden" name="_page_url" value="">
+            
+            @if (Model.Fields != null && Model.Fields.Any())
+            {
+                foreach (var field in Model.Fields.Where(f => !f.IsHidden).OrderBy(f => f.Order))
+                {
+                    switch (field.FieldType)
+                    {
+                        case Notification_Application.Models.FormFieldType.Heading:
+                            <h3 style="margin: 20px 0 12px 0;">@field.Label</h3>
+                            break;
+                            
+                        case Notification_Application.Models.FormFieldType.Paragraph:
+                            <p style="margin-bottom: 16px; opacity: 0.8;">@field.Label</p>
+                            break;
+                            
+                        case Notification_Application.Models.FormFieldType.Divider:
+                            <hr style="margin: 20px 0; border: none; border-top: 1px solid @(Model.BorderColor ?? "#e5e7eb");">
+                            break;
+                            
+                        case Notification_Application.Models.FormFieldType.Textarea:
+                            <div class="form-group" style="width: @(field.Width > 0 ? field.Width : 100)%;">
+                                <label class="form-label">@field.Label @(field.IsRequired ? Html.Raw("<span class=\"required\">*</span>") : null)</label>
+                                <textarea class="form-control" name="@field.FieldName" placeholder="@field.Placeholder" @(field.IsRequired ? "required" : "")></textarea>
+                                @if (!string.IsNullOrEmpty(field.HelpText))
+                                {
+                                    <div class="help-text">@field.HelpText</div>
+                                }
+                            </div>
+                            break;
+                            
+                        case Notification_Application.Models.FormFieldType.Select:
+                            <div class="form-group" style="width: @(field.Width > 0 ? field.Width : 100)%;">
+                                <label class="form-label">@field.Label @(field.IsRequired ? Html.Raw("<span class=\"required\">*</span>") : null)</label>
+                                <select class="form-control" name="@field.FieldName" @(field.IsRequired ? "required" : "")>
+                                    <option value="">@(field.Placeholder ?? "Select...")</option>
+                                    @if (!string.IsNullOrEmpty(field.Options))
+                                    {
+                                        var options = System.Text.Json.JsonSerializer.Deserialize<List<string>>(field.Options);
+                                        foreach (var opt in options ?? new List<string>())
+                                        {
+                                            <option value="@opt">@opt</option>
+                                        }
+                                    }
+                                </select>
+                                @if (!string.IsNullOrEmpty(field.HelpText))
+                                {
+                                    <div class="help-text">@field.HelpText</div>
+                                }
+                            </div>
+                            break;
+                            
+                        case Notification_Application.Models.FormFieldType.Radio:
+                            <div class="form-group" style="width: @(field.Width > 0 ? field.Width : 100)%;">
+                                <label class="form-label">@field.Label @(field.IsRequired ? Html.Raw("<span class=\"required\">*</span>") : null)</label>
+                                @if (!string.IsNullOrEmpty(field.Options))
+                                {
+                                    var options = System.Text.Json.JsonSerializer.Deserialize<List<string>>(field.Options);
+                                    foreach (var opt in options ?? new List<string>())
+                                    {
+                                        <div class="form-check">
+                                            <input type="radio" name="@field.FieldName" value="@opt" @(field.IsRequired ? "required" : "")>
+                                            <span>@opt</span>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            break;
+                            
+                        case Notification_Application.Models.FormFieldType.Checkbox:
+                        case Notification_Application.Models.FormFieldType.Consent:
+                            <div class="form-group" style="width: @(field.Width > 0 ? field.Width : 100)%;">
+                                <div class="form-check">
+                                    <input type="checkbox" name="@field.FieldName" value="1" @(field.IsRequired ? "required" : "")>
+                                    <span>@field.Label @(field.IsRequired ? Html.Raw("<span class=\"required\">*</span>") : null)</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(field.HelpText))
+                                {
+                                    <div class="help-text">@field.HelpText</div>
+                                }
+                            </div>
+                            break;
+                            
+                        default:
+                            var inputType = field.FieldType switch
+                            {
+                                Notification_Application.Models.FormFieldType.Email => "email",
+                                Notification_Application.Models.FormFieldType.Phone => "tel",
+                                Notification_Application.Models.FormFieldType.Number => "number",
+                                Notification_Application.Models.FormFieldType.Date => "date",
+                                Notification_Application.Models.FormFieldType.Time => "time",
+                                Notification_Application.Models.FormFieldType.Url => "url",
+                                _ => "text"
+                            };
+                            <div class="form-group" style="width: @(field.Width > 0 ? field.Width : 100)%;">
+                                <label class="form-label">@field.Label @(field.IsRequired ? Html.Raw("<span class=\"required\">*</span>") : null)</label>
+                                <input type="@inputType" class="form-control" name="@field.FieldName" placeholder="@field.Placeholder" 
+                                       @(field.IsRequired ? "required" : "") 
+                                       @(field.MinLength.HasValue ? $"minlength=\"{field.MinLength}\"" : "")
+                                       @(field.MaxLength.HasValue ? $"maxlength=\"{field.MaxLength}\"" : "")
+                                       @(!string.IsNullOrEmpty(field.ValidationPattern) ? $"pattern=\"{field.ValidationPattern}\"" : "")>
+                                @if (!string.IsNullOrEmpty(field.HelpText))
+                                {
+                                    <div class="help-text">@field.HelpText</div>
+                                }
+                            </div>
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                <!-- Default fields if none configured -->
+                <div class="form-group">
+                    <label class="form-label">Email <span class="required">*</span></label>
+                    <input type="email" class="form-control" name="email" placeholder="your@email.com" required>
+                </div>
+            }
+            
+            <button type="submit" class="btn-submit">@Model.SubmitButtonText</button>
+        </form>
+        
+        @if (!string.IsNullOrEmpty(Model.FooterText))
+        {
+            <div class="form-footer">@Model.FooterText</div>
+        }
+        
+        @if (Model.ShowPoweredBy)
+        {
+            <div class="powered-by">Powered by <a href="https://optinyeti.com" target="_blank">OptinYeti</a></div>
+        }
+        
+        <div class="form-message" id="formMessage"></div>
+        <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-radius: 8px; font-size: 0.875rem; color: #92400e;">
+            <strong>Preview Mode:</strong> Submissions here are recorded to the database.
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('previewForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = this.querySelector('.btn-submit');
+            const originalText = btn.textContent;
+            btn.textContent = 'Submitting...';
+            btn.disabled = true;
+            
+            // Collect form data
+            const formData = {};
+            const inputs = this.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    formData[input.name] = input.checked ? '1' : '0';
+                } else if (input.type === 'radio') {
+                    if (input.checked) formData[input.name] = input.value;
+                } else {
+                    formData[input.name] = input.value;
+                }
+            });
+            
+            // Add UTM params from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(param => {
+                if (urlParams.has(param)) formData['_' + param] = urlParams.get(param);
+            });
+            formData['_page_url'] = window.location.href;
+            
+            // Submit to API
+            fetch('/api/FormApi/submit/@Model.EmbedCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                
+                const message = document.getElementById('formMessage');
+                if (result.success) {
+                    message.className = 'form-message success';
+                    message.textContent = result.message || '@(Model.SuccessMessage ?? "Thank you for your submission!")';
+                    message.style.display = 'block';
+                    this.style.display = 'none';
+                } else {
+                    message.className = 'form-message error';
+                    message.textContent = result.error || 'Something went wrong. Please try again.';
+                    message.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                
+                const message = document.getElementById('formMessage');
+                message.className = 'form-message error';
+                message.textContent = 'Something went wrong. Please try again.';
+                message.style.display = 'block';
+                console.error('Submission error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

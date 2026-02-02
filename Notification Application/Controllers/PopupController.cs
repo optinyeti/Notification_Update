@@ -52,9 +52,27 @@ public class PopupController : Controller
         return View();
     }
 
-    public IActionResult Playbooks()
+    public async Task<IActionResult> Playbooks()
     {
-        return View();
+        var playbooks = await _context.Playbooks
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.SortOrder)
+            .ToListAsync();
+        return View(playbooks);
+    }
+    
+    public async Task<IActionResult> PlaybookDetail(int id)
+    {
+        var playbook = await _context.Playbooks.FindAsync(id);
+        if (playbook == null) return NotFound();
+        
+        var templateIds = playbook.GetTemplateIdList();
+        var templates = await _context.PopupTemplates
+            .Where(t => templateIds.Contains(t.Id))
+            .ToListAsync();
+            
+        ViewBag.Playbook = playbook;
+        return View(templates);
     }
 
     public async Task<IActionResult> Designer(int? id, string? name, PopupType? type, string? templateFile, string? category)
@@ -104,7 +122,13 @@ public class PopupController : Controller
                 
                 if (System.IO.File.Exists(templatePath))
                 {
-                    popup.Content = await System.IO.File.ReadAllTextAsync(templatePath);
+                    var content = await System.IO.File.ReadAllTextAsync(templatePath);
+                    // Strip Razor directives from .cshtml files
+                    if (templateFile.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+                    {
+                        content = StripRazorDirectives(content);
+                    }
+                    popup.Content = content;
                     popup.Name = Path.GetFileNameWithoutExtension(templateFile).Replace("-", " ")
                         .Replace("_", " ");
                     // Convert to title case
@@ -496,6 +520,29 @@ public class PopupController : Controller
         if (popup == null) return NotFound();
 
         return View(popup);
+    }
+
+    private string StripRazorDirectives(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return content;
+        
+        // Remove @{ Layout = null; } and similar Razor blocks at the start
+        var patterns = new[]
+        {
+            @"@\{\s*Layout\s*=\s*null\s*;\s*\}\s*",  // @{ Layout = null; }
+            @"@\{\s*\}\s*",  // Empty @{ }
+            @"@model\s+[^\r\n]+\s*",  // @model directives
+            @"@using\s+[^\r\n]+\s*",  // @using directives
+            @"@inject\s+[^\r\n]+\s*"  // @inject directives
+        };
+        
+        foreach (var pattern in patterns)
+        {
+            content = System.Text.RegularExpressions.Regex.Replace(content, pattern, "", 
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        
+        return content.TrimStart();
     }
 
     private string GenerateContentFromTemplate(PopupTemplate template)

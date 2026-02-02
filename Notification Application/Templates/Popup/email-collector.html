@@ -1,0 +1,50 @@
+<div class="popup-email-collector" style="max-width: 480px; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative; text-align: center;">
+    <button class="close-btn" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8;">&times;</button>
+    
+    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+        <svg width="32" height="32" fill="white" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </div>
+    
+    <h2 style="font-size: 26px; font-weight: 800; color: #1e293b; margin: 0 0 12px 0;">Join Our Newsletter</h2>
+    <p style="font-size: 16px; color: #64748b; margin: 0 0 28px 0; line-height: 1.6;">Get exclusive tips, insights, and updates delivered straight to your inbox.</p>
+    
+    <form class="popup-form">
+        <input type="text" name="name" placeholder="Your Name" style="width: 100%; padding: 14px 18px; margin-bottom: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; transition: all 0.2s;">
+        <input type="email" name="email" placeholder="Your Email Address" style="width: 100%; padding: 14px 18px; margin-bottom: 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; transition: all 0.2s;" required>
+        <button type="submit" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;">Subscribe Now</button>
+    </form>
+    
+    <p style="font-size: 12px; color: #94a3b8; margin-top: 16px;">🔒 We respect your privacy. Unsubscribe anytime.</p>
+</div>
+
+<style>
+.popup-email-collector {
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.popup-form input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.popup-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.close-btn:hover {
+    color: #64748b;
+}
+</style>

@@ -1,0 +1,39 @@
+<div class="floating-bar-newsletter" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px 24px; display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);">
+    <span style="color: white; font-size: 15px; font-weight: 600;">📧 Join our newsletter for exclusive updates!</span>
+    
+    <form style="display: flex; gap: 8px;">
+        <input type="email" placeholder="Enter your email" style="padding: 10px 16px; border: none; border-radius: 8px; font-size: 14px; min-width: 240px;" required>
+        <button type="submit" style="padding: 10px 20px; background: white; color: #667eea; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;">Subscribe</button>
+    </form>
+    
+    <button class="close-bar" style="position: absolute; right: 16px; background: none; border: none; color: rgba(255,255,255,0.8); font-size: 20px; cursor: pointer;">&times;</button>
+</div>
+
+<style>
+.floating-bar-newsletter {
+    position: relative;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.floating-bar-newsletter input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+}
+
+.floating-bar-newsletter button[type="submit"]:hover {
+    transform: scale(1.02);
+}
+
+.close-bar:hover {
+    color: white;
+}
+</style>

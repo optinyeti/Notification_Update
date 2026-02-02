@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Your Free Entertainment Quote</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        
+        .popup-container {
+            background: #fdf2f8;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            position: relative;
+            padding: 25px;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.05);
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #64748b;
+            line-height: 1;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(0,0,0,0.1);
+            transform: rotate(90deg);
+        }
+        
+        .popup-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #db277720;
+        }
+        
+        .popup-icon {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+        
+        .popup-title {
+            flex: 1;
+        }
+        
+        .popup-headline {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #db2777;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+        
+        .popup-subheadline {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #334155;
+        }
+        
+        .feature-icon {
+            color: #ec4899;
+            font-weight: 700;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #db2777;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #db2777, #ec4899);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .trust-badge {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        
+        @@media (max-width: 768px) {
+            .popup-container { padding: 20px; max-width: 95%; }
+            .popup-headline { font-size: 1.2rem; }
+            .features { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-container">
+        <button class="close-btn" onclick="window.parent.postMessage('closePopup', '*')">×</button>
+        
+        <div class="popup-header">
+            <div class="popup-icon">🎬</div>
+            <div class="popup-title">
+                <h2 class="popup-headline">Get Your Free Entertainment Quote</h2>
+                <p class="popup-subheadline">Join thousands of satisfied customers</p>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">✓</span>
+                <span>Fast Response</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">✓</span>
+                <span>Expert Team</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">✓</span>
+                <span>Best Prices</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">✓</span>
+                <span>100% Guaranteed</span>
+            </div>
+        </div>
+        
+        <form onsubmit="handleSubmit(event)">
+            <div class="form-group">
+                <input type="text" class="form-control" name="name" placeholder="Your Name *" required>
+            </div>
+            <div class="form-group">
+                <input type="email" class="form-control" name="email" placeholder="Email Address *" required>
+            </div>
+            <div class="form-group">
+                <input type="tel" class="form-control" name="phone" placeholder="Phone Number *" required>
+            </div>
+            <button type="submit" class="btn-primary">Get Started →</button>
+        </form>
+        
+        <div class="trust-badge">
+            🔒 Your information is secure and never shared
+        </div>
+    </div>
+    
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            window.parent.postMessage({
+                type: 'formSubmit',
+                template: 'Entertainment_Quote_Modern',
+                data: data
+            }, '*');
+            
+            event.target.innerHTML = '<div style="text-align: center; padding: 30px;"><h3 style="color: #db2777; margin-bottom: 10px;">✓ Success!</h3><p style="color: #64748b;">We\'ll contact you shortly.</p></div>';
+        }
+    </script>
+</body>
+</html>

@@ -22,6 +22,9 @@ public static class DatabaseSeeder
 
         // Seed popup templates
         await SeedPopupTemplatesAsync(context);
+        
+        // Seed playbooks
+        await PlaybookSeeder.SeedAsync(context);
     }
 
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
@@ -1167,6 +1170,322 @@ public static class DatabaseSeeder
             DefaultFrequency = PopupFrequency.OncePerMonth,
             IsPremium = true,
             SortOrder = 34
+        });
+
+        // ==================== HOME SERVICES TEMPLATES (4) ====================
+        templates.Add(new PopupTemplate
+        {
+            Name = "Plumbing Emergency",
+            Description = "24/7 emergency plumbing services lead capture",
+            Category = "Home Services",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Emergency Plumbing?\",\"subheading\":\"We're Available 24/7\"}",
+            ImageUrl = "https://placehold.co/600x400/1e3a8a/ffffff?text=Emergency+Plumbing",
+            PreviewImageUrl = "https://placehold.co/400x300/1e3a8a/ffffff?text=24/7+Service",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "Emergency Plumbing?",
+                SubHeading = "We're Available 24/7 - Get a FREE quote in under 60 seconds",
+                CollectName = true,
+                CollectPhone = true,
+                ButtonText = "Get FREE Quote Now",
+                SuccessMessage = "Thanks! We'll contact you within 30 minutes.",
+                PrivacyText = "🔒 Your information is 100% secure",
+                ShowSocialIcons = false,
+                BackgroundColor = "#ffffff",
+                TextColor = "#111827",
+                ButtonColor = "#ef4444"
+            }),
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 2000,
+            DefaultFrequency = PopupFrequency.OncePerDay,
+            SortOrder = 35
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "HVAC Maintenance",
+            Description = "AC and heating service booking with special offer",
+            Category = "Home Services",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Beat the Heat!\",\"subheading\":\"20% OFF AC Tune-Up\"}",
+            ImageUrl = "https://placehold.co/600x400/0891b2/ffffff?text=HVAC+Service",
+            PreviewImageUrl = "https://placehold.co/400x300/0891b2/ffffff?text=20%25+OFF",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "Beat the Heat!",
+                SubHeading = "Keep your home cool & comfortable all summer long",
+                CollectName = true,
+                CollectPhone = true,
+                ButtonText = "Claim 20% OFF",
+                SuccessMessage = "Great! We'll schedule your service soon.",
+                PrivacyText = "🕒 Average response time: 2 hours",
+                ShowSocialIcons = false,
+                BackgroundColor = "#f9fafb",
+                TextColor = "#111827",
+                ButtonColor = "#0891b2"
+            }),
+            DefaultTrigger = PopupTrigger.OnScroll,
+            DefaultDelayMs = 0,
+            DefaultFrequency = PopupFrequency.OncePerWeek,
+            SortOrder = 36
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Landscaping Service",
+            Description = "Lawn care and landscaping lead generation",
+            Category = "Home Services",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Transform Your Lawn This Spring\",\"subheading\":\"25% OFF + FREE Consultation\"}",
+            ImageUrl = "https://placehold.co/600x400/10b981/ffffff?text=Landscaping",
+            PreviewImageUrl = "https://placehold.co/400x300/10b981/ffffff?text=Spring+Special",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "Transform Your Lawn This Spring",
+                SubHeading = "Professional landscaping services for your dream outdoor space",
+                CollectName = true,
+                CollectPhone = true,
+                ButtonText = "Get FREE Consultation",
+                SuccessMessage = "Perfect! We'll reach out to schedule your consultation.",
+                PrivacyText = "🌟 4.9★ Rating • 500+ Happy Customers",
+                ShowSocialIcons = false,
+                BackgroundColor = "#ffffff",
+                TextColor = "#111827",
+                ButtonColor = "#10b981"
+            }),
+            DefaultTrigger = PopupTrigger.OnTimeDelay,
+            DefaultDelayMs = 10000,
+            DefaultFrequency = PopupFrequency.OncePerDay,
+            SortOrder = 37
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Electrical Emergency",
+            Description = "Emergency electrical services with same-day availability",
+            Category = "Home Services",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Electrical Emergency?\",\"subheading\":\"Licensed electricians standing by 24/7\"}",
+            ImageUrl = "https://placehold.co/600x400/3b82f6/ffffff?text=Electrical+Service",
+            PreviewImageUrl = "https://placehold.co/400x300/3b82f6/ffffff?text=Same+Day",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "Electrical Emergency?",
+                SubHeading = "Licensed electricians standing by 24/7",
+                CollectName = true,
+                CollectPhone = true,
+                ButtonText = "Request Emergency Service",
+                SuccessMessage = "Help is on the way! Our team will call you shortly.",
+                PrivacyText = "📞 Or call: (555) 123-4567",
+                ShowSocialIcons = false,
+                BackgroundColor = "#ffffff",
+                TextColor = "#111827",
+                ButtonColor = "#ef4444"
+            }),
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 1000,
+            DefaultFrequency = PopupFrequency.OncePerSession,
+            SortOrder = 38
+        });
+
+        // ==================== ADVANCED ECOMMERCE TEMPLATES (4) ====================
+        templates.Add(new PopupTemplate
+        {
+            Name = "Flash Sale Countdown",
+            Description = "Urgency-driven flash sale with countdown timer",
+            Category = "E-commerce",
+            Type = PopupType.Advertising,
+            Content = "{\"heading\":\"FLASH SALE!\",\"subheading\":\"Up to 70% OFF Everything\"}",
+            ImageUrl = "https://placehold.co/600x400/000000/ffffff?text=FLASH+SALE",
+            PreviewImageUrl = "https://placehold.co/400x300/000000/ffffff?text=70%25+OFF",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new AdvertisingOptions
+            {
+                Heading = "⚡ FLASH SALE!",
+                SubHeading = "Up to 70% OFF Everything - Biggest sale of the year!",
+                ButtonText = "SHOP NOW →",
+                ButtonUrl = "/shop/flash-sale",
+                ShowCountdown = true,
+                CountdownEndDate = DateTime.UtcNow.AddHours(24),
+                BackgroundColor = "#000000",
+                ButtonColor = "#fbbf24"
+            }),
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 3000,
+            DefaultFrequency = PopupFrequency.OncePerDay,
+            SortOrder = 39
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Spin to Win Discount",
+            Description = "Gamified discount wheel for email capture",
+            Category = "E-commerce",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Welcome Gift!\",\"subheading\":\"Spin the wheel for your exclusive discount\"}",
+            ImageUrl = "https://placehold.co/600x400/ec4899/ffffff?text=Spin+To+Win",
+            PreviewImageUrl = "https://placehold.co/400x300/ec4899/ffffff?text=Prize+Wheel",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "🎁 Welcome Gift!",
+                SubHeading = "Spin the wheel for your exclusive discount",
+                CollectName = false,
+                CollectPhone = false,
+                ButtonText = "SPIN THE WHEEL",
+                SuccessMessage = "🎉 Congratulations! Check your email for your discount code.",
+                PrivacyText = "🔒 No spam, we promise!",
+                ShowSocialIcons = false,
+                BackgroundColor = "#ec4899",
+                TextColor = "#ffffff",
+                ButtonColor = "#fbbf24"
+            }),
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 5000,
+            DefaultFrequency = PopupFrequency.OnceEver,
+            SortOrder = 40
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Cart Abandonment",
+            Description = "Recover abandoned carts with special offer",
+            Category = "E-commerce",
+            Type = PopupType.Advertising,
+            Content = "{\"heading\":\"Wait! Don't Go Empty-Handed\",\"subheading\":\"Complete your purchase and save 15%\"}",
+            ImageUrl = "https://placehold.co/600x400/f59e0b/ffffff?text=Cart+Recovery",
+            PreviewImageUrl = "https://placehold.co/400x300/f59e0b/ffffff?text=15%25+OFF",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new AdvertisingOptions
+            {
+                Heading = "😱 Wait! Don't Go Empty-Handed",
+                SubHeading = "Complete your purchase now and get 15% OFF your entire order!",
+                ButtonText = "Complete My Order & Save 15%",
+                ButtonUrl = "/cart",
+                ShowCountdown = true,
+                CountdownEndDate = DateTime.UtcNow.AddMinutes(15),
+                BackgroundColor = "#ffffff",
+                ButtonColor = "#ef4444"
+            }),
+            DefaultTrigger = PopupTrigger.OnExitIntent,
+            DefaultDelayMs = 0,
+            DefaultFrequency = PopupFrequency.OncePerSession,
+            SortOrder = 41
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Mobile App Download",
+            Description = "Promote mobile app with exclusive bonus",
+            Category = "E-commerce",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Get Our FREE App\",\"subheading\":\"$10 Welcome Bonus + Exclusive Deals\"}",
+            ImageUrl = "https://placehold.co/600x400/6366f1/ffffff?text=Mobile+App",
+            PreviewImageUrl = "https://placehold.co/400x300/6366f1/ffffff?text=$10+Bonus",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "📱 Get Our FREE App",
+                SubHeading = "Shop faster, get exclusive deals, and never miss a sale",
+                CollectName = false,
+                CollectPhone = true,
+                ButtonText = "Text Me the App",
+                SuccessMessage = "📲 Check your phone for the download link!",
+                PrivacyText = "4.8★ Rating • 1M+ Downloads",
+                ShowSocialIcons = false,
+                BackgroundColor = "#6366f1",
+                TextColor = "#ffffff",
+                ButtonColor = "#fbbf24"
+            }),
+            DefaultTrigger = PopupTrigger.OnScroll,
+            DefaultDelayMs = 0,
+            DefaultFrequency = PopupFrequency.OncePerWeek,
+            SortOrder = 42
+        });
+
+        // ==================== LEAD CAPTURE & FORM FILL TEMPLATES (3) ====================
+        templates.Add(new PopupTemplate
+        {
+            Name = "Ebook Download",
+            Description = "Professional lead magnet with preview",
+            Category = "Lead Generation",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"The Ultimate Guide to Digital Marketing\",\"subheading\":\"50+ Pages of Expert Tips\"}",
+            ImageUrl = "https://placehold.co/600x400/6366f1/ffffff?text=Free+Ebook",
+            PreviewImageUrl = "https://placehold.co/400x300/6366f1/ffffff?text=Free+Download",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "The Ultimate Guide to Digital Marketing",
+                SubHeading = "Discover proven strategies to grow your business online",
+                CollectName = true,
+                CollectPhone = false,
+                ButtonText = "Download Free Guide",
+                SuccessMessage = "Success! Check your email for the download link.",
+                PrivacyText = "🔒 We respect your privacy. Unsubscribe anytime.",
+                ShowSocialIcons = false,
+                BackgroundColor = "#ffffff",
+                TextColor = "#111827",
+                ButtonColor = "#6366f1"
+            }),
+            DefaultTrigger = PopupTrigger.OnTimeDelay,
+            DefaultDelayMs = 15000,
+            DefaultFrequency = PopupFrequency.OnceEver,
+            SortOrder = 43
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Webinar Registration",
+            Description = "Live webinar signup with date and time",
+            Category = "Lead Generation",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Master Social Media Marketing in 2026\",\"subheading\":\"FREE Live Webinar\"}",
+            ImageUrl = "https://placehold.co/600x400/0f172a/ffffff?text=Webinar",
+            PreviewImageUrl = "https://placehold.co/400x300/0f172a/ffffff?text=Live+Webinar",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "🔴 Master Social Media Marketing in 2026",
+                SubHeading = "Learn the secrets to growing your brand and skyrocketing engagement",
+                CollectName = true,
+                CollectPhone = false,
+                ButtonText = "Register FREE Now",
+                SuccessMessage = "You're registered! Check your email for the webinar link.",
+                PrivacyText = "⏰ Limited spots available",
+                ShowSocialIcons = false,
+                BackgroundColor = "#0f172a",
+                TextColor = "#ffffff",
+                ButtonColor = "#10b981"
+            }),
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 5000,
+            DefaultFrequency = PopupFrequency.OncePerDay,
+            SortOrder = 44
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Feedback Survey",
+            Description = "Quick customer satisfaction survey",
+            Category = "Lead Generation",
+            Type = PopupType.EmailCollector,
+            Content = "{\"heading\":\"Quick Survey\",\"subheading\":\"Help us improve in 30 seconds\"}",
+            ImageUrl = "https://placehold.co/600x400/3b82f6/ffffff?text=Survey",
+            PreviewImageUrl = "https://placehold.co/400x300/3b82f6/ffffff?text=Feedback",
+            TypeSpecificOptions = System.Text.Json.JsonSerializer.Serialize(new EmailCollectorOptions
+            {
+                Heading = "📋 Quick Survey",
+                SubHeading = "Help us improve! Share your thoughts in 30 seconds.",
+                CollectName = false,
+                CollectPhone = false,
+                ButtonText = "Submit Feedback",
+                SuccessMessage = "Thank you! Your feedback helps us serve you better 💙",
+                PrivacyText = "Your feedback is anonymous",
+                ShowSocialIcons = false,
+                BackgroundColor = "#f8fafc",
+                TextColor = "#111827",
+                ButtonColor = "#3b82f6"
+            }),
+            DefaultTrigger = PopupTrigger.OnExitIntent,
+            DefaultDelayMs = 0,
+            DefaultFrequency = PopupFrequency.OncePerMonth,
+            SortOrder = 45
         });
 
         context.PopupTemplates.AddRange(templates);

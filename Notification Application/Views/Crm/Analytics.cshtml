@@ -1,0 +1,246 @@
+@{
+    ViewData["Title"] = "CRM Analytics";
+    var leadsOverTimeJson = ViewBag.LeadsOverTime as string ?? "[]";
+    var leadSourcesJson = ViewBag.LeadSources as string ?? "[]";
+    var stageMetricsJson = ViewBag.StageMetrics as string ?? "[]";
+}
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-graph-up me-2"></i>CRM Analytics
+            </h1>
+            <p class="text-muted mb-0">Insights and performance metrics for your leads</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Index", "Crm")" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Conversion Funnel -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-funnel me-2 text-primary"></i>Conversion Funnel
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);">
+                                <div class="h1 mb-0 text-white fw-bold">@ViewBag.TotalLeads</div>
+                                <div class="text-white-50">Total Leads</div>
+                            </div>
+                        </div>
+                        <div class="col-md-1 text-center d-none d-md-block">
+                            <i class="bi bi-chevron-right fs-2 text-muted"></i>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
+                                <div class="h2 mb-0 text-white fw-bold">@ViewBag.ContactedLeads</div>
+                                <div class="text-white-50 small">Contacted</div>
+                            </div>
+                            @if ((int)ViewBag.TotalLeads > 0)
+                            {
+                                <div class="mt-2 small text-muted">
+                                    @(((int)ViewBag.ContactedLeads * 100 / (int)ViewBag.TotalLeads))% of total
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-1 text-center d-none d-md-block">
+                            <i class="bi bi-chevron-right fs-2 text-muted"></i>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                                <div class="h2 mb-0 text-white fw-bold">@ViewBag.QualifiedLeads</div>
+                                <div class="text-white-50 small">Qualified</div>
+                            </div>
+                            @if ((int)ViewBag.ContactedLeads > 0)
+                            {
+                                <div class="mt-2 small text-muted">
+                                    @(((int)ViewBag.QualifiedLeads * 100 / (int)ViewBag.ContactedLeads))% conversion
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-1 text-center d-none d-md-block">
+                            <i class="bi bi-chevron-right fs-2 text-muted"></i>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <div class="h2 mb-0 text-white fw-bold">@ViewBag.ConvertedLeads</div>
+                                <div class="text-white-50 small">Converted</div>
+                            </div>
+                            @if ((int)ViewBag.QualifiedLeads > 0)
+                            {
+                                <div class="mt-2 small text-muted">
+                                    @(((int)ViewBag.ConvertedLeads * 100 / (int)ViewBag.QualifiedLeads))% close rate
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Leads Over Time Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-graph-up-arrow me-2 text-success"></i>Leads Over Time (Last 30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="leadsOverTimeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Sources -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-pie-chart me-2 text-info"></i>Lead Sources
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="leadSourcesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stage Metrics -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-clock-history me-2 text-warning"></i>Average Time in Each Stage
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stageMetricsChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Leads Over Time Chart
+            const leadsOverTimeData = @Html.Raw(leadsOverTimeJson);
+            const leadsCtx = document.getElementById('leadsOverTimeChart').getContext('2d');
+            
+            new Chart(leadsCtx, {
+                type: 'line',
+                data: {
+                    labels: leadsOverTimeData.map(d => new Date(d.Date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+                    datasets: [{
+                        label: 'New Leads',
+                        data: leadsOverTimeData.map(d => d.Count),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Lead Sources Chart
+            const leadSourcesData = @Html.Raw(leadSourcesJson);
+            const sourcesCtx = document.getElementById('leadSourcesChart').getContext('2d');
+            
+            const sourceColors = [
+                '#667eea', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+                '#0ea5e9', '#ec4899', '#6366f1', '#14b8a6', '#f97316'
+            ];
+            
+            new Chart(sourcesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: leadSourcesData.map(d => d.Source),
+                    datasets: [{
+                        data: leadSourcesData.map(d => d.Count),
+                        backgroundColor: sourceColors.slice(0, leadSourcesData.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Stage Metrics Chart
+            const stageMetricsData = @Html.Raw(stageMetricsJson);
+            const stageCtx = document.getElementById('stageMetricsChart').getContext('2d');
+            
+            new Chart(stageCtx, {
+                type: 'bar',
+                data: {
+                    labels: stageMetricsData.map(d => d.Stage || 'Unknown'),
+                    datasets: [{
+                        label: 'Average Days',
+                        data: stageMetricsData.map(d => d.AverageDays?.toFixed(1) || 0),
+                        backgroundColor: '#667eea',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

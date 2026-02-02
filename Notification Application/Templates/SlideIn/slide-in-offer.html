@@ -1,0 +1,52 @@
+<div class="slide-in-offer" style="max-width: 360px; background: white; border-radius: 16px 0 0 16px; box-shadow: -8px 0 40px rgba(0,0,0,0.15); overflow: hidden; position: relative;">
+    <button class="close-btn" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 20px; cursor: pointer; color: #94a3b8;">&times;</button>
+    
+    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 24px; color: white; text-align: center;">
+        <span style="font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9;">LIMITED OFFER</span>
+        <h3 style="font-size: 32px; font-weight: 900; margin: 8px 0;">20% OFF</h3>
+        <p style="font-size: 15px; margin: 0; opacity: 0.95;">Use code: SAVE20</p>
+    </div>
+    
+    <div style="padding: 24px;">
+        <p style="font-size: 14px; color: #64748b; margin: 0 0 20px 0; line-height: 1.6;">Subscribe now and get 20% off your first purchase!</p>
+        
+        <form>
+            <input type="email" placeholder="Your email address" style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; margin-bottom: 12px; transition: all 0.2s;" required>
+            <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;">Claim My Discount</button>
+        </form>
+        
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 12px; text-align: center;">No spam. Unsubscribe anytime.</p>
+    </div>
+</div>
+
+<style>
+.slide-in-offer {
+    animation: slideInRight 0.4s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-offer input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.slide-in-offer button[type="submit"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+.close-btn:hover {
+    color: #64748b;
+}
+</style>

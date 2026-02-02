@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Legal Consultation - Legal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .popup-container {
+            background: #ffffff;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+            transform: rotate(90deg);
+        }
+        @media (max-width: 768px) {
+            .popup-container {
+                max-width: 95%;
+                border-radius: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-container">
+        <button class="close-btn" onclick="window.parent.postMessage('closePopup', '*')">×</button>
+        
+        <div style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); padding: 40px 30px; text-align: center;">
+            <div style="font-size: 3.5rem; margin-bottom: 15px;">⚖️</div>
+            <h1 style="color: white; font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; line-height: 1.2;">
+                Free Legal Consultation
+            </h1>
+            <p style="color: rgba(255, 255, 255, 0.95); font-size: 1.1rem; font-weight: 500;">
+                Speak with an experienced attorney today
+            </p>
+        </div>
+        
+        <div style="padding: 30px;">
+            <div style="margin-bottom: 25px;">
+
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; margin-right: 12px;"></div>
+                    <span style="color: #1e293b; font-size: 0.95rem;">30+ Years Experience</span>
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; margin-right: 12px;"></div>
+                    <span style="color: #1e293b; font-size: 0.95rem;">No Upfront Costs</span>
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; margin-right: 12px;"></div>
+                    <span style="color: #1e293b; font-size: 0.95rem;">Confidential</span>
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; margin-right: 12px;"></div>
+                    <span style="color: #1e293b; font-size: 0.95rem;">Available 24/7</span>
+                </div>
+            </div>
+            
+            <form onsubmit="handleSubmit(event)" style="margin-top: 25px;">
+
+                <input type="text" 
+                       name="name" 
+                       placeholder="Your Name *" 
+                       required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; margin-bottom: 15px;">
+
+                <input type="email" 
+                       name="email" 
+                       placeholder="Email Address *" 
+                       required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; margin-bottom: 15px;">
+
+                <input type="tel" 
+                       name="phone" 
+                       placeholder="Phone Number *" 
+                       required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; margin-bottom: 15px;">
+
+                <input type="text" 
+                       name="case_type" 
+                       placeholder="CASE TYPE" 
+                       style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; margin-bottom: 15px;">
+                
+                <button type="submit" 
+                        style="width: 100%; padding: 16px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
+                    Schedule Call →
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+                <div style="color: #1e293b; font-size: 0.9rem; margin-bottom: 8px;">Or call us directly:</div>
+                <a href="tel:Call5552345678" 
+                   style="color: #1e3a8a; font-size: 1.3rem; font-weight: 700; text-decoration: none;">
+                    📞 Call (555) 234-5678
+                </a>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 15px;">
+                <p style="color: #64748b; font-size: 0.8rem;">
+                    🔒 Your information is secure and will never be shared.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Send to parent window
+            window.parent.postMessage({
+                type: 'formSubmit',
+                template: 'Legal_Consultation_Professional.html',
+                data: data
+            }, '*');
+            
+            // Show success message
+            event.target.innerHTML = '<div style="text-align: center; padding: 40px;"><h2 style="color: #1e3a8a; margin-bottom: 15px;">✓ Thank You!</h2><p style="color: #1e293b;">We\'ll be in touch shortly.</p></div>';
+        }
+    </script>
+</body>
+</html>

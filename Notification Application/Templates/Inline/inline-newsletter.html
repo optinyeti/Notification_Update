@@ -1,0 +1,41 @@
+<div class="inline-signup" style="max-width: 100%; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 32px; border-radius: 16px; border: 2px solid #e2e8f0;">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
+        <div style="flex: 1; min-width: 280px;">
+            <h3 style="font-size: 22px; font-weight: 800; color: #1e293b; margin: 0 0 8px 0;">📬 Stay Updated</h3>
+            <p style="font-size: 15px; color: #64748b; margin: 0; line-height: 1.5;">Subscribe to our newsletter for the latest news and exclusive offers.</p>
+        </div>
+        
+        <form class="inline-form" style="flex: 1; min-width: 320px; display: flex; gap: 12px;">
+            <input type="email" name="email" placeholder="Enter your email" style="flex: 1; padding: 14px 18px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 15px; transition: all 0.2s;" required>
+            <button type="submit" style="padding: 14px 28px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s;">Subscribe</button>
+        </form>
+    </div>
+    
+    <p style="font-size: 12px; color: #94a3b8; margin: 16px 0 0 0; text-align: center;">🔒 No spam, unsubscribe anytime.</p>
+</div>
+
+<style>
+.inline-signup {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.inline-form input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.inline-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+</style>

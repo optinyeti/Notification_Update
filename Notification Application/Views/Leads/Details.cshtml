@@ -2,28 +2,90 @@
 
 @{
     ViewData["Title"] = "Lead Details";
+    var hasCrmAccess = ViewBag.HasCrmAccess ?? false;
+    var pipelines = ViewBag.Pipelines as List<Notification_Application.Models.Pipeline> ?? new List<Notification_Application.Models.Pipeline>();
+    var deals = ViewBag.Deals as List<Notification_Application.Models.Deal> ?? new List<Notification_Application.Models.Deal>();
 }
 
 <div class="max-w-7xl mx-auto px-4 py-8">
     <!-- Header -->
     <div class="mb-8">
-        <div class="flex items-center gap-4 mb-4">
-            <a asp-action="Index" class="text-blue-600 hover:text-blue-800">
-                <i class="fas fa-arrow-left me-2"></i>Back to Leads
-            </a>
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="flex items-center gap-4 mb-4">
+                    <a asp-action="Index" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Leads
+                    </a>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900">
+                    @if (!string.IsNullOrEmpty(Model.FirstName) || !string.IsNullOrEmpty(Model.LastName))
+                    {
+                        <span>@Model.FirstName @Model.LastName</span>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <span>@Model.Email</span>
+                    }
+                    else
+                    {
+                        <span>Lead #@Model.Id</span>
+                    }
+                </h1>
+                <div class="flex items-center gap-3 mt-2">
+                    <span class="px-3 py-1 text-sm rounded-full @GetStatusBadgeClass(Model.Status)">@Model.Status</span>
+                    @if (Model.Disposition != Notification_Application.Models.LeadDisposition.None)
+                    {
+                        <span class="px-3 py-1 text-sm rounded-full bg-purple-100 text-purple-800">@Model.Disposition</span>
+                    }
+                    @if (Model.PotentialValue.HasValue)
+                    {
+                        <span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">
+                            <i class="fas fa-dollar-sign me-1"></i>@Model.PotentialValue.Value.ToString("N0")
+                        </span>
+                    }
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                @if (!string.IsNullOrEmpty(Model.Email))
+                {
+                    <a href="mailto:@Model.Email" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </a>
+                }
+                @if (!string.IsNullOrEmpty(Model.Phone))
+                {
+                    <a href="tel:@Model.Phone" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                        <i class="fas fa-phone me-2"></i>Call
+                    </a>
+                }
+            </div>
         </div>
-        <h1 class="text-3xl font-bold text-gray-900">Lead Details</h1>
     </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        </div>
+    }
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Info -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Contact Information -->
             <div class="bg-white rounded-lg shadow border p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-user me-2 text-blue-600"></i>Contact Information
+                </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-medium text-gray-500">Name</label>
+                        <label class="text-sm font-medium text-gray-500">Full Name</label>
                         <p class="text-gray-900 mt-1">
                             @if (!string.IsNullOrEmpty(Model.FirstName) || !string.IsNullOrEmpty(Model.LastName))
                             {
@@ -65,14 +127,171 @@
                         <label class="text-sm font-medium text-gray-500">Company</label>
                         <p class="text-gray-900 mt-1">@(Model.Company ?? "Not provided")</p>
                     </div>
+                    @if (!string.IsNullOrEmpty(Model.JobTitle))
+                    {
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">Job Title</label>
+                            <p class="text-gray-900 mt-1">@Model.JobTitle</p>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Industry))
+                    {
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">Industry</label>
+                            <p class="text-gray-900 mt-1">@Model.Industry</p>
+                        </div>
+                    }
                 </div>
+            </div>
+
+            <!-- CRM Pipeline & Deal Section (Pro+ Only) -->
+            <div class="bg-white rounded-lg shadow border p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-stream me-2 text-purple-600"></i>Pipeline & Deal
+                    </h2>
+                    @if (!hasCrmAccess)
+                    {
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full">
+                            <i class="fas fa-lock me-1"></i>Pro Plan Required
+                        </span>
+                    }
+                </div>
+                
+                @if (hasCrmAccess)
+                {
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Pipeline Assignment -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Current Pipeline</h3>
+                            @if (Model.Pipeline != null)
+                            {
+                                <div class="p-3 bg-purple-50 rounded-lg mb-3">
+                                    <p class="font-medium text-purple-900">@Model.Pipeline.Name</p>
+                                    @if (Model.Stage != null)
+                                    {
+                                        <p class="text-sm text-purple-700 mt-1">Stage: @Model.Stage.Name</p>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-gray-400 mb-3">Not assigned to any pipeline</p>
+                            }
+                            
+                            <form asp-action="AssignToPipeline" method="post" class="space-y-3">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <div>
+                                    <select name="pipelineId" id="pipelineSelect" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" required>
+                                        <option value="">Select Pipeline...</option>
+                                        @foreach (var pipeline in pipelines)
+                                        {
+                                            if (Model.PipelineId == pipeline.Id)
+                                            {
+                                                <option value="@pipeline.Id" data-stages="@System.Text.Json.JsonSerializer.Serialize(pipeline.Stages.Select(s => new { s.Id, s.Name }))" selected>@pipeline.Name</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@pipeline.Id" data-stages="@System.Text.Json.JsonSerializer.Serialize(pipeline.Stages.Select(s => new { s.Id, s.Name }))">@pipeline.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div>
+                                    <select name="stageId" id="stageSelect" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                        <option value="">Select Stage (optional)...</option>
+                                        @if (Model.Pipeline != null && Model.Pipeline.Stages != null)
+                                        {
+                                            foreach (var stage in Model.Pipeline.Stages.OrderBy(s => s.Order))
+                                            {
+                                                if (Model.StageId == stage.Id)
+                                                {
+                                                    <option value="@stage.Id" selected>@stage.Name</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@stage.Id">@stage.Name</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-check me-2"></i>Update Pipeline
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Deal Assignment -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Deal Information</h3>
+                            @if (Model.AssignedDeal != null)
+                            {
+                                <div class="p-3 bg-green-50 rounded-lg mb-3">
+                                    <p class="font-medium text-green-900">@Model.AssignedDeal.Name</p>
+                                    <p class="text-sm text-green-700 mt-1">Value: @Model.AssignedDeal.Amount.ToString("C")</p>
+                                </div>
+                            }
+                            
+                            <form asp-action="AssignDeal" method="post" class="space-y-3">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <div>
+                                    <label class="text-xs text-gray-500">Potential Value</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                        <input type="number" name="potentialValue" value="@Model.PotentialValue" 
+                                               class="w-full border border-gray-300 rounded-md pl-7 pr-3 py-2 text-sm" 
+                                               placeholder="0.00" step="0.01" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Assign Existing Deal</label>
+                                    <select name="dealId" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                        <option value="">Select deal or create new...</option>
+                                        @foreach (var deal in deals)
+                                        {
+                                            if (Model.AssignedDealId == deal.Id)
+                                            {
+                                                <option value="@deal.Id" selected>@deal.Name (@deal.Amount.ToString("C"))</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@deal.Id">@deal.Name (@deal.Amount.ToString("C"))</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Or Create New Deal</label>
+                                    <input type="text" name="dealTitle" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" 
+                                           placeholder="New deal title..." />
+                                </div>
+                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-handshake me-2"></i>Update Deal
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-6">
+                        <i class="fas fa-rocket text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-600 mb-4">Upgrade to Pro to unlock Pipeline and Deal management features.</p>
+                        <a asp-controller="UserDashboard" asp-action="Subscription" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium">
+                            Upgrade Now
+                        </a>
+                    </div>
+                }
             </div>
 
             <!-- Custom Fields -->
             @if (ViewBag.CustomFields != null && ((Dictionary<string, object>)ViewBag.CustomFields).Any())
             {
                 <div class="bg-white rounded-lg shadow border p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Custom Fields</h2>
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-list-alt me-2 text-orange-600"></i>Custom Fields
+                    </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @foreach (var field in (Dictionary<string, object>)ViewBag.CustomFields)
                         {
@@ -85,13 +304,15 @@
                 </div>
             }
 
-            <!-- Source Information -->
+            <!-- Source & Campaign Information -->
             <div class="bg-white rounded-lg shadow border p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Source & Campaign</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-bullseye me-2 text-red-600"></i>Source & Campaign
+                </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-medium text-gray-500">Campaign</label>
-                        <p class="text-gray-900 mt-1">@Model.Popup?.Name</p>
+                        <label class="text-sm font-medium text-gray-500">Popup Campaign</label>
+                        <p class="text-gray-900 mt-1">@(Model.Popup?.Name ?? "Unknown")</p>
                     </div>
                     <div>
                         <label class="text-sm font-medium text-gray-500">View Type</label>
@@ -106,124 +327,208 @@
                         <p class="text-gray-900 mt-1 text-sm break-all">@(Model.Referrer ?? "Direct")</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- UTM Parameters -->
-            @if (!string.IsNullOrEmpty(Model.UtmSource) || !string.IsNullOrEmpty(Model.UtmCampaign))
-            {
-                <div class="bg-white rounded-lg shadow border p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">UTM Parameters</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                @if (!string.IsNullOrEmpty(Model.UtmSource) || !string.IsNullOrEmpty(Model.UtmCampaign))
+                {
+                    <hr class="my-4" />
+                    <h3 class="text-md font-semibold text-gray-700 mb-3">UTM Parameters</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                         @if (!string.IsNullOrEmpty(Model.UtmSource))
                         {
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">UTM Source</label>
-                                <p class="text-gray-900 mt-1">@Model.UtmSource</p>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <span class="text-gray-500">Source:</span> <span class="font-medium">@Model.UtmSource</span>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(Model.UtmMedium))
                         {
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">UTM Medium</label>
-                                <p class="text-gray-900 mt-1">@Model.UtmMedium</p>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <span class="text-gray-500">Medium:</span> <span class="font-medium">@Model.UtmMedium</span>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(Model.UtmCampaign))
                         {
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">UTM Campaign</label>
-                                <p class="text-gray-900 mt-1">@Model.UtmCampaign</p>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <span class="text-gray-500">Campaign:</span> <span class="font-medium">@Model.UtmCampaign</span>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(Model.UtmTerm))
                         {
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">UTM Term</label>
-                                <p class="text-gray-900 mt-1">@Model.UtmTerm</p>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <span class="text-gray-500">Term:</span> <span class="font-medium">@Model.UtmTerm</span>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(Model.UtmContent))
                         {
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">UTM Content</label>
-                                <p class="text-gray-900 mt-1">@Model.UtmContent</p>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <span class="text-gray-500">Content:</span> <span class="font-medium">@Model.UtmContent</span>
                             </div>
                         }
                     </div>
-                </div>
-            }
+                }
+            </div>
 
             <!-- Notes Section -->
             <div class="bg-white rounded-lg shadow border p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Notes</h2>
-                <div class="prose max-w-none">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-sticky-note me-2 text-yellow-600"></i>Notes
+                </h2>
+                <div class="prose max-w-none mb-4">
                     @if (!string.IsNullOrEmpty(Model.Notes))
                     {
-                        <p class="text-gray-700 whitespace-pre-wrap">@Model.Notes</p>
+                        <p class="text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">@Model.Notes</p>
                     }
                     else
                     {
                         <p class="text-gray-400 italic">No notes yet</p>
                     }
                 </div>
+                <form asp-action="AddNote" method="post" class="flex gap-2">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="text" name="note" class="flex-1 border border-gray-300 rounded-md px-3 py-2" 
+                           placeholder="Add a quick note..." required />
+                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md font-medium">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </form>
             </div>
         </div>
 
         <!-- Sidebar -->
         <div class="space-y-6">
-            <!-- Status Card -->
+            <!-- Status & Disposition Card -->
             <div class="bg-white rounded-lg shadow border p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Lead Status</h3>
                 
-                <form asp-action="UpdateStatus" method="post" class="space-y-4">
+                <form asp-action="UpdateStatus" method="post" class="space-y-4 mb-6">
                     <input type="hidden" name="id" value="@Model.Id" />
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                         <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                            <option value="New" selected="@(Model.Status == Notification_Application.Models.LeadStatus.New)">New</option>
-                            <option value="Contacted" selected="@(Model.Status == Notification_Application.Models.LeadStatus.Contacted)">Contacted</option>
-                            <option value="Qualified" selected="@(Model.Status == Notification_Application.Models.LeadStatus.Qualified)">Qualified</option>
-                            <option value="Converted" selected="@(Model.Status == Notification_Application.Models.LeadStatus.Converted)">Converted</option>
-                            <option value="Unqualified" selected="@(Model.Status == Notification_Application.Models.LeadStatus.Unqualified)">Unqualified</option>
-                            <option value="Archived" selected="@(Model.Status == Notification_Application.Models.LeadStatus.Archived)">Archived</option>
+                            @foreach (var status in Enum.GetValues<Notification_Application.Models.LeadStatus>())
+                            {
+                                if (Model.Status == status)
+                                {
+                                    <option value="@status" selected>@status</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            }
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Add Note</label>
-                        <textarea name="notes" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Add a note about this lead..."></textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Note (optional)</label>
+                        <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Status change note..."></textarea>
                     </div>
 
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">
                         Update Status
                     </button>
                 </form>
+
+                <hr class="my-4" />
+
+                <form asp-action="UpdateDisposition" method="post" class="space-y-4">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Disposition</label>
+                        <select name="disposition" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                            @foreach (var disposition in Enum.GetValues<Notification_Application.Models.LeadDisposition>())
+                            {
+                                if (Model.Disposition == disposition)
+                                {
+                                    <option value="@disposition" selected>@disposition</option>
+                                }
+                                else
+                                {
+                                    <option value="@disposition">@disposition</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Note (optional)</label>
+                        <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Disposition note..."></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium">
+                        Update Disposition
+                    </button>
+                </form>
             </div>
 
-            <!-- Timeline -->
+            <!-- Stage Quick Update (if in pipeline) -->
+            @if (hasCrmAccess && Model.Pipeline != null && Model.Pipeline.Stages != null && Model.Pipeline.Stages.Any())
+            {
+                <div class="bg-white rounded-lg shadow border p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stage Update</h3>
+                    <form asp-action="UpdateStage" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="space-y-2">
+                            @foreach (var stage in Model.Pipeline.Stages.OrderBy(s => s.Order))
+                            {
+                                <label class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="stageId" value="@stage.Id" 
+                                           @(Model.StageId == stage.Id ? "checked" : "") 
+                                           class="mr-3" onchange="this.form.submit()" />
+                                    <span class="@(Model.StageId == stage.Id ? "font-medium text-purple-600" : "text-gray-700")">
+                                        @stage.Name
+                                    </span>
+                                </label>
+                            }
+                        </div>
+                    </form>
+                </div>
+            }
+
+            <!-- Activity Timeline -->
             <div class="bg-white rounded-lg shadow border p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Timeline</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Activity Timeline</h3>
                 <div class="space-y-4">
+                    @if (Model.Activities != null && Model.Activities.Any())
+                    {
+                        foreach (var activity in Model.Activities.OrderByDescending(a => a.CreatedAt).Take(10))
+                        {
+                            <div class="flex items-start gap-3">
+                                <div class="@GetActivityIconClass(activity.Type) p-2 rounded-full">
+                                    <i class="@GetActivityIcon(activity.Type)"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">@activity.Title</p>
+                                    @if (!string.IsNullOrEmpty(activity.Description))
+                                    {
+                                        <p class="text-xs text-gray-600 mt-1">@activity.Description</p>
+                                    }
+                                    <p class="text-xs text-gray-500 mt-1">@activity.CreatedAt.ToString("MMM dd, yyyy h:mm tt")</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    
                     <div class="flex items-start gap-3">
                         <div class="bg-blue-100 p-2 rounded-full">
                             <i class="fas fa-plus text-blue-600"></i>
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-900">Lead Captured</p>
-                            <p class="text-xs text-gray-500">@Model.CapturedAt.ToString("MMM dd, yyyy HH:mm")</p>
+                            <p class="text-xs text-gray-500">@Model.CapturedAt.ToString("MMM dd, yyyy h:mm tt")</p>
                         </div>
                     </div>
 
                     @if (Model.LastContactedAt.HasValue)
                     {
                         <div class="flex items-start gap-3">
-                            <div class="bg-purple-100 p-2 rounded-full">
-                                <i class="fas fa-phone text-purple-600"></i>
+                            <div class="bg-green-100 p-2 rounded-full">
+                                <i class="fas fa-phone text-green-600"></i>
                             </div>
                             <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">Contacted</p>
-                                <p class="text-xs text-gray-500">@Model.LastContactedAt.Value.ToString("MMM dd, yyyy HH:mm")</p>
+                                <p class="text-sm font-medium text-gray-900">Last Contacted</p>
+                                <p class="text-xs text-gray-500">@Model.LastContactedAt.Value.ToString("MMM dd, yyyy h:mm tt")</p>
                             </div>
                         </div>
                     }
@@ -232,11 +537,19 @@
 
             <!-- Metadata -->
             <div class="bg-white rounded-lg shadow border p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Metadata</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Technical Details</h3>
                 <div class="space-y-3 text-sm">
+                    <div>
+                        <span class="text-gray-500">Lead ID:</span>
+                        <span class="text-gray-900 ml-2">#@Model.Id</span>
+                    </div>
                     <div>
                         <span class="text-gray-500">IP Address:</span>
                         <span class="text-gray-900 ml-2">@(Model.IpAddress ?? "N/A")</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Lead Score:</span>
+                        <span class="text-gray-900 ml-2 font-medium">@Model.Score</span>
                     </div>
                     <div>
                         <span class="text-gray-500">GDPR Consent:</span>
@@ -258,7 +571,11 @@
             <div class="bg-white rounded-lg shadow border p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
                 <div class="space-y-2">
-                    <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to delete this lead?');">
+                    <a asp-controller="Leads" asp-action="Export" asp-route-leadId="@Model.Id" 
+                       class="block text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-md text-sm font-medium">
+                        <i class="fas fa-download me-2"></i>Export Lead Data
+                    </a>
+                    <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to delete this lead? This action cannot be undone.');">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-md text-sm font-medium">
                             <i class="fas fa-trash me-2"></i>Delete Lead
@@ -269,3 +586,66 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Pipeline/Stage dropdown cascade
+    document.getElementById('pipelineSelect')?.addEventListener('change', function() {
+        const stageSelect = document.getElementById('stageSelect');
+        const selectedOption = this.options[this.selectedIndex];
+        const stages = selectedOption.dataset.stages ? JSON.parse(selectedOption.dataset.stages) : [];
+        
+        stageSelect.innerHTML = '<option value="">Select Stage (optional)...</option>';
+        stages.forEach(stage => {
+            const option = document.createElement('option');
+            option.value = stage.Id;
+            option.textContent = stage.Name;
+            stageSelect.appendChild(option);
+        });
+    });
+</script>
+
+@functions {
+    string GetStatusBadgeClass(Notification_Application.Models.LeadStatus status)
+    {
+        return status switch
+        {
+            Notification_Application.Models.LeadStatus.New => "bg-blue-100 text-blue-800",
+            Notification_Application.Models.LeadStatus.Contacted => "bg-yellow-100 text-yellow-800",
+            Notification_Application.Models.LeadStatus.Qualified => "bg-green-100 text-green-800",
+            Notification_Application.Models.LeadStatus.Converted => "bg-purple-100 text-purple-800",
+            Notification_Application.Models.LeadStatus.Unqualified => "bg-red-100 text-red-800",
+            Notification_Application.Models.LeadStatus.Archived => "bg-gray-100 text-gray-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+
+    string GetActivityIconClass(Notification_Application.Models.ActivityType type)
+    {
+        return type switch
+        {
+            Notification_Application.Models.ActivityType.Note => "bg-yellow-100 text-yellow-600",
+            Notification_Application.Models.ActivityType.Email => "bg-blue-100 text-blue-600",
+            Notification_Application.Models.ActivityType.Call => "bg-green-100 text-green-600",
+            Notification_Application.Models.ActivityType.Meeting => "bg-purple-100 text-purple-600",
+            Notification_Application.Models.ActivityType.StatusChanged => "bg-orange-100 text-orange-600",
+            Notification_Application.Models.ActivityType.StageChanged => "bg-indigo-100 text-indigo-600",
+            Notification_Application.Models.ActivityType.DealCreated => "bg-emerald-100 text-emerald-600",
+            _ => "bg-gray-100 text-gray-600"
+        };
+    }
+
+    string GetActivityIcon(Notification_Application.Models.ActivityType type)
+    {
+        return type switch
+        {
+            Notification_Application.Models.ActivityType.Note => "fas fa-sticky-note",
+            Notification_Application.Models.ActivityType.Email => "fas fa-envelope",
+            Notification_Application.Models.ActivityType.Call => "fas fa-phone",
+            Notification_Application.Models.ActivityType.Meeting => "fas fa-calendar",
+            Notification_Application.Models.ActivityType.StatusChanged => "fas fa-exchange-alt",
+            Notification_Application.Models.ActivityType.StageChanged => "fas fa-arrow-right",
+            Notification_Application.Models.ActivityType.DealCreated => "fas fa-handshake",
+            _ => "fas fa-info-circle"
+        };
+    }
+}

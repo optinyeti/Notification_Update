@@ -31,6 +31,10 @@ public class Tenant
     public string? StripePublishableKey { get; set; }
     public string? StripeWebhookSecret { get; set; }
     
+    // API & Tracking
+    public string? ApiKey { get; set; } // For API authentication
+    public string? TrackingCode { get; set; } // Unique code for pixel tracking
+    
     // Navigation properties
     public ICollection<User> Users { get; set; } = new List<User>();
     public ICollection<Popup> Popups { get; set; } = new List<Popup>();

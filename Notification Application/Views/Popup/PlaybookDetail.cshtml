@@ -1,0 +1,94 @@
+@model List<Notification_Application.Models.PopupTemplate>
+@{
+    ViewData["Title"] = "Playbook Templates";
+    var playbook = ViewBag.Playbook as Notification_Application.Models.Playbook;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@playbook.Name - Templates</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; }
+        .playbook-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0; margin-bottom: 40px; }
+        .template-card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .template-card:hover { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .template-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 16px; background: #e9ecef; }
+        .use-template-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; }
+        .use-template-btn:hover { opacity: 0.9; color: white; }
+        .tips-section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 30px; }
+        .tip-box { background: #f0f4ff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #667eea; }
+    </style>
+</head>
+<body>
+    <div class="playbook-header">
+        <div class="container">
+            <a href="/Popup/Playbooks" class="btn btn-light mb-3">
+                <i class="bi bi-arrow-left"></i> Back to Playbooks
+            </a>
+            <h1><i class="@playbook.Icon me-2"></i> @playbook.Name</h1>
+            <p class="lead">@playbook.Description</p>
+            <div class="d-flex gap-3 mt-3">
+                <span class="badge bg-light text-dark fs-6"><i class="bi bi-building"></i> @playbook.Industry</span>
+                <span class="badge bg-light text-dark fs-6"><i class="bi bi-bullseye"></i> @playbook.Tactic</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h2 class="mb-4">Included Templates</h2>
+                <div class="row">
+                    @foreach (var template in Model)
+                    {
+                        <div class="col-md-6">
+                            <div class="template-card">
+                                @if (!string.IsNullOrEmpty(template.PreviewImageUrl))
+                                {
+                                    <img src="@template.PreviewImageUrl" alt="@template.Name" class="template-img">
+                                }
+                                <h4>@template.Name</h4>
+                                <p class="text-muted">@template.Description</p>
+                                <a href="/Popup/Designer?name=@Uri.EscapeDataString(template.Name)&type=@((int)template.Type)&category=@Uri.EscapeDataString(template.Category)" 
+                                   class="use-template-btn w-100 text-center d-block">
+                                    <i class="bi bi-palette"></i> Use This Template
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="tips-section">
+                    <h3><i class="bi bi-lightbulb text-warning"></i> Targeting Tips</h3>
+                    <div class="tip-box">
+                        @playbook.TargetingTips
+                    </div>
+                </div>
+
+                <div class="tips-section">
+                    <h3><i class="bi bi-graph-up text-success"></i> Expected Results</h3>
+                    <div class="tip-box">
+                        @playbook.ExpectedResults
+                    </div>
+                </div>
+
+                <div class="tips-section">
+                    <h3><i class="bi bi-check-circle text-primary"></i> Best Practices</h3>
+                    <div class="tip-box">
+                        @playbook.BestPractices
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

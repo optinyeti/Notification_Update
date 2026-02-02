@@ -36,13 +36,12 @@
     <!-- End Google Tag Manager (noscript) -->
     <header class="bg-white shadow-sm border-b">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between items-center py-3">
                 <!-- Logo and Brand -->
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
                         <a asp-controller="Home" asp-action="Index" class="flex items-center">
-                            <i class="fas fa-window-restore text-blue-600 text-2xl mr-3"></i>
-                            <span class="text-xl font-bold text-gray-900">Popup Manager Pro</span>
+                            <img src="~/images/sitelogo.png" alt="Logo" style="height: 84px; width: auto;" class="mr-2" />
                         </a>
                     </div>
 
@@ -59,15 +58,45 @@
                                 <a asp-controller="Popup" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
                                     <i class="fas fa-window-restore me-1"></i>My Popups
                                 </a>
+                                <a asp-controller="Form" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                                    <i class="fas fa-wpforms me-1"></i>Forms
+                                </a>
                                 <a asp-controller="Template" asp-action="SelectTemplate" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
                                     <i class="fas fa-palette me-1"></i>Templates
                                 </a>
-                                <a asp-controller="UserDashboard" asp-action="Analytics" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                    <i class="fas fa-chart-line me-1"></i>Analytics
-                                </a>
-                                <a asp-controller="Leads" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                    <i class="fas fa-users me-1"></i>Leads
-                                </a>
+                                <!-- CRM Dropdown -->
+                                <div class="dropdown inline-flex items-center px-1 pt-1">
+                                    <button class="text-gray-500 hover:text-gray-700 text-sm font-medium dropdown-toggle" type="button" id="crmMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-address-book me-1"></i>CRM
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="crmMenuDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Leads" asp-action="Index">
+                                            <i class="fas fa-users me-2"></i>Leads
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Crm" asp-action="Pipeline">
+                                            <i class="fas fa-stream me-2"></i>Pipeline
+                                            @if (ViewBag.PlanId < 3)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2" title="Pro plan required"><i class="fas fa-lock"></i></span>
+                                            }
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Crm" asp-action="Analytics">
+                                            <i class="fas fa-chart-line me-2"></i>Reports
+                                            @if (ViewBag.PlanId < 3)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2" title="Pro plan required"><i class="fas fa-lock"></i></span>
+                                            }
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Crm" asp-action="Index">
+                                            <i class="fas fa-tachometer-alt me-2"></i>CRM Dashboard
+                                            @if (ViewBag.PlanId < 3)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2" title="Pro plan required"><i class="fas fa-lock"></i></span>
+                                            }
+                                        </a></li>
+                                    </ul>
+                                </div>
                                 <a asp-controller="Integration" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
                                     <i class="fas fa-plug me-1"></i>Integrations
                                 </a>
@@ -277,9 +306,10 @@
     <footer class="bg-white border-t mt-auto">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center">
-                <p class="text-gray-500 text-sm">
-                    &copy; @DateTime.Now.Year Popup Manager Pro. All rights reserved.
-                </p>
+                <div class="flex items-center">
+                    <img src="~/images/sitelogo.png" alt="Logo" style="height: 48px; width: auto;" class="mr-2" />
+                    <span class="text-gray-500 text-sm">&copy; @DateTime.Now.Year All rights reserved.</span>
+                </div>
                 <div class="flex space-x-6">
                     <a asp-controller="Home" asp-action="Privacy" class="text-gray-500 hover:text-gray-700 text-sm">
                         Privacy Policy

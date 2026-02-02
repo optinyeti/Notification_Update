@@ -55,15 +55,18 @@
         .popup-canvas.position-center::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: -1; pointer-events: none; }
         .popup-canvas.position-fullscreen { align-items: stretch; justify-content: stretch; }
         .popup-canvas.position-side { align-items: stretch; justify-content: flex-end; }
-        .canvas-dropzone { pointer-events: all; padding: 20px; min-height: auto; border: 2px dashed #cbd5e1; background: white; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; z-index: 20; }
+        .canvas-dropzone { pointer-events: all; padding: 0; min-height: auto; border: 2px dashed #cbd5e1; background: white; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; z-index: 20; box-sizing: border-box; }
         .canvas-dropzone:hover { border-color: #3b82f6; }
-        /* Type-specific styling */
+        /* Type-specific styling - FIXED SACRED DIMENSIONS */
         .popup-canvas.position-top .canvas-dropzone,
-        .popup-canvas.position-bottom .canvas-dropzone { max-width: 100%; width: 100%; height: 120px; border-radius: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 15px 20px; }
-        .popup-canvas.position-center .canvas-dropzone { width: 600px; height: 500px; border-radius: 12px; padding: 30px; }
-        .popup-canvas.position-fullscreen .canvas-dropzone { width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0; }
-        .popup-canvas.position-side .canvas-dropzone { width: 400px; height: 100%; max-width: 400px; max-height: 100%; border-radius: 0; padding: 30px 20px; }
+        .popup-canvas.position-bottom .canvas-dropzone { width: 100%; height: 120px; min-height: 120px; max-height: 120px; border-radius: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0; }
+        .popup-canvas.position-center .canvas-dropzone { width: 800px; height: 600px; min-width: 800px; max-width: 800px; min-height: 600px; max-height: 600px; border-radius: 12px; padding: 0; }
+        .popup-canvas.position-fullscreen .canvas-dropzone { width: 100%; height: 100%; min-width: 100%; max-width: 100%; min-height: 100%; max-height: 100%; border-radius: 0; padding: 0; }
+        .popup-canvas.position-side .canvas-dropzone { width: 400px; height: 100%; min-width: 400px; max-width: 400px; min-height: 100%; max-height: 100%; border-radius: 0; padding: 0; }
         .canvas-dropzone.drag-over { border-color: #2563eb; background: #eff6ff; }
+        .canvas-dropzone .canvas-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; z-index: 1; }
+        .canvas-placeholder svg { width: 200px; height: 200px; opacity: 0.3; margin-bottom: 20px; }
+        .canvas-placeholder-text { font-size: 18px; color: #6b7280; font-weight: 500; padding: 12px 24px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; display: inline-block; }
         .right-sidebar { width: 320px; background: white; border-left: 1px solid #e5e7eb; margin-top: 60px; overflow-y: auto; }
         .properties-section, .rules-section, .analytics-section { padding: 20px; display: none; }
         .properties-section.active, .rules-section.active, .analytics-section.active { display: block; }
@@ -73,9 +76,10 @@
         .property-textarea { resize: vertical; }
         .color-picker-row { display: flex; gap: 8px; align-items: center; }
         .color-preview { width: 40px; height: 40px; border-radius: 6px; border: 1px solid #d1d5db; cursor: pointer; }
-        .component-wrapper { position: relative; cursor: pointer; transition: all 0.2s; }
+        .component-wrapper { position: absolute; cursor: move; transition: outline 0.2s; padding: 8px; min-height: 40px; min-width: 50px; z-index: 2; }
         .component-wrapper:hover { outline: 2px solid #93c5fd; }
-        .component-wrapper.selected { outline: 2px solid #2563eb; }
+        .component-wrapper.selected { outline: 2px solid #2563eb; z-index: 3; }
+        .component-wrapper.selected::after { content: ''; position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; background: #2563eb; border: 2px solid white; border-radius: 50%; cursor: nwse-resize; z-index: 11; }
         .component-controls { position: absolute; top: -32px; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px; display: none; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
         .component-wrapper.selected .component-controls { display: flex; }
         .control-btn { width: 24px; height: 24px; border: none; background: transparent; cursor: pointer; border-radius: 4px; color: #6b7280; font-size: 14px; display: flex; align-items: center; justify-content: center; }
@@ -122,6 +126,21 @@
         .did-you-know strong { display: block; margin-bottom: 8px; color: #92400e; font-size: 13px; }
         .did-you-know p { margin: 0; font-size: 12px; color: #78350f; line-height: 1.6; }
         .did-you-know a { color: #2563eb; text-decoration: none; font-weight: 600; }
+        
+        /* Media Library Styles */
+        .media-item { position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; transition: all 0.2s; }
+        .media-item:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .media-item.selected { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.5); }
+        .media-item img { width: 100%; height: 200px; object-fit: cover; }
+        .media-item-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); padding: 12px; color: white; font-size: 12px; }
+        .media-item-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 4px; }
+        .media-item:hover .media-item-actions { display: flex; }
+        .media-action-btn { width: 28px; height: 28px; border: none; border-radius: 4px; background: white; color: #374151; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .media-action-btn:hover { background: #ef4444; color: white; }
+        .image-url-group { display: flex; gap: 8px; }
+        .image-url-group .property-input { flex: 1; }
+        .image-url-group .btn-media-library { padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; white-space: nowrap; }
+        .image-url-group .btn-media-library:hover { background: #2563eb; }
         
         /* Rules Content Area */
         .rules-content { flex: 1; background: #f9fafb; overflow-y: auto; padding: 32px; }
@@ -222,7 +241,19 @@
                 <div class="device-screen">
                     <div class="popup-canvas" id="popupCanvas">
                         <div class="canvas-dropzone" id="dropzone">
-                            <div class="empty-state"><i class="bi bi-mouse"></i><p>Drag and drop blocks here to start building</p></div>
+                            <div class="canvas-placeholder">
+                                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="100" cy="100" r="80" fill="#dbeafe"/>
+                                    <rect x="70" y="60" width="60" height="80" rx="4" fill="#3b82f6" opacity="0.6"/>
+                                    <rect x="75" y="70" width="20" height="3" rx="1.5" fill="white"/>
+                                    <rect x="75" y="80" width="15" height="2" rx="1" fill="white" opacity="0.7"/>
+                                    <rect x="75" y="85" width="15" height="2" rx="1" fill="white" opacity="0.7"/>
+                                    <rect x="75" y="95" width="30" height="15" rx="2" fill="#93c5fd"/>
+                                    <path d="M140 120 L160 140 L170 130 L180 140 L180 160 L140 160 Z" fill="#60a5fa"/>
+                                    <path d="M150 100 C150 90 160 85 165 90 C170 85 180 90 180 100 L180 120 C180 130 165 140 165 140 C165 140 150 130 150 120 Z" fill="#3b82f6" opacity="0.8"/>
+                                </svg>
+                                <div class="canvas-placeholder-text">Drag blocks and elements to start building your campaign</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1203,6 +1234,43 @@
         </div>
     </div>
 
+    <!-- Media Library Modal -->
+    <div class="modal fade" id="mediaLibraryModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-images me-2"></i>Media Library</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="d-flex gap-2">
+                                <input type="file" id="mediaUploadInput" accept="image/*" style="display: none;" onchange="uploadMediaFile(this)">
+                                <button class="btn btn-primary" onclick="document.getElementById('mediaUploadInput').click()">
+                                    <i class="bi bi-upload"></i> Upload Image
+                                </button>
+                                <div id="uploadProgress" class="flex-grow-1" style="display: none;">
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div id="mediaLibraryGrid" class="row g-3">
+                                <div class="col-12 text-center text-muted py-5">
+                                    <i class="bi bi-images" style="font-size: 48px;"></i>
+                                    <p class="mt-3">No images yet. Upload your first image to get started!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Email Service Modal -->
     <div class="modal fade" id="emailModal" tabindex="-1">
         <div class="modal-dialog">
@@ -1525,6 +1593,10 @@
                     if (htmlContent && htmlContent.trim() !== '' && htmlContent !== '{}' && htmlContent !== '""') {
                         console.log('Loading HTML content into dropzone');
                         document.getElementById('dropzone').innerHTML = htmlContent;
+                        
+                        // Remove placeholder
+                        const placeholder = document.querySelector('.canvas-placeholder');
+                        if (placeholder) placeholder.remove();
                         const emptyState = document.querySelector('.empty-state');
                         if (emptyState) emptyState.remove();
                         
@@ -1568,9 +1640,17 @@
             dropzone.addEventListener('drop', function(e) {
                 e.preventDefault();
                 dropzone.classList.remove('drag-over');
-                addComponent(e.dataTransfer.getData('blockType'));
-                const emptyState = dropzone.querySelector('.empty-state');
-                if (emptyState) emptyState.remove();
+                
+                // Calculate drop position relative to canvas
+                const rect = dropzone.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                addComponent(e.dataTransfer.getData('blockType'), x, y);
+                
+                // Remove placeholder
+                const placeholder = dropzone.querySelector('.canvas-placeholder');
+                if (placeholder) placeholder.remove();
             });
             
             // Click on empty space to deselect
@@ -1589,25 +1669,20 @@
             const popupCanvas = document.getElementById('popupCanvas');
             const dropzone = document.getElementById('dropzone');
             
-            // Remove all position classes
+            // Remove all position classes and inline styles
             popupCanvas.classList.remove('position-top', 'position-bottom', 'position-center', 'position-fullscreen', 'position-side');
+            popupCanvas.style.cssText = '';
+            dropzone.style.cssText = '';
             
-            // Apply position based on type
+            // Apply position based on type - CSS handles the fixed dimensions
             switch(type) {
                 case 'Modal':
                 case 'Notification':
                     popupCanvas.classList.add('position-center');
-                    dropzone.style.maxWidth = '600px';
-                    dropzone.style.width = 'auto';
-                    dropzone.style.borderRadius = '12px';
                     break;
                     
                 case 'FloatingBar':
                     popupCanvas.classList.add('position-top');
-                    dropzone.style.maxWidth = '100%';
-                    dropzone.style.width = '100%';
-                    dropzone.style.borderRadius = '0';
-                    dropzone.style.maxHeight = '150px';
                     break;
                     
                 case 'SlideIn':
@@ -1615,35 +1690,20 @@
                     popupCanvas.style.alignItems = 'flex-end';
                     popupCanvas.style.justifyContent = 'flex-end';
                     popupCanvas.style.padding = '20px';
-                    dropzone.style.maxWidth = '400px';
-                    dropzone.style.width = '400px';
-                    dropzone.style.borderRadius = '12px';
                     dropzone.style.marginRight = '20px';
                     dropzone.style.marginBottom = '20px';
                     break;
                     
                 case 'Fullscreen':
                     popupCanvas.classList.add('position-fullscreen');
-                    dropzone.style.width = '100%';
-                    dropzone.style.height = '100%';
-                    dropzone.style.maxWidth = '100%';
-                    dropzone.style.maxHeight = '100%';
-                    dropzone.style.borderRadius = '0';
                     break;
                     
                 case 'SidePanel':
                     popupCanvas.classList.add('position-side');
-                    dropzone.style.width = '400px';
-                    dropzone.style.height = '100%';
-                    dropzone.style.maxWidth = '400px';
-                    dropzone.style.maxHeight = '100%';
-                    dropzone.style.borderRadius = '0';
                     break;
                     
                 default:
                     popupCanvas.classList.add('position-center');
-                    dropzone.style.maxWidth = '600px';
-                    dropzone.style.width = 'auto';
             }
         }
 
@@ -1737,18 +1797,29 @@
         // Initialize drag and drop on page load
         initializeDragAndDrop();
 
-        function addComponent(type) {
+        function addComponent(type, x, y) {
             componentCounter++;
             const wrapper = document.createElement('div');
             wrapper.className = 'component-wrapper';
             wrapper.dataset.componentId = componentCounter;
             wrapper.dataset.componentType = type;
+            
+            // Position at drop location if coordinates provided
+            if (x !== undefined && y !== undefined) {
+                wrapper.style.left = Math.max(0, x - 100) + 'px'; // Center element on cursor
+                wrapper.style.top = Math.max(0, y - 20) + 'px';
+            } else {
+                // Default center position for programmatically added components
+                wrapper.style.left = '50%';
+                wrapper.style.top = '50%';
+                wrapper.style.transform = 'translate(-50%, -50%)';
+            }
             let content = '';
             switch(type) {
                 case 'heading': content = '<h2 contenteditable="true" style="margin: 16px 0; font-size: 32px; font-weight: 700; color: #111827;">Edit Heading</h2>'; break;
                 case 'text': content = '<p contenteditable="true" style="margin: 16px 0; font-size: 16px; color: #374151;">Click to edit text</p>'; break;
                 case 'button': content = '<div style="text-align: center; margin: 16px 0;"><button style="background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;">Click Me</button></div>'; break;
-                case 'image': content = '<div style="text-align: center; margin: 16px 0;"><img src="https://via.placeholder.com/400x200" style="max-width: 100%; border-radius: 8px;"></div>'; break;
+                case 'image': content = '<div style="text-align: center; margin: 16px 0;"><img src="https://placehold.co/400x200/e5e7eb/6b7280?text=Click+to+change+image" style="max-width: 100%; border-radius: 8px;"></div>'; break;
                 case 'icon': content = '<div style="text-align: center; margin: 16px 0;"><i class="bi bi-star-fill" style="font-size: 48px; color: #f59e0b;"></i></div>'; break;
                 case 'fields': content = '<div style="margin: 16px 0;"><input type="email" placeholder="Enter your email" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px;"></div>'; break;
                 case 'list': content = '<ul style="margin: 16px 0; padding-left: 24px; color: #374151;"><li style="margin: 8px 0;">List item 1</li><li style="margin: 8px 0;">List item 2</li><li style="margin: 8px 0;">List item 3</li></ul>'; break;
@@ -1759,7 +1830,7 @@
                 case 'countdown': content = '<div class="countdown-timer" data-target-date="" style="text-align: center; margin: 16px 0; font-size: 32px; font-weight: 700; color: #2563eb;" data-format="00:59:59">00:59:59</div>'; break;
                 case 'progress': content = '<div style="margin: 16px 0;"><div style="background: #e5e7eb; height: 24px; border-radius: 12px; overflow: hidden;"><div class="progress-fill" data-progress="70" style="width: 70%; height: 100%; background: linear-gradient(90deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600;">70%</div></div></div>'; break;
                 case 'rating': content = '<div style="text-align: center; margin: 16px 0; font-size: 28px; color: #f59e0b;"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></div>'; break;
-                case 'testimonial': content = '<div style="margin: 16px 0; padding: 24px; background: #f9fafb; border-radius: 12px; border-left: 4px solid #2563eb;"><p style="font-size: 16px; font-style: italic; color: #374151; margin-bottom: 16px;">"This is an amazing product! Highly recommended."</p><div style="display: flex; align-items: center; gap: 12px;"><img src="https://via.placeholder.com/48" style="width: 48px; height: 48px; border-radius: 50%;"><div><div style="font-weight: 600; color: #111827;">John Doe</div><div style="font-size: 14px; color: #6b7280;">Customer</div></div></div></div>'; break;
+                case 'testimonial': content = '<div style="margin: 16px 0; padding: 24px; background: #f9fafb; border-radius: 12px; border-left: 4px solid #2563eb;"><p style="font-size: 16px; font-style: italic; color: #374151; margin-bottom: 16px;">"This is an amazing product! Highly recommended."</p><div style="display: flex; align-items: center; gap: 12px;"><img src="https://placehold.co/48x48/3b82f6/ffffff?text=JD" style="width: 48px; height: 48px; border-radius: 50%;"><div><div style="font-weight: 600; color: #111827;">John Doe</div><div style="font-size: 14px; color: #6b7280;">Customer</div></div></div></div>'; break;
                 case 'badge': content = '<div style="text-align: center; margin: 16px 0;"><span style="display: inline-block; padding: 8px 16px; background: #2563eb; color: white; border-radius: 20px; font-size: 14px; font-weight: 600;">NEW</span></div>'; break;
                 case 'card': content = '<div style="margin: 16px 0; padding: 24px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"><h3 style="font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 12px;">Card Title</h3><p style="color: #6b7280; margin-bottom: 16px;">Card content goes here. You can add text, images, or other elements.</p><button style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">Learn More</button></div>'; break;
                 case 'social': content = '<div class="social-buttons" style="text-align: center; margin: 16px 0;"><a href="#" style="display: inline-block; width: 36px; height: 36px; line-height: 36px; background: #3b5998; color: white; border-radius: 50%; margin: 0 4px; text-decoration: none;"><i class="bi bi-facebook"></i></a><a href="#" style="display: inline-block; width: 36px; height: 36px; line-height: 36px; background: #1da1f2; color: white; border-radius: 50%; margin: 0 4px; text-decoration: none;"><i class="bi bi-twitter"></i></a><a href="#" style="display: inline-block; width: 36px; height: 36px; line-height: 36px; background: #0077b5; color: white; border-radius: 50%; margin: 0 4px; text-decoration: none;"><i class="bi bi-linkedin"></i></a></div>'; break;
@@ -1801,6 +1872,12 @@
             });
             
             wrapper.addEventListener('click', function(e) { e.stopPropagation(); selectComponent(this); });
+            
+            // Add drag-to-move functionality
+            initComponentDrag(wrapper);
+            
+            // Add resize functionality
+            initComponentResize(wrapper);
             
             // Make text elements in the new component editable
             const textElements = wrapper.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, button:not(.control-btn), div[style*="text-align"]');
@@ -1856,9 +1933,13 @@
             
             console.log('Wrapping existing elements, found:', children.length);
             
+            let currentY = 20; // Start position from top
+            
             children.forEach(child => {
-                // Skip if already wrapped
-                if (child.classList.contains('component-wrapper') || child.classList.contains('empty-state')) {
+                // Skip if already wrapped or is placeholder
+                if (child.classList.contains('component-wrapper') || 
+                    child.classList.contains('empty-state') || 
+                    child.classList.contains('canvas-placeholder')) {
                     return;
                 }
                 
@@ -1942,6 +2023,14 @@
                 wrapper.appendChild(controls);
                 wrapper.appendChild(child);
                 
+                // Position wrapper - stack vertically for templates
+                wrapper.style.left = '20px';
+                wrapper.style.top = currentY + 'px';
+                wrapper.style.width = 'calc(100% - 40px)'; // Full width minus margins
+                
+                // Update Y position for next element (approximate height)
+                currentY += child.offsetHeight + 20;
+                
                 // Add button event listeners
                 const moveUpBtn = controls.children[0];
                 const moveDownBtn = controls.children[1];
@@ -1973,6 +2062,12 @@
                     e.stopPropagation(); 
                     selectComponent(this); 
                 });
+                
+                // Add drag-to-move functionality
+                initComponentDrag(wrapper);
+                
+                // Add resize functionality
+                initComponentResize(wrapper);
             });
             
             console.log('Wrapped', componentCounter, 'components');
@@ -2036,6 +2131,150 @@
                     }
                 }
             });
+        }
+
+        // Drag-to-move functionality for components
+        function initComponentDrag(wrapper) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+            
+            const onMouseDown = (e) => {
+                // Only drag if clicking on the wrapper itself or non-editable content
+                if (e.target.getAttribute('contenteditable') === 'true') return;
+                if (e.target.classList.contains('control-btn') || e.target.closest('.control-btn')) return;
+                if (e.target.classList.contains('component-wrapper') === false && e.target.closest('.component-controls')) return;
+                
+                // Don't start drag on resize handle
+                const rect = wrapper.getBoundingClientRect();
+                const handleSize = 15;
+                if (e.clientX > rect.right - handleSize && e.clientY > rect.bottom - handleSize) return;
+                
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                // Get current position or start from 0
+                const computedStyle = window.getComputedStyle(wrapper);
+                const matrix = new WebKitCSSMatrix(computedStyle.transform);
+                initialX = matrix.m41 || 0;
+                initialY = matrix.m42 || 0;
+                
+                wrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+            };
+            
+            const onMouseMove = (e) => {
+                if (!isDragging) return;
+                
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                // Get canvas bounds
+                const canvas = document.getElementById('dropzone');
+                const canvasRect = canvas.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                
+                // Calculate new position in absolute coordinates
+                const currentLeft = parseFloat(wrapper.style.left) || 0;
+                const currentTop = parseFloat(wrapper.style.top) || 0;
+                
+                let newLeft = currentLeft + deltaX;
+                let newTop = currentTop + deltaY;
+                
+                // Constrain movement within canvas
+                newLeft = Math.max(0, Math.min(newLeft, canvasRect.width - wrapperRect.width));
+                newTop = Math.max(0, Math.min(newTop, canvasRect.height - wrapperRect.height));
+                
+                wrapper.style.left = newLeft + 'px';
+                wrapper.style.top = newTop + 'px';
+                wrapper.style.transform = 'none'; // Clear any transform
+                
+                // Update starting position for next move
+                startX = e.clientX;
+                startY = e.clientY;
+            };
+            
+            const onMouseUp = () => {
+                if (isDragging) {
+                    isDragging = false;
+                    wrapper.style.cursor = 'move';
+                }
+            };
+            
+            wrapper.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            
+            // Store cleanup function
+            wrapper.dragCleanup = () => {
+                wrapper.removeEventListener('mousedown', onMouseDown);
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+        }
+
+        // Resize functionality for components
+        function initComponentResize(wrapper) {
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
+            
+            const onResizeStart = (e) => {
+                // Check if click is on resize handle (bottom-right corner)
+                const rect = wrapper.getBoundingClientRect();
+                const handleSize = 15;
+                
+                if (e.clientX > rect.right - handleSize && e.clientY > rect.bottom - handleSize) {
+                    isResizing = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startWidth = rect.width;
+                    startHeight = rect.height;
+                    
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            };
+            
+            const onResizeMove = (e) => {
+                if (!isResizing) return;
+                
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                let newWidth = startWidth + deltaX;
+                let newHeight = startHeight + deltaY;
+                
+                // Get canvas bounds
+                const canvas = document.getElementById('dropzone');
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                // Constrain size within canvas
+                const maxWidth = canvasRect.width;
+                const maxHeight = canvasRect.height;
+                
+                newWidth = Math.max(50, Math.min(newWidth, maxWidth));
+                newHeight = Math.max(30, Math.min(newHeight, maxHeight));
+                
+                wrapper.style.width = newWidth + 'px';
+                wrapper.style.height = newHeight + 'px';
+                
+                e.preventDefault();
+            };
+            
+            const onResizeEnd = () => {
+                isResizing = false;
+            };
+            
+            wrapper.addEventListener('mousedown', onResizeStart);
+            document.addEventListener('mousemove', onResizeMove);
+            document.addEventListener('mouseup', onResizeEnd);
+            
+            // Store cleanup function
+            wrapper.resizeCleanup = () => {
+                wrapper.removeEventListener('mousedown', onResizeStart);
+                document.removeEventListener('mousemove', onResizeMove);
+                document.removeEventListener('mouseup', onResizeEnd);
+            };
         }
 
         function selectComponent(wrapper) {
@@ -2211,7 +2450,7 @@
                     
                 case 'image':
                     const imgElem = selectedComponent?.querySelector('img');
-                    const imgUrl = imgElem ? imgElem.src || 'https://via.placeholder.com/400x200' : 'https://via.placeholder.com/400x200';
+                    const imgUrl = imgElem ? imgElem.src || 'https://placehold.co/400x200/e5e7eb/6b7280?text=Image' : 'https://placehold.co/400x200/e5e7eb/6b7280?text=Image';
                     const imgAlt = imgElem ? imgElem.alt || '' : '';
                     const imgMaxWidth = imgElem ? parseInt(imgElem.style.maxWidth) || 100 : 100;
                     const imgRadius = imgElem ? parseInt(imgElem.style.borderRadius) || 8 : 8;
@@ -2221,7 +2460,12 @@
                     html += `
                         <div class="property-group">
                             <label class="property-label">Image URL</label>
-                            <input type="url" class="property-input" id="imageUrl" value="${imgUrl}" onchange="updateImage(this.value)">
+                            <div class="image-url-group">
+                                <input type="url" class="property-input" id="imageUrl" value="${imgUrl}" onchange="updateImage(this.value)">
+                                <button class="btn-media-library" onclick="event.preventDefault(); openMediaLibrary('imageUrl')">
+                                    <i class="bi bi-images"></i> Library
+                                </button>
+                            </div>
                         </div>
                         <div class="property-group">
                             <label class="property-label">Alt Text</label>
@@ -2403,7 +2647,12 @@
                             </div>
                             <div class="property-group">
                                 <label class="property-label">Image URL</label>
-                                <input type="url" class="property-input" id="templateImageUrl" value="${imgSrc}" onchange="updateTemplateImage(this.value)">
+                                <div class="image-url-group">
+                                    <input type="url" class="property-input" id="templateImageUrl" value="${imgSrc}" onchange="updateTemplateImage(this.value)">
+                                    <button class="btn-media-library" onclick="event.preventDefault(); openMediaLibrary('templateImageUrl')">
+                                        <i class="bi bi-images"></i> Library
+                                    </button>
+                                </div>
                             </div>
                             <div class="property-group">
                                 <label class="property-label">Alt Text</label>
@@ -2882,7 +3131,12 @@
                         </div>
                         <div class="property-group">
                             <label class="property-label">Author Image URL</label>
-                            <input type="url" class="property-input" value="https://via.placeholder.com/48" onchange="updateTestimonialImage(this.value)">
+                            <div class="image-url-group">
+                                <input type="url" class="property-input" id="testimonialImageUrl" value="https://placehold.co/48x48/3b82f6/ffffff?text=JD" onchange="updateTestimonialImage(this.value)">
+                                <button class="btn-media-library" onclick="event.preventDefault(); openMediaLibrary('testimonialImageUrl')">
+                                    <i class="bi bi-images"></i> Library
+                                </button>
+                            </div>
                         </div>
                         <div class="property-group">
                             <label class="property-label">Background Color</label>
@@ -3929,6 +4183,149 @@
             } else {
                 previewFrame.classList.remove('mobile');
                 previewFrame.classList.add('desktop');
+            }
+        }
+
+        // Media Library Functions
+        let currentImageInputId = null;
+        let mediaLibrary = [];
+
+        async function loadMediaLibrary() {
+            try {
+                const response = await fetch('/Media/GetLibrary');
+                if (response.ok) {
+                    mediaLibrary = await response.json();
+                    renderMediaLibrary();
+                }
+            } catch (error) {
+                console.error('Error loading media library:', error);
+            }
+        }
+
+        function renderMediaLibrary() {
+            const grid = document.getElementById('mediaLibraryGrid');
+            
+            if (mediaLibrary.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center text-muted py-5">
+                        <i class="bi bi-images" style="font-size: 48px;"></i>
+                        <p class="mt-3">No images yet. Upload your first image to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = mediaLibrary.map(img => `
+                <div class="col-md-3">
+                    <div class="media-item" onclick="selectMediaImage('${img.filePath}')" data-image-id="${img.id}">
+                        <img src="${img.filePath}" alt="${img.altText || img.fileName}">
+                        <div class="media-item-overlay">
+                            <div style="font-weight: 600;">${img.title || img.originalFileName}</div>
+                            <div style="font-size: 11px; opacity: 0.8;">${img.width} × ${img.height} • ${formatFileSize(img.fileSize)}</div>
+                        </div>
+                        <div class="media-item-actions">
+                            <button class="media-action-btn" onclick="event.stopPropagation(); deleteMediaImage(${img.id})" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function openMediaLibrary(inputId) {
+            currentImageInputId = inputId;
+            loadMediaLibrary();
+            new bootstrap.Modal(document.getElementById('mediaLibraryModal')).show();
+        }
+
+        function selectMediaImage(filePath) {
+            if (currentImageInputId) {
+                const input = document.getElementById(currentImageInputId);
+                if (input) {
+                    input.value = filePath;
+                    input.dispatchEvent(new Event('change'));
+                }
+            }
+            bootstrap.Modal.getInstance(document.getElementById('mediaLibraryModal')).hide();
+        }
+
+        async function uploadMediaFile(input) {
+            if (!input.files || input.files.length === 0) return;
+
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressBar = progressDiv.querySelector('.progress-bar');
+            
+            progressDiv.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            try {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                    }
+                });
+
+                xhr.addEventListener('load', async () => {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        if (result.success) {
+                            await loadMediaLibrary();
+                            progressDiv.style.display = 'none';
+                            input.value = ''; // Clear file input
+                        } else {
+                            alert('Upload failed: ' + (result.error || 'Unknown error'));
+                            progressDiv.style.display = 'none';
+                        }
+                    } else {
+                        alert('Upload failed with status: ' + xhr.status);
+                        progressDiv.style.display = 'none';
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    alert('Upload failed. Please try again.');
+                    progressDiv.style.display = 'none';
+                });
+
+                xhr.open('POST', '/Media/Upload');
+                xhr.send(formData);
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload failed: ' + error.message);
+                progressDiv.style.display = 'none';
+            }
+        }
+
+        async function deleteMediaImage(imageId) {
+            if (!confirm('Are you sure you want to delete this image?')) return;
+
+            try {
+                const response = await fetch(`/Media/Delete?id=${imageId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await loadMediaLibrary();
+                } else {
+                    alert('Failed to delete image');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Failed to delete image: ' + error.message);
             }
         }
 

@@ -1,0 +1,153 @@
+@model Notification_Application.Models.WebsiteForm
+@{
+    ViewData["Title"] = "Create Form";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <a href="@Url.Action("Index", "Form")" class="text-decoration-none">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Forms
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Create New Form</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label">Form Name <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control form-control-lg" placeholder="e.g., Contact Form, Newsletter Signup" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="2" placeholder="Brief description of this form's purpose"></textarea>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="FormType" class="form-label">Form Type <span class="text-danger">*</span></label>
+                                <select asp-for="FormType" asp-items="@Html.GetEnumSelectList<Notification_Application.Models.FormType>()" class="form-select"></select>
+                                <small class="text-muted">This helps us suggest the right fields</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Style" class="form-label">Form Style</label>
+                                <select asp-for="Style" asp-items="@Html.GetEnumSelectList<Notification_Application.Models.FormStyle>()" class="form-select"></select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h6 class="mb-3"><i class="bi bi-palette me-2"></i>Appearance</h6>
+
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label asp-for="BackgroundColor" class="form-label">Background Color</label>
+                                <div class="input-group">
+                                    <input type="color" asp-for="BackgroundColor" class="form-control form-control-color" style="width: 50px;">
+                                    <input type="text" class="form-control" value="#ffffff" id="bgColorText" onchange="document.getElementById('BackgroundColor').value = this.value">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="TextColor" class="form-label">Text Color</label>
+                                <div class="input-group">
+                                    <input type="color" asp-for="TextColor" class="form-control form-control-color" style="width: 50px;">
+                                    <input type="text" class="form-control" value="#1f2937" id="textColorText">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="ButtonColor" class="form-label">Button Color</label>
+                                <div class="input-group">
+                                    <input type="color" asp-for="ButtonColor" class="form-control form-control-color" style="width: 50px;">
+                                    <input type="text" class="form-control" value="#3b82f6" id="buttonColorText">
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h6 class="mb-3"><i class="bi bi-card-text me-2"></i>Content</h6>
+
+                        <div class="mb-4">
+                            <label asp-for="HeaderText" class="form-label">Header Text</label>
+                            <input asp-for="HeaderText" class="form-control" placeholder="e.g., Get In Touch" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="SubheaderText" class="form-label">Subheader Text</label>
+                            <input asp-for="SubheaderText" class="form-control" placeholder="e.g., Fill out the form below and we'll get back to you" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="SubmitButtonText" class="form-label">Submit Button Text</label>
+                            <input asp-for="SubmitButtonText" class="form-control" value="Submit" />
+                        </div>
+
+                        <hr class="my-4">
+                        <h6 class="mb-3"><i class="bi bi-gear me-2"></i>Settings</h6>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="SubmissionAction" class="form-label">After Submission</label>
+                                <select asp-for="SubmissionAction" asp-items="@Html.GetEnumSelectList<Notification_Application.Models.SubmissionAction>()" class="form-select"></select>
+                            </div>
+                            <div class="col-md-6" id="redirectUrlGroup">
+                                <label asp-for="RedirectUrl" class="form-label">Redirect URL</label>
+                                <input asp-for="RedirectUrl" class="form-control" placeholder="https://yoursite.com/thank-you" />
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="SuccessMessage" class="form-label">Success Message</label>
+                            <input asp-for="SuccessMessage" class="form-control" value="Thank you for your submission!" />
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="CreateLead" checked>
+                                    <label class="form-check-label" asp-for="CreateLead">Create Lead on Submission</label>
+                                </div>
+                                <small class="text-muted">Automatically create a lead in your CRM</small>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="EnableHoneypot" checked>
+                                    <label class="form-check-label" asp-for="EnableHoneypot">Enable Spam Protection</label>
+                                </div>
+                                <small class="text-muted">Add honeypot field to prevent spam</small>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="@Url.Action("Index", "Form")" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Create Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('SubmissionAction').addEventListener('change', function() {
+        const redirectGroup = document.getElementById('redirectUrlGroup');
+        if (this.value === 'RedirectToUrl' || this.value === 'ShowMessageThenRedirect') {
+            redirectGroup.style.display = 'block';
+        } else {
+            redirectGroup.style.display = 'none';
+        }
+    });
+</script>
+}

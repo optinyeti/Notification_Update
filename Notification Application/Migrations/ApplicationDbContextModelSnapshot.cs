@@ -47,6 +47,21 @@ namespace Notification_Application.Migrations
                     b.ToTable("BlogPostBlogTag");
                 });
 
+            modelBuilder.Entity("LeadLeadTag", b =>
+                {
+                    b.Property<int>("LeadsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TagsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("LeadsId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("LeadLeadTag");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -333,6 +348,124 @@ namespace Notification_Application.Migrations
                     b.ToTable("BlogTags");
                 });
 
+            modelBuilder.Entity("Notification_Application.Models.CrmTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AssignedToId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AssignedToUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedById")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("LeadId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedToId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("LeadId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("CrmTasks");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Deal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ActualCloseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ExpectedCloseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LeadId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Probability")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Deals");
+                });
+
             modelBuilder.Entity("Notification_Application.Models.EmailCapture", b =>
                 {
                     b.Property<int>("Id")
@@ -388,31 +521,343 @@ namespace Notification_Application.Migrations
                     b.ToTable("EmailCaptures");
                 });
 
+            modelBuilder.Entity("Notification_Application.Models.FormAnalytics", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("ConversionRate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DesktopViews")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FormId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MobileViews")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PartialSubmissions")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Submissions")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TabletViews")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UniqueViews")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Views")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FormId");
+
+                    b.ToTable("FormAnalytics");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.FormField", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("AllowOther")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ConditionalLogic")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DefaultValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FieldName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FieldType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FormId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("HasConditionalLogic")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("HelpText")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LeadFieldMapping")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("MaxLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MinLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Options")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Placeholder")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("PreFillFromUrl")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ValidationMessage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ValidationPattern")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FormId");
+
+                    b.ToTable("FormFields");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.FormSubmission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("DoubleOptInConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("DoubleOptInConfirmedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FormId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsSpam")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("LeadId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PageUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Referrer")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UtmCampaign")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UtmContent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UtmMedium")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UtmSource")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UtmTerm")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FormId");
+
+                    b.HasIndex("LeadId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("FormSubmissions");
+                });
+
             modelBuilder.Entity("Notification_Application.Models.Integration", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AccessToken")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ApiKey")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Configuration")
-                        .IsRequired()
+                    b.Property<string>("ApiSecret")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClientId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsEnabled")
+                    b.Property<string>("CreatedById")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ErrorCount")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ExternalAccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalListId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsConnected")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastErrorAt")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastSyncAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("OAuthState")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Settings")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SyncCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SyncEvents")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SyncForms")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SyncLeads")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SyncPopups")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("TokenExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WebhookSecret")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WebhookUrl")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Integrations");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.IntegrationLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("FormSubmissionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("IntegrationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSuccess")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("LeadId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("StatusCode")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
@@ -420,14 +865,13 @@ namespace Notification_Application.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("WebhookUrl")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TenantId");
+                    b.HasIndex("IntegrationId");
 
-                    b.ToTable("Integrations");
+                    b.HasIndex("LeadId");
+
+                    b.ToTable("IntegrationLogs");
                 });
 
             modelBuilder.Entity("Notification_Application.Models.Lead", b =>
@@ -436,7 +880,19 @@ namespace Notification_Application.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal?>("AnnualRevenue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("AssignedDealId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AverageTimeOnSite")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CapturedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("City")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Company")
@@ -451,17 +907,41 @@ namespace Notification_Application.Migrations
                     b.Property<string>("ConsentText")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Country")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("CustomFields")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Disposition")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("EmailClicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EmailOpens")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("EmployeeCount")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("FirstVisitAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Industry")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("IpAddress")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("JobTitle")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastContactedAt")
@@ -470,25 +950,64 @@ namespace Notification_Application.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("LastScoreUpdate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastVisitAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LeadSource")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LeadSourceDetail")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PageViews")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Phone")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("PipelineId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PopupId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("PotentialValue")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Referrer")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Score")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Source")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("StageEnteredAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("StageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("State")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TotalVisits")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UserAgent")
@@ -512,13 +1031,283 @@ namespace Notification_Application.Migrations
                     b.Property<string>("ViewType")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Website")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedDealId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("PipelineId");
+
                     b.HasIndex("PopupId");
+
+                    b.HasIndex("StageId");
 
                     b.HasIndex("TenantId");
 
                     b.ToTable("Leads");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadActivity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Browser")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeviceType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LeadId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PageTitle")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PageUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PerformedById")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PerformedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("TimeOnPage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("ActivityType");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadId");
+
+                    b.HasIndex("PerformedById");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("LeadActivities");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadCustomField", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DefaultValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FieldLabel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FieldName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FieldType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Options")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("LeadCustomFields");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadScore", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LeadId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadId");
+
+                    b.ToTable("LeadScores");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadStageHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DaysInPreviousStage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("FromStageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LeadId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("MovedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MovedById")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MovedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ToStageId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromStageId");
+
+                    b.HasIndex("LeadId");
+
+                    b.HasIndex("MovedById");
+
+                    b.HasIndex("ToStageId");
+
+                    b.ToTable("LeadStageHistories");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("LeadTags");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.MediaLibraryImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AltText")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MimeType")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MediaLibraryImages");
                 });
 
             modelBuilder.Entity("Notification_Application.Models.Newsletter", b =>
@@ -624,6 +1413,157 @@ namespace Notification_Application.Migrations
                     b.HasIndex("NewsletterId");
 
                     b.ToTable("NewsletterRecipients");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Pipeline", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Pipelines");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.PipelineStage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ExpectedDaysInStage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsLostStage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsWonStage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PipelineId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PipelineId");
+
+                    b.ToTable("PipelineStages");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Playbook", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BestPractices")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExpectedResults")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IconColor")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Industry")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsPopular")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Tactic")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetingTips")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TemplateIds")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Playbooks");
                 });
 
             modelBuilder.Entity("Notification_Application.Models.Popup", b =>
@@ -973,27 +1913,27 @@ namespace Notification_Application.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 25, 14, 33, 10, 592, DateTimeKind.Utc).AddTicks(1910),
-                            Description = "Perfect for getting started",
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(4899),
+                            Description = "Best for individuals just getting started",
                             HasAPIAccess = false,
                             HasAdvancedTargeting = false,
                             HasAnalytics = false,
                             HasPrioritySupport = false,
                             HasWhiteLabel = false,
                             IsActive = true,
-                            MaxPopupViews = 1000,
-                            MaxPopups = 3,
+                            MaxPopupViews = 10000,
+                            MaxPopups = 10,
                             MaxUsers = 1,
-                            MonthlyPrice = 0m,
-                            Name = "Free",
-                            YearlyPrice = 0m
+                            MonthlyPrice = 7m,
+                            Name = "Basic Plan",
+                            YearlyPrice = 70m
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 25, 14, 33, 10, 592, DateTimeKind.Utc).AddTicks(4681),
-                            Description = "For growing businesses",
-                            HasAPIAccess = true,
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(7269),
+                            Description = "Best for growing businesses and creators",
+                            HasAPIAccess = false,
                             HasAdvancedTargeting = true,
                             HasAnalytics = true,
                             HasPrioritySupport = false,
@@ -1001,16 +1941,34 @@ namespace Notification_Application.Migrations
                             IsActive = true,
                             MaxPopupViews = 50000,
                             MaxPopups = 25,
-                            MaxUsers = 5,
-                            MonthlyPrice = 29m,
-                            Name = "Professional",
-                            YearlyPrice = 290m
+                            MaxUsers = 3,
+                            MonthlyPrice = 17m,
+                            Name = "Plus Plan",
+                            YearlyPrice = 170m
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 1, 25, 14, 33, 10, 592, DateTimeKind.Utc).AddTicks(4712),
-                            Description = "For large organizations",
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(7276),
+                            Description = "Best for professionals and power users",
+                            HasAPIAccess = true,
+                            HasAdvancedTargeting = true,
+                            HasAnalytics = true,
+                            HasPrioritySupport = true,
+                            HasWhiteLabel = false,
+                            IsActive = true,
+                            MaxPopupViews = -1,
+                            MaxPopups = -1,
+                            MaxUsers = 5,
+                            MonthlyPrice = 25m,
+                            Name = "Pro Plan",
+                            YearlyPrice = 250m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(7279),
+                            Description = "Best for teams and scaling businesses",
                             HasAPIAccess = true,
                             HasAdvancedTargeting = true,
                             HasAnalytics = true,
@@ -1020,9 +1978,9 @@ namespace Notification_Application.Migrations
                             MaxPopupViews = -1,
                             MaxPopups = -1,
                             MaxUsers = -1,
-                            MonthlyPrice = 99m,
-                            Name = "Enterprise",
-                            YearlyPrice = 990m
+                            MonthlyPrice = 37m,
+                            Name = "Growth Plan",
+                            YearlyPrice = 370m
                         });
                 });
 
@@ -1085,6 +2043,9 @@ namespace Notification_Application.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ApiKey")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -1139,6 +2100,9 @@ namespace Notification_Application.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SubscriptionStatus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TrackingCode")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -1276,6 +2240,162 @@ namespace Notification_Application.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Notification_Application.Models.WebsiteForm", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BackgroundColor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BorderColor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BorderRadius")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ButtonColor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ButtonTextColor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ConversionRate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("CreateLead")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CustomCss")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("DefaultStageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DoubleOptInEmailTemplate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EmbedCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("EnableHoneypot")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("EnableRecaptcha")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FontFamily")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FontSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FooterText")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FormType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("HeaderText")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LeadSource")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NotificationEmail")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("PipelineId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RecaptchaSecretKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RecaptchaSiteKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("RequireDoubleOptIn")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SendNotificationEmail")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ShowPoweredBy")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Style")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SubheaderText")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SubmissionAction")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Submissions")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SubmitButtonText")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SuccessMessage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TextColor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Theme")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Views")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DefaultStageId");
+
+                    b.HasIndex("PipelineId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("WebsiteForms");
+                });
+
             modelBuilder.Entity("BlogCategoryBlogPost", b =>
                 {
                     b.HasOne("Notification_Application.Models.BlogPost", null)
@@ -1300,6 +2420,21 @@ namespace Notification_Application.Migrations
                         .IsRequired();
 
                     b.HasOne("Notification_Application.Models.BlogTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LeadLeadTag", b =>
+                {
+                    b.HasOne("Notification_Application.Models.Lead", null)
+                        .WithMany()
+                        .HasForeignKey("LeadsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.LeadTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1387,6 +2522,61 @@ namespace Notification_Application.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("Notification_Application.Models.CrmTask", b =>
+                {
+                    b.HasOne("Notification_Application.Models.User", "AssignedTo")
+                        .WithMany()
+                        .HasForeignKey("AssignedToId");
+
+                    b.HasOne("Notification_Application.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.HasOne("Notification_Application.Models.Lead", "Lead")
+                        .WithMany("Tasks")
+                        .HasForeignKey("LeadId");
+
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssignedTo");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Lead");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Deal", b =>
+                {
+                    b.HasOne("Notification_Application.Models.Lead", "Lead")
+                        .WithMany("Deals")
+                        .HasForeignKey("LeadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Lead");
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("Notification_Application.Models.EmailCapture", b =>
                 {
                     b.HasOne("Notification_Application.Models.Popup", "Popup")
@@ -1406,7 +2596,157 @@ namespace Notification_Application.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("Notification_Application.Models.FormAnalytics", b =>
+                {
+                    b.HasOne("Notification_Application.Models.WebsiteForm", "Form")
+                        .WithMany()
+                        .HasForeignKey("FormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Form");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.FormField", b =>
+                {
+                    b.HasOne("Notification_Application.Models.WebsiteForm", "Form")
+                        .WithMany("Fields")
+                        .HasForeignKey("FormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Form");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.FormSubmission", b =>
+                {
+                    b.HasOne("Notification_Application.Models.WebsiteForm", "Form")
+                        .WithMany("FormSubmissions")
+                        .HasForeignKey("FormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId");
+
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Form");
+
+                    b.Navigation("Lead");
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("Notification_Application.Models.Integration", b =>
+                {
+                    b.HasOne("Notification_Application.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.IntegrationLog", b =>
+                {
+                    b.HasOne("Notification_Application.Models.Integration", "Integration")
+                        .WithMany()
+                        .HasForeignKey("IntegrationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId");
+
+                    b.Navigation("Integration");
+
+                    b.Navigation("Lead");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Lead", b =>
+                {
+                    b.HasOne("Notification_Application.Models.Deal", "AssignedDeal")
+                        .WithMany()
+                        .HasForeignKey("AssignedDealId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Notification_Application.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId");
+
+                    b.HasOne("Notification_Application.Models.Pipeline", "Pipeline")
+                        .WithMany("Leads")
+                        .HasForeignKey("PipelineId");
+
+                    b.HasOne("Notification_Application.Models.Popup", "Popup")
+                        .WithMany("Leads")
+                        .HasForeignKey("PopupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.PipelineStage", "Stage")
+                        .WithMany("Leads")
+                        .HasForeignKey("StageId");
+
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssignedDeal");
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Pipeline");
+
+                    b.Navigation("Popup");
+
+                    b.Navigation("Stage");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadActivity", b =>
+                {
+                    b.HasOne("Notification_Application.Models.Lead", "Lead")
+                        .WithMany("Activities")
+                        .HasForeignKey("LeadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.User", "PerformedBy")
+                        .WithMany()
+                        .HasForeignKey("PerformedById");
+
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lead");
+
+                    b.Navigation("PerformedBy");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadCustomField", b =>
                 {
                     b.HasOne("Notification_Application.Models.Tenant", "Tenant")
                         .WithMany()
@@ -1417,23 +2757,68 @@ namespace Notification_Application.Migrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("Notification_Application.Models.Lead", b =>
+            modelBuilder.Entity("Notification_Application.Models.LeadScore", b =>
                 {
-                    b.HasOne("Notification_Application.Models.Popup", "Popup")
-                        .WithMany("Leads")
-                        .HasForeignKey("PopupId")
+                    b.HasOne("Notification_Application.Models.Lead", "Lead")
+                        .WithMany("ScoreHistory")
+                        .HasForeignKey("LeadId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Lead");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadStageHistory", b =>
+                {
+                    b.HasOne("Notification_Application.Models.PipelineStage", "FromStage")
+                        .WithMany()
+                        .HasForeignKey("FromStageId");
+
+                    b.HasOne("Notification_Application.Models.Lead", "Lead")
+                        .WithMany("StageHistory")
+                        .HasForeignKey("LeadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.User", "MovedBy")
+                        .WithMany()
+                        .HasForeignKey("MovedById");
+
+                    b.HasOne("Notification_Application.Models.PipelineStage", "ToStage")
+                        .WithMany()
+                        .HasForeignKey("ToStageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FromStage");
+
+                    b.Navigation("Lead");
+
+                    b.Navigation("MovedBy");
+
+                    b.Navigation("ToStage");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.LeadTag", b =>
+                {
                     b.HasOne("Notification_Application.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Popup");
-
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.MediaLibraryImage", b =>
+                {
+                    b.HasOne("Notification_Application.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Notification_Application.Models.Newsletter", b =>
@@ -1464,6 +2849,28 @@ namespace Notification_Application.Migrations
                         .IsRequired();
 
                     b.Navigation("Newsletter");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Pipeline", b =>
+                {
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.PipelineStage", b =>
+                {
+                    b.HasOne("Notification_Application.Models.Pipeline", "Pipeline")
+                        .WithMany("Stages")
+                        .HasForeignKey("PipelineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pipeline");
                 });
 
             modelBuilder.Entity("Notification_Application.Models.Popup", b =>
@@ -1574,9 +2981,65 @@ namespace Notification_Application.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("Notification_Application.Models.WebsiteForm", b =>
+                {
+                    b.HasOne("Notification_Application.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Notification_Application.Models.PipelineStage", "DefaultStage")
+                        .WithMany()
+                        .HasForeignKey("DefaultStageId");
+
+                    b.HasOne("Notification_Application.Models.Pipeline", "Pipeline")
+                        .WithMany()
+                        .HasForeignKey("PipelineId");
+
+                    b.HasOne("Notification_Application.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DefaultStage");
+
+                    b.Navigation("Pipeline");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Lead", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("Deals");
+
+                    b.Navigation("ScoreHistory");
+
+                    b.Navigation("StageHistory");
+
+                    b.Navigation("Tasks");
+                });
+
             modelBuilder.Entity("Notification_Application.Models.Newsletter", b =>
                 {
                     b.Navigation("Recipients");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.Pipeline", b =>
+                {
+                    b.Navigation("Leads");
+
+                    b.Navigation("Stages");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.PipelineStage", b =>
+                {
+                    b.Navigation("Leads");
                 });
 
             modelBuilder.Entity("Notification_Application.Models.Popup", b =>
@@ -1616,6 +3079,13 @@ namespace Notification_Application.Migrations
                     b.Navigation("Popups");
 
                     b.Navigation("SupportTickets");
+                });
+
+            modelBuilder.Entity("Notification_Application.Models.WebsiteForm", b =>
+                {
+                    b.Navigation("Fields");
+
+                    b.Navigation("FormSubmissions");
                 });
 #pragma warning restore 612, 618
         }

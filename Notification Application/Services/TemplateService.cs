@@ -10,13 +10,22 @@ namespace Notification_Application.Services
 
         private static readonly List<TemplateCategory> _categories = new()
         {
-            new TemplateCategory { Id = "popup", Label = "Popup", FolderName = "Popup" },
-            new TemplateCategory { Id = "select-template", Label = "Select Template", FolderName = "SelectTemplate" },
-            new TemplateCategory { Id = "floating-bar", Label = "Floating Bar", FolderName = "FloatingBar" },
-            new TemplateCategory { Id = "fullscreen", Label = "Fullscreen", FolderName = "Fullscreen" },
-            new TemplateCategory { Id = "inline", Label = "Inline", FolderName = "Inline" },
-            new TemplateCategory { Id = "slide-in", Label = "Slide-in", FolderName = "SlideIn" },
-            new TemplateCategory { Id = "gamified", Label = "Gamified", FolderName = "Gamified" }
+            new TemplateCategory { Id = "home-services", Label = "🏠 Home Services", FolderName = "HomeServices" },
+            new TemplateCategory { Id = "ecommerce", Label = "🛒 E-commerce", FolderName = "Ecommerce" },
+            new TemplateCategory { Id = "professional-services", Label = "💼 Professional Services", FolderName = "ProfessionalServices" },
+            new TemplateCategory { Id = "healthcare", Label = "🏥 Healthcare", FolderName = "Healthcare" },
+            new TemplateCategory { Id = "education", Label = "🎓 Education", FolderName = "Education" },
+            new TemplateCategory { Id = "saas", Label = "💻 SaaS", FolderName = "SaaS" },
+            new TemplateCategory { Id = "hospitality", Label = "🏨 Hospitality", FolderName = "Hospitality" },
+            new TemplateCategory { Id = "automotive", Label = "🚗 Automotive", FolderName = "Automotive" },
+            new TemplateCategory { Id = "nonprofit", Label = "❤️ Non-Profit", FolderName = "NonProfit" },
+            new TemplateCategory { Id = "lead-capture", Label = "📋 Lead Capture", FolderName = "LeadCapture" },
+            new TemplateCategory { Id = "popup", Label = "📱 Popup", FolderName = "Popup" },
+            new TemplateCategory { Id = "floating-bar", Label = "📊 Floating Bar", FolderName = "FloatingBar" },
+            new TemplateCategory { Id = "fullscreen", Label = "🖥️ Fullscreen", FolderName = "Fullscreen" },
+            new TemplateCategory { Id = "inline", Label = "📄 Inline", FolderName = "Inline" },
+            new TemplateCategory { Id = "slide-in", Label = "➡️ Slide-in", FolderName = "SlideIn" },
+            new TemplateCategory { Id = "gamified", Label = "🎮 Gamified", FolderName = "Gamified" }
         };
 
         public TemplateService(IWebHostEnvironment environment, ILogger<TemplateService> logger)
@@ -56,10 +65,14 @@ namespace Notification_Application.Services
                     return Enumerable.Empty<TemplateInfo>();
                 }
 
+                // Get both .html and .cshtml files
                 var htmlFiles = Directory.GetFiles(categoryPath, "*.html");
+                var cshtmlFiles = Directory.GetFiles(categoryPath, "*.cshtml");
+                var allFiles = htmlFiles.Concat(cshtmlFiles).ToArray();
+                
                 var templates = new List<TemplateInfo>();
 
-                foreach (var file in htmlFiles)
+                foreach (var file in allFiles)
                 {
                     var fileInfo = new FileInfo(file);
                     var fileName = Path.GetFileNameWithoutExtension(file);
@@ -111,13 +124,44 @@ namespace Notification_Application.Services
                     throw new UnauthorizedAccessException("Access denied");
                 }
 
-                return await File.ReadAllTextAsync(filePath);
+                var content = await File.ReadAllTextAsync(filePath);
+                
+                // Strip Razor directives from .cshtml files
+                if (templateName.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+                {
+                    content = StripRazorDirectives(content);
+                }
+
+                return content;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error reading template: {Category}/{TemplateName}", category, templateName);
                 throw;
             }
+        }
+        
+        private string StripRazorDirectives(string content)
+        {
+            if (string.IsNullOrEmpty(content)) return content;
+            
+            // Remove @{ Layout = null; } and similar Razor blocks at the start
+            var patterns = new[]
+            {
+                @"@\{\s*Layout\s*=\s*null\s*;\s*\}\s*",  // @{ Layout = null; }
+                @"@\{\s*\}\s*",  // Empty @{ }
+                @"@model\s+[^\r\n]+\s*",  // @model directives
+                @"@using\s+[^\r\n]+\s*",  // @using directives
+                @"@inject\s+[^\r\n]+\s*"  // @inject directives
+            };
+            
+            foreach (var pattern in patterns)
+            {
+                content = System.Text.RegularExpressions.Regex.Replace(content, pattern, "", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            }
+            
+            return content.TrimStart();
         }
 
         public async Task<bool> SaveTemplateAsync(string category, string templateName, string content)

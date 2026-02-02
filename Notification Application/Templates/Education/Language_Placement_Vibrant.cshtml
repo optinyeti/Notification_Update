@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Language Placement</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        
+        .popup-container {
+            background: #faf5ff;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #581c87;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        .popup-header {
+            background: linear-gradient(135deg, #7c3aed 0%, #f97316 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .popup-icon { font-size: 3.5rem; margin-bottom: 15px; }
+        .popup-headline { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; line-height: 1.2; }
+        .popup-subheadline { font-size: 1.1rem; font-weight: 500; opacity: 0.95; }
+        
+        .popup-body { padding: 30px; }
+        
+        .benefits-list { margin-bottom: 25px; }
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #581c87;
+            font-size: 0.95rem;
+        }
+        
+        .benefit-dot {
+            width: 8px;
+            height: 8px;
+            background: #fbbf24;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #7c3aed 0%, #f97316 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .phone-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .phone-label {
+            color: #581c87;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .phone-link {
+            color: #7c3aed;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        
+        .security-note {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        
+        .success-message {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .success-message h2 {
+            color: #7c3aed;
+            margin-bottom: 15px;
+        }
+        
+        .success-message p {
+            color: #581c87;
+        }
+        
+        @@media (max-width: 768px) {
+            .popup-container {
+                max-width: 95%;
+                border-radius: 12px;
+            }
+            .popup-headline { font-size: 1.5rem; }
+            .popup-subheadline { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-container">
+        <button class="close-btn" onclick="closePopup()">×</button>
+        
+        <div class="popup-header">
+            <div class="popup-icon">🗣️</div>
+            <h1 class="popup-headline">Professional Language Placement</h1>
+            <p class="popup-subheadline">Professional language services you can trust</p>
+        </div>
+        
+        <div class="popup-body">
+            <div class="benefits-list">
+                    <div class="benefit-item"><span class="benefit-dot"></span>Licensed & Insured</div>
+                    <div class="benefit-item"><span class="benefit-dot"></span>Satisfaction Guaranteed</div>
+                    <div class="benefit-item"><span class="benefit-dot"></span>Trusted by Thousands</div>
+                    <div class="benefit-item"><span class="benefit-dot"></span>Fast Response</div>
+            </div>
+            
+            <form id="popupForm" onsubmit="return handleSubmit(event)">
+                <input type="text" name="name" placeholder="Your Name *" required class="form-control mb-3" />
+                <input type="email" name="email" placeholder="Email Address *" required class="form-control mb-3" />
+                <input type="tel" name="phone" placeholder="Phone Number *" required class="form-control mb-3" />
+                
+                <button type="submit" class="submit-btn">
+                    Get Started →
+                </button>
+            </form>
+
+            
+            <div class="security-note">
+                🔒 Your information is secure and will never be shared.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function closePopup() {
+            if (window.parent) {
+                window.parent.postMessage('closePopup', '*');
+            }
+        }
+        
+        function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Send to parent window
+            if (window.parent) {
+                window.parent.postMessage({
+                    type: 'formSubmit',
+                    template: 'Language_Placement_Vibrant',
+                    data: data
+                }, '*');
+            }
+            
+            // Show success message
+            document.querySelector('.popup-body').innerHTML = `
+                <div class="success-message">
+                    <h2>✓ Thank You!</h2>
+                    <p>We'll be in touch shortly.</p>
+                </div>
+            `;
+            
+            return false;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+@model List<Notification_Application.Models.WebsiteForm>
+@{
+    ViewData["Title"] = "Website Forms";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Website Forms</h1>
+            <p class="text-muted mb-0">Create embeddable forms to capture leads from your website</p>
+        </div>
+        <a href="@Url.Action("Create", "Form")" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Create Form
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-ui-checks-grid text-primary fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total Forms</h6>
+                            <h3 class="mb-0">@Model.Count</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-check-circle text-success fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Published</h6>
+                            <h3 class="mb-0">@Model.Count(f => f.Status == Notification_Application.Models.FormStatus.Published)</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-eye text-info fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total Views</h6>
+                            <h3 class="mb-0">@Model.Sum(f => f.Views).ToString("N0")</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="bi bi-person-check text-warning fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Submissions</h6>
+                            <h3 class="mb-0">@Model.Sum(f => f.Submissions).ToString("N0")</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0 ps-4">Form</th>
+                                <th class="border-0">Type</th>
+                                <th class="border-0">Status</th>
+                                <th class="border-0 text-center">Views</th>
+                                <th class="border-0 text-center">Submissions</th>
+                                <th class="border-0 text-center">Conversion</th>
+                                <th class="border-0">Created</th>
+                                <th class="border-0 text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var form in Model.OrderByDescending(f => f.CreatedAt))
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                                                <i class="bi bi-ui-checks text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">@form.Name</h6>
+                                                @if (!string.IsNullOrEmpty(form.Description))
+                                                {
+                                                    <small class="text-muted">@form.Description.Substring(0, Math.Min(50, form.Description.Length))...</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@form.FormType</span>
+                                    </td>
+                                    <td>
+                                        @if (form.Status == Notification_Application.Models.FormStatus.Published)
+                                        {
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Published</span>
+                                        }
+                                        else if (form.Status == Notification_Application.Models.FormStatus.Draft)
+                                        {
+                                            <span class="badge bg-warning"><i class="bi bi-pencil me-1"></i>Draft</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary"><i class="bi bi-archive me-1"></i>Archived</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-medium">@form.Views.ToString("N0")</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-medium text-success">@form.Submissions.ToString("N0")</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @{
+                                            var conversionRate = form.Views > 0 ? (decimal)form.Submissions / form.Views * 100 : 0;
+                                            var badgeClass = conversionRate >= 20 ? "success" : conversionRate >= 10 ? "warning" : "secondary";
+                                        }
+                                        <span class="badge bg-@badgeClass">@conversionRate.ToString("F1")%</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@form.CreatedAt.ToString("MMM d, yyyy")</small>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group">
+                                            <a href="@Url.Action("Builder", "Form", new { id = form.Id })" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="@Url.Action("Submissions", "Form", new { id = form.Id })" class="btn btn-sm btn-outline-info" title="Submissions">
+                                                <i class="bi bi-list-check"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-success" title="Get Embed Code" data-bs-toggle="modal" data-bs-target="#embedModal" data-form-id="@form.Id" data-embed-code="@form.EmbedCode">
+                                                <i class="bi bi-code-slash"></i>
+                                            </button>
+                                            <a href="@Url.Action("Preview", "Form", new { id = form.Id })" class="btn btn-sm btn-outline-secondary" title="Preview" target="_blank">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="@Url.Action("Analytics", "Form", new { id = form.Id })"><i class="bi bi-graph-up me-2"></i>Analytics</a></li>
+                                                    <li>
+                                                        <form asp-action="Duplicate" asp-route-id="@form.Id" method="post" class="d-inline">
+                                                            <button type="submit" class="dropdown-item"><i class="bi bi-copy me-2"></i>Duplicate</button>
+                                                        </form>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    @if (form.Status == Notification_Application.Models.FormStatus.Published)
+                                                    {
+                                                        <li>
+                                                            <form asp-action="Unpublish" asp-route-id="@form.Id" method="post" class="d-inline">
+                                                                <button type="submit" class="dropdown-item"><i class="bi bi-pause-circle me-2"></i>Unpublish</button>
+                                                            </form>
+                                                        </li>
+                                                    }
+                                                    else
+                                                    {
+                                                        <li>
+                                                            <form asp-action="Publish" asp-route-id="@form.Id" method="post" class="d-inline">
+                                                                <button type="submit" class="dropdown-item text-success"><i class="bi bi-check-circle me-2"></i>Publish</button>
+                                                            </form>
+                                                        </li>
+                                                    }
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form asp-action="Delete" asp-route-id="@form.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this form?');">
+                                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Delete</button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-ui-checks-grid display-1 text-muted opacity-50"></i>
+                </div>
+                <h4>No forms yet</h4>
+                <p class="text-muted mb-4">Create your first website form to start capturing leads</p>
+                <a href="@Url.Action("Create", "Form")" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Create Your First Form
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Embed Code Modal -->
+<div class="modal fade" id="embedModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-code-slash me-2"></i>Embed Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">Copy the code below and paste it into your website where you want the form to appear.</p>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-medium">Option 1: Simple Embed (Recommended)</label>
+                    <div class="position-relative">
+                        <pre class="bg-dark text-light p-3 rounded" id="simpleEmbedCode" style="white-space: pre-wrap; word-break: break-all;"></pre>
+                        <button type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-2" onclick="copyToClipboard('simpleEmbedCode')">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-medium">Option 2: JavaScript Embed</label>
+                    <div class="position-relative">
+                        <pre class="bg-dark text-light p-3 rounded" id="jsEmbedCode" style="white-space: pre-wrap; word-break: break-all;"></pre>
+                        <button type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-2" onclick="copyToClipboard('jsEmbedCode')">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Tip:</strong> Make sure the form is published for it to appear on your website.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const embedModal = document.getElementById('embedModal');
+    embedModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const embedCode = button.getAttribute('data-embed-code');
+        const baseUrl = window.location.origin;
+        
+        // Simple embed code
+        const simpleCode = `<div data-oy-form="${embedCode}"></div>\n<script src="${baseUrl}/api/FormApi/script"><\/script>`;
+        document.getElementById('simpleEmbedCode').textContent = simpleCode;
+        
+        // JavaScript embed code
+        const jsCode = `<div id="my-form-container"></div>\n<script src="${baseUrl}/api/FormApi/script"><\/script>\n<script>\n  OptinYetiForms.init({\n    embedCode: '${embedCode}',\n    containerId: 'my-form-container',\n    baseUrl: '${baseUrl}'\n  });\n<\/script>`;
+        document.getElementById('jsEmbedCode').textContent = jsCode;
+    });
+    
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector(`#${elementId}`).nextElementSibling;
+            btn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
+            }, 2000);
+        });
+    }
+</script>
+}

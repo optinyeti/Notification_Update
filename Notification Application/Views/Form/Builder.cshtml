@@ -1,0 +1,834 @@
+@model Notification_Application.Models.WebsiteForm
+@{
+    ViewData["Title"] = "Form Builder - " + Model.Name;
+}
+
+<style>
+    .form-builder-container {
+        display: grid;
+        grid-template-columns: 280px 1fr 320px;
+        gap: 0;
+        height: calc(100vh - 56px);
+        overflow: hidden;
+    }
+    
+    .builder-sidebar {
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        overflow-y: auto;
+        padding: 16px;
+    }
+    
+    .builder-canvas {
+        background: #e2e8f0;
+        overflow-y: auto;
+        padding: 32px;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .builder-settings {
+        background: #ffffff;
+        border-left: 1px solid #e2e8f0;
+        overflow-y: auto;
+        padding: 16px;
+    }
+    
+    .form-preview {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+        padding: 32px;
+        width: 100%;
+        max-width: 520px;
+        min-height: 400px;
+    }
+    
+    .field-type {
+        padding: 10px 14px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.2s;
+    }
+    
+    .field-type:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+    
+    .field-type:active {
+        cursor: grabbing;
+    }
+    
+    .field-type i {
+        width: 24px;
+        text-align: center;
+        color: #64748b;
+    }
+    
+    .form-field {
+        position: relative;
+        padding: 12px;
+        border: 2px dashed transparent;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .form-field:hover {
+        border-color: #93c5fd;
+        background: #f0f9ff;
+    }
+    
+    .form-field.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+    
+    .form-field .field-actions {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        display: none;
+        gap: 4px;
+    }
+    
+    .form-field:hover .field-actions,
+    .form-field.selected .field-actions {
+        display: flex;
+    }
+    
+    .field-action-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        border-radius: 4px;
+        background: white;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+    
+    .field-action-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+    
+    .field-action-btn.delete:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .drop-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 24px;
+        text-align: center;
+        color: #94a3b8;
+        transition: all 0.2s;
+    }
+    
+    .drop-zone.drag-over {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+    
+    .settings-section {
+        margin-bottom: 24px;
+    }
+    
+    .settings-section-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .builder-header {
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    @@media (max-width: 1200px) {
+        .form-builder-container {
+            grid-template-columns: 1fr;
+        }
+        .builder-sidebar, .builder-settings {
+            display: none;
+        }
+    }
+</style>
+
+<div class="builder-header">
+    <div class="d-flex align-items-center gap-3">
+        <a href="@Url.Action("Index", "Form")" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h5 class="mb-0">@Model.Name</h5>
+            <small class="text-muted">Form Builder</small>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Preview", "Form", new { id = Model.Id })" target="_blank" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-eye me-1"></i>Preview
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="saveForm()">
+            <i class="bi bi-check-lg me-1"></i>Save
+        </button>
+        @if (Model.Status == Notification_Application.Models.FormStatus.Draft)
+        {
+            <form asp-action="Publish" asp-route-id="@Model.Id" method="post" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-success">
+                    <i class="bi bi-rocket me-1"></i>Publish
+                </button>
+            </form>
+        }
+        else
+        {
+            <span class="badge bg-success d-flex align-items-center"><i class="bi bi-check-circle me-1"></i>Published</span>
+        }
+    </div>
+</div>
+
+<div class="form-builder-container">
+    <!-- Left Sidebar - Field Types -->
+    <div class="builder-sidebar">
+        <h6 class="mb-3">Add Fields</h6>
+        
+        <div class="mb-3">
+            <small class="text-muted fw-medium">Basic Fields</small>
+        </div>
+        <div class="field-type" draggable="true" data-field-type="text">
+            <i class="bi bi-type"></i> Text
+        </div>
+        <div class="field-type" draggable="true" data-field-type="email">
+            <i class="bi bi-envelope"></i> Email
+        </div>
+        <div class="field-type" draggable="true" data-field-type="phone">
+            <i class="bi bi-telephone"></i> Phone
+        </div>
+        <div class="field-type" draggable="true" data-field-type="number">
+            <i class="bi bi-123"></i> Number
+        </div>
+        <div class="field-type" draggable="true" data-field-type="textarea">
+            <i class="bi bi-text-paragraph"></i> Text Area
+        </div>
+        
+        <div class="mb-3 mt-4">
+            <small class="text-muted fw-medium">Selection Fields</small>
+        </div>
+        <div class="field-type" draggable="true" data-field-type="select">
+            <i class="bi bi-chevron-down"></i> Dropdown
+        </div>
+        <div class="field-type" draggable="true" data-field-type="radio">
+            <i class="bi bi-ui-radios"></i> Radio Buttons
+        </div>
+        <div class="field-type" draggable="true" data-field-type="checkbox">
+            <i class="bi bi-check-square"></i> Checkbox
+        </div>
+        <div class="field-type" draggable="true" data-field-type="multiselect">
+            <i class="bi bi-ui-checks"></i> Multi-Select
+        </div>
+        
+        <div class="mb-3 mt-4">
+            <small class="text-muted fw-medium">Advanced Fields</small>
+        </div>
+        <div class="field-type" draggable="true" data-field-type="date">
+            <i class="bi bi-calendar"></i> Date
+        </div>
+        <div class="field-type" draggable="true" data-field-type="time">
+            <i class="bi bi-clock"></i> Time
+        </div>
+        <div class="field-type" draggable="true" data-field-type="fileupload">
+            <i class="bi bi-upload"></i> File Upload
+        </div>
+        <div class="field-type" draggable="true" data-field-type="rating">
+            <i class="bi bi-star"></i> Rating
+        </div>
+        
+        <div class="mb-3 mt-4">
+            <small class="text-muted fw-medium">Contact Fields</small>
+        </div>
+        <div class="field-type" draggable="true" data-field-type="firstname">
+            <i class="bi bi-person"></i> First Name
+        </div>
+        <div class="field-type" draggable="true" data-field-type="lastname">
+            <i class="bi bi-person"></i> Last Name
+        </div>
+        <div class="field-type" draggable="true" data-field-type="company">
+            <i class="bi bi-building"></i> Company
+        </div>
+        <div class="field-type" draggable="true" data-field-type="website">
+            <i class="bi bi-globe"></i> Website
+        </div>
+        
+        <div class="mb-3 mt-4">
+            <small class="text-muted fw-medium">Layout Elements</small>
+        </div>
+        <div class="field-type" draggable="true" data-field-type="heading">
+            <i class="bi bi-type-h1"></i> Heading
+        </div>
+        <div class="field-type" draggable="true" data-field-type="paragraph">
+            <i class="bi bi-text-left"></i> Paragraph
+        </div>
+        <div class="field-type" draggable="true" data-field-type="divider">
+            <i class="bi bi-hr"></i> Divider
+        </div>
+        
+        <div class="mb-3 mt-4">
+            <small class="text-muted fw-medium">Compliance</small>
+        </div>
+        <div class="field-type" draggable="true" data-field-type="consent">
+            <i class="bi bi-shield-check"></i> Consent
+        </div>
+        <div class="field-type" draggable="true" data-field-type="hidden">
+            <i class="bi bi-eye-slash"></i> Hidden Field
+        </div>
+    </div>
+    
+    <!-- Center - Form Canvas -->
+    <div class="builder-canvas">
+        <div class="form-preview" id="formPreview">
+            @if (!string.IsNullOrEmpty(Model.HeaderText))
+            {
+                <h2 class="mb-2" id="previewHeader">@Model.HeaderText</h2>
+            }
+            @if (!string.IsNullOrEmpty(Model.SubheaderText))
+            {
+                <p class="text-muted mb-4" id="previewSubheader">@Model.SubheaderText</p>
+            }
+            
+            <div id="fieldsContainer">
+                @if (Model.Fields != null && Model.Fields.Any())
+                {
+                    @foreach (var field in Model.Fields.OrderBy(f => f.Order))
+                    {
+                        <div class="form-field" data-field-id="@field.Id" onclick="selectField(this)">
+                            <div class="field-actions">
+                                <button class="field-action-btn" onclick="moveFieldUp(@field.Id); event.stopPropagation();" title="Move Up">
+                                    <i class="bi bi-chevron-up"></i>
+                                </button>
+                                <button class="field-action-btn" onclick="moveFieldDown(@field.Id); event.stopPropagation();" title="Move Down">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <button class="field-action-btn delete" onclick="deleteField(@field.Id); event.stopPropagation();" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            @await Html.PartialAsync("_FormFieldPreview", field)
+                        </div>
+                    }
+                }
+            </div>
+            
+            <div class="drop-zone" id="dropZone">
+                <i class="bi bi-plus-circle mb-2 d-block fs-4"></i>
+                Drag fields here or click a field type
+            </div>
+            
+            <button type="button" class="btn btn-primary w-100 mt-3" id="previewSubmitBtn">
+                @Model.SubmitButtonText
+            </button>
+            
+            @if (!string.IsNullOrEmpty(Model.FooterText))
+            {
+                <p class="text-muted text-center mt-3 small" id="previewFooter">@Model.FooterText</p>
+            }
+        </div>
+    </div>
+    
+    <!-- Right Sidebar - Field Settings -->
+    <div class="builder-settings">
+        <div id="noFieldSelected">
+            <div class="text-center py-5">
+                <i class="bi bi-hand-index-thumb display-4 text-muted opacity-50"></i>
+                <p class="text-muted mt-3">Select a field to edit its settings</p>
+            </div>
+        </div>
+        
+        <div id="fieldSettings" style="display: none;">
+            <div class="settings-section">
+                <div class="settings-section-title">Field Settings</div>
+                
+                <div class="mb-3">
+                    <label class="form-label small">Label</label>
+                    <input type="text" class="form-control" id="fieldLabel" onchange="updateFieldSetting('label', this.value)">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small">Field Name</label>
+                    <input type="text" class="form-control" id="fieldName" onchange="updateFieldSetting('name', this.value)">
+                    <small class="text-muted">Used in form data</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small">Placeholder</label>
+                    <input type="text" class="form-control" id="fieldPlaceholder" onchange="updateFieldSetting('placeholder', this.value)">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small">Help Text</label>
+                    <input type="text" class="form-control" id="fieldHelpText" onchange="updateFieldSetting('helpText', this.value)">
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="fieldRequired" onchange="updateFieldSetting('required', this.checked)">
+                    <label class="form-check-label" for="fieldRequired">Required</label>
+                </div>
+            </div>
+            
+            <div class="settings-section" id="optionsSection" style="display: none;">
+                <div class="settings-section-title">Options</div>
+                <div id="optionsList"></div>
+                <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="addOption()">
+                    <i class="bi bi-plus me-1"></i>Add Option
+                </button>
+            </div>
+            
+            <div class="settings-section" id="validationSection">
+                <div class="settings-section-title">Validation</div>
+                
+                <div class="mb-3" id="minLengthGroup">
+                    <label class="form-label small">Min Length</label>
+                    <input type="number" class="form-control" id="fieldMinLength" min="0" onchange="updateFieldSetting('minLength', this.value)">
+                </div>
+                
+                <div class="mb-3" id="maxLengthGroup">
+                    <label class="form-label small">Max Length</label>
+                    <input type="number" class="form-control" id="fieldMaxLength" min="0" onchange="updateFieldSetting('maxLength', this.value)">
+                </div>
+                
+                <div class="mb-3" id="patternGroup">
+                    <label class="form-label small">Validation Pattern (Regex)</label>
+                    <input type="text" class="form-control" id="fieldPattern" onchange="updateFieldSetting('pattern', this.value)">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small">Error Message</label>
+                    <input type="text" class="form-control" id="fieldErrorMsg" onchange="updateFieldSetting('errorMessage', this.value)">
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-section-title">Lead Mapping</div>
+                <div class="mb-3">
+                    <label class="form-label small">Map to Lead Field</label>
+                    <select class="form-select" id="fieldLeadMapping" onchange="updateFieldSetting('leadMapping', this.value)">
+                        <option value="">-- None --</option>
+                        <option value="email">Email</option>
+                        <option value="firstname">First Name</option>
+                        <option value="lastname">Last Name</option>
+                        <option value="phone">Phone</option>
+                        <option value="company">Company</option>
+                        <option value="jobtitle">Job Title</option>
+                        <option value="website">Website</option>
+                        <option value="city">City</option>
+                        <option value="state">State</option>
+                        <option value="country">Country</option>
+                        <option value="industry">Industry</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-section-title">Layout</div>
+                <div class="mb-3">
+                    <label class="form-label small">Width</label>
+                    <select class="form-select" id="fieldWidth" onchange="updateFieldSetting('width', this.value)">
+                        <option value="100">Full Width (100%)</option>
+                        <option value="50">Half Width (50%)</option>
+                        <option value="33">One Third (33%)</option>
+                        <option value="66">Two Thirds (66%)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const formId = @Model.Id;
+    let fields = @Html.Raw(Model.Fields != null && Model.Fields.Any() ? System.Text.Json.JsonSerializer.Serialize(Model.Fields.Select(f => new {
+        id = f.Id,
+        type = f.FieldType.ToString().ToLower(),
+        name = f.FieldName,
+        label = f.Label,
+        placeholder = f.Placeholder,
+        helpText = f.HelpText,
+        required = f.IsRequired,
+        options = !string.IsNullOrEmpty(f.Options) ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(f.Options) : new List<string>(),
+        minLength = f.MinLength,
+        maxLength = f.MaxLength,
+        pattern = f.ValidationPattern,
+        errorMessage = f.ValidationMessage,
+        leadMapping = f.LeadFieldMapping,
+        width = f.Width,
+        order = f.Order
+    }).OrderBy(f => f.order).ToList()) : "[]");
+    
+    let selectedFieldId = null;
+    let nextTempId = -1;
+    
+    // Initialize drag and drop
+    document.querySelectorAll('.field-type').forEach(el => {
+        el.addEventListener('dragstart', handleDragStart);
+        el.addEventListener('click', () => addField(el.dataset.fieldType));
+    });
+    
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', handleDragOver);
+    dropZone.addEventListener('dragleave', handleDragLeave);
+    dropZone.addEventListener('drop', handleDrop);
+    
+    function handleDragStart(e) {
+        e.dataTransfer.setData('text/plain', e.target.dataset.fieldType);
+    }
+    
+    function handleDragOver(e) {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    }
+    
+    function handleDragLeave(e) {
+        dropZone.classList.remove('drag-over');
+    }
+    
+    function handleDrop(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const fieldType = e.dataTransfer.getData('text/plain');
+        addField(fieldType);
+    }
+    
+    function addField(type) {
+        const defaultLabels = {
+            'text': 'Text Field',
+            'email': 'Email Address',
+            'phone': 'Phone Number',
+            'number': 'Number',
+            'textarea': 'Message',
+            'select': 'Select Option',
+            'radio': 'Choose One',
+            'checkbox': 'I agree',
+            'multiselect': 'Select Multiple',
+            'date': 'Date',
+            'time': 'Time',
+            'fileupload': 'Upload File',
+            'rating': 'Rating',
+            'firstname': 'First Name',
+            'lastname': 'Last Name',
+            'company': 'Company',
+            'website': 'Website',
+            'heading': 'Section Heading',
+            'paragraph': 'Additional information text',
+            'divider': '',
+            'consent': 'I agree to the terms and conditions',
+            'hidden': 'Hidden Field'
+        };
+        
+        const defaultMappings = {
+            'email': 'email',
+            'firstname': 'firstname',
+            'lastname': 'lastname',
+            'phone': 'phone',
+            'company': 'company',
+            'website': 'website'
+        };
+        
+        const field = {
+            id: nextTempId--,
+            type: type,
+            name: type + '_' + Date.now(),
+            label: defaultLabels[type] || 'New Field',
+            placeholder: '',
+            helpText: '',
+            required: ['email', 'firstname'].includes(type),
+            options: ['select', 'radio', 'multiselect'].includes(type) ? ['Option 1', 'Option 2', 'Option 3'] : [],
+            minLength: null,
+            maxLength: null,
+            pattern: '',
+            errorMessage: '',
+            leadMapping: defaultMappings[type] || '',
+            width: 100,
+            order: fields.length
+        };
+        
+        fields.push(field);
+        renderFields();
+        selectFieldById(field.id);
+    }
+    
+    function renderFields() {
+        const container = document.getElementById('fieldsContainer');
+        container.innerHTML = fields.map(field => `
+            <div class="form-field${selectedFieldId === field.id ? ' selected' : ''}" data-field-id="${field.id}" onclick="selectField(this)">
+                <div class="field-actions">
+                    <button class="field-action-btn" onclick="moveFieldUp(${field.id}); event.stopPropagation();" title="Move Up">
+                        <i class="bi bi-chevron-up"></i>
+                    </button>
+                    <button class="field-action-btn" onclick="moveFieldDown(${field.id}); event.stopPropagation();" title="Move Down">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <button class="field-action-btn delete" onclick="deleteField(${field.id}); event.stopPropagation();" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                ${renderFieldPreview(field)}
+            </div>
+        `).join('');
+    }
+    
+    function renderFieldPreview(field) {
+        const inputStyle = 'width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;';
+        
+        switch(field.type) {
+            case 'heading':
+                return `<h4>${field.label}</h4>`;
+            case 'paragraph':
+                return `<p class="text-muted mb-0">${field.label}</p>`;
+            case 'divider':
+                return `<hr>`;
+            case 'hidden':
+                return `<div class="text-muted small"><i class="bi bi-eye-slash me-2"></i>Hidden: ${field.name}</div>`;
+            case 'textarea':
+                return `
+                    <label class="form-label">${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}</label>
+                    <textarea style="${inputStyle}" rows="3" placeholder="${field.placeholder}" disabled></textarea>
+                    ${field.helpText ? `<small class="text-muted">${field.helpText}</small>` : ''}
+                `;
+            case 'select':
+                return `
+                    <label class="form-label">${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}</label>
+                    <select style="${inputStyle}" disabled>
+                        <option>${field.placeholder || 'Select...'}</option>
+                        ${field.options.map(o => `<option>${o}</option>`).join('')}
+                    </select>
+                    ${field.helpText ? `<small class="text-muted">${field.helpText}</small>` : ''}
+                `;
+            case 'radio':
+                return `
+                    <label class="form-label">${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}</label>
+                    ${field.options.map(o => `<div><input type="radio" disabled> ${o}</div>`).join('')}
+                    ${field.helpText ? `<small class="text-muted">${field.helpText}</small>` : ''}
+                `;
+            case 'checkbox':
+            case 'consent':
+                return `
+                    <label style="display: flex; align-items: flex-start; gap: 8px;">
+                        <input type="checkbox" disabled style="margin-top: 4px;">
+                        <span>${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}</span>
+                    </label>
+                    ${field.helpText ? `<small class="text-muted">${field.helpText}</small>` : ''}
+                `;
+            case 'rating':
+                return `
+                    <label class="form-label">${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}</label>
+                    <div class="text-warning fs-4">★★★★★</div>
+                    ${field.helpText ? `<small class="text-muted">${field.helpText}</small>` : ''}
+                `;
+            default:
+                const inputType = field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : field.type === 'time' ? 'time' : 'text';
+                return `
+                    <label class="form-label">${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}</label>
+                    <input type="${inputType}" style="${inputStyle}" placeholder="${field.placeholder}" disabled>
+                    ${field.helpText ? `<small class="text-muted">${field.helpText}</small>` : ''}
+                `;
+        }
+    }
+    
+    function selectField(el) {
+        document.querySelectorAll('.form-field').forEach(f => f.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedFieldId = parseInt(el.dataset.fieldId);
+        showFieldSettings();
+    }
+    
+    function selectFieldById(id) {
+        selectedFieldId = id;
+        renderFields();
+        showFieldSettings();
+    }
+    
+    function showFieldSettings() {
+        const field = fields.find(f => f.id === selectedFieldId);
+        if (!field) {
+            document.getElementById('noFieldSelected').style.display = 'block';
+            document.getElementById('fieldSettings').style.display = 'none';
+            return;
+        }
+        
+        document.getElementById('noFieldSelected').style.display = 'none';
+        document.getElementById('fieldSettings').style.display = 'block';
+        
+        document.getElementById('fieldLabel').value = field.label;
+        document.getElementById('fieldName').value = field.name;
+        document.getElementById('fieldPlaceholder').value = field.placeholder || '';
+        document.getElementById('fieldHelpText').value = field.helpText || '';
+        document.getElementById('fieldRequired').checked = field.required;
+        document.getElementById('fieldMinLength').value = field.minLength || '';
+        document.getElementById('fieldMaxLength').value = field.maxLength || '';
+        document.getElementById('fieldPattern').value = field.pattern || '';
+        document.getElementById('fieldErrorMsg').value = field.errorMessage || '';
+        document.getElementById('fieldLeadMapping').value = field.leadMapping || '';
+        document.getElementById('fieldWidth').value = field.width || 100;
+        
+        // Show/hide options section
+        const showOptions = ['select', 'radio', 'multiselect'].includes(field.type);
+        document.getElementById('optionsSection').style.display = showOptions ? 'block' : 'none';
+        if (showOptions) {
+            renderOptions(field.options);
+        }
+        
+        // Show/hide validation based on field type
+        const isTextLike = ['text', 'email', 'phone', 'textarea', 'number'].includes(field.type);
+        document.getElementById('minLengthGroup').style.display = isTextLike ? 'block' : 'none';
+        document.getElementById('maxLengthGroup').style.display = isTextLike ? 'block' : 'none';
+        document.getElementById('patternGroup').style.display = isTextLike ? 'block' : 'none';
+    }
+    
+    function renderOptions(options) {
+        const list = document.getElementById('optionsList');
+        list.innerHTML = options.map((opt, i) => `
+            <div class="input-group mb-2">
+                <input type="text" class="form-control" value="${opt}" onchange="updateOption(${i}, this.value)">
+                <button class="btn btn-outline-danger" type="button" onclick="removeOption(${i})">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    function addOption() {
+        const field = fields.find(f => f.id === selectedFieldId);
+        if (field) {
+            field.options.push('New Option');
+            renderOptions(field.options);
+        }
+    }
+    
+    function updateOption(index, value) {
+        const field = fields.find(f => f.id === selectedFieldId);
+        if (field) {
+            field.options[index] = value;
+            renderFields();
+        }
+    }
+    
+    function removeOption(index) {
+        const field = fields.find(f => f.id === selectedFieldId);
+        if (field && field.options.length > 1) {
+            field.options.splice(index, 1);
+            renderOptions(field.options);
+            renderFields();
+        }
+    }
+    
+    function updateFieldSetting(setting, value) {
+        const field = fields.find(f => f.id === selectedFieldId);
+        if (field) {
+            field[setting] = value;
+            renderFields();
+        }
+    }
+    
+    function moveFieldUp(id) {
+        const index = fields.findIndex(f => f.id === id);
+        if (index > 0) {
+            [fields[index], fields[index - 1]] = [fields[index - 1], fields[index]];
+            fields.forEach((f, i) => f.order = i);
+            renderFields();
+        }
+    }
+    
+    function moveFieldDown(id) {
+        const index = fields.findIndex(f => f.id === id);
+        if (index < fields.length - 1) {
+            [fields[index], fields[index + 1]] = [fields[index + 1], fields[index]];
+            fields.forEach((f, i) => f.order = i);
+            renderFields();
+        }
+    }
+    
+    function deleteField(id) {
+        if (confirm('Are you sure you want to delete this field?')) {
+            fields = fields.filter(f => f.id !== id);
+            fields.forEach((f, i) => f.order = i);
+            selectedFieldId = null;
+            renderFields();
+            showFieldSettings();
+        }
+    }
+    
+    async function saveForm() {
+        const data = fields.map(f => ({
+            id: f.id > 0 ? f.id : 0,
+            fieldType: f.type,
+            fieldName: f.name,
+            label: f.label,
+            placeholder: f.placeholder,
+            helpText: f.helpText,
+            isRequired: f.required,
+            options: f.options && f.options.length > 0 ? JSON.stringify(f.options) : null,
+            minLength: f.minLength ? parseInt(f.minLength) : null,
+            maxLength: f.maxLength ? parseInt(f.maxLength) : null,
+            validationPattern: f.pattern,
+            validationMessage: f.errorMessage,
+            leadFieldMapping: f.leadMapping,
+            width: parseInt(f.width) || 100,
+            order: f.order
+        }));
+        
+        try {
+            const response = await fetch(`/Form/SaveFields/${formId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.fields) {
+                    fields = result.fields;
+                    renderFields();
+                }
+                showToast('Form saved successfully!', 'success');
+            } else {
+                showToast('Failed to save form', 'error');
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            showToast('Error saving form', 'error');
+        }
+    }
+    
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 80px; right: 20px; z-index: 9999; animation: fadeIn 0.3s;';
+        toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+</script>
+}

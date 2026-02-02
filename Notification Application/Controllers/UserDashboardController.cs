@@ -54,13 +54,131 @@ public class UserDashboardController : Controller
         var popups = await _popupService.GetPopupsAsync(user.TenantId);
         var analytics = await _analyticsService.GetAnalyticsSummaryAsync(user.TenantId);
 
+        // Get lead stats
+        var today = DateTime.UtcNow.Date;
+        var weekAgo = today.AddDays(-7);
+        
+        var totalLeads = await _context.Leads.CountAsync(l => l.TenantId == user.TenantId);
+        var newLeadsToday = await _context.Leads.CountAsync(l => l.TenantId == user.TenantId && l.CapturedAt >= today);
+        var newLeadsThisWeek = await _context.Leads.CountAsync(l => l.TenantId == user.TenantId && l.CapturedAt >= weekAgo);
+        var qualifiedLeads = await _context.Leads.CountAsync(l => l.TenantId == user.TenantId && l.Status == LeadStatus.Qualified);
+        var leadsInPipeline = await _context.Leads.CountAsync(l => l.TenantId == user.TenantId && l.PipelineId != null);
+        var pipelineValue = await _context.Leads
+            .Where(l => l.TenantId == user.TenantId && l.PotentialValue != null)
+            .SumAsync(l => l.PotentialValue ?? 0);
+        
+        var recentLeads = await _context.Leads
+            .Where(l => l.TenantId == user.TenantId)
+            .OrderByDescending(l => l.CapturedAt)
+            .Take(5)
+            .Include(l => l.Popup)
+            .Include(l => l.Stage)
+            .Include(l => l.Pipeline)
+            .ToListAsync();
+
+        // Check CRM access
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == user.TenantId);
+        var hasCrmAccess = tenant?.SubscriptionPlanId >= 3;
+
+        // Get Forms stats
+        var totalForms = await _context.WebsiteForms.CountAsync(f => f.TenantId == user.TenantId);
+        var publishedForms = await _context.WebsiteForms.CountAsync(f => f.TenantId == user.TenantId && f.Status == FormStatus.Published);
+        var totalFormSubmissions = await _context.FormSubmissions.CountAsync(s => s.TenantId == user.TenantId);
+        var formSubmissionsToday = await _context.FormSubmissions.CountAsync(s => s.TenantId == user.TenantId && s.SubmittedAt >= today);
+        var formSubmissionsThisWeek = await _context.FormSubmissions.CountAsync(s => s.TenantId == user.TenantId && s.SubmittedAt >= weekAgo);
+        
+        var recentForms = await _context.WebsiteForms
+            .Where(f => f.TenantId == user.TenantId)
+            .OrderByDescending(f => f.UpdatedAt)
+            .Take(5)
+            .ToListAsync();
+
+        // Calculate average form conversion rate
+        var formsWithViews = await _context.WebsiteForms
+            .Where(f => f.TenantId == user.TenantId && f.Views > 0)
+            .ToListAsync();
+        var avgFormConversion = formsWithViews.Any() 
+            ? formsWithViews.Average(f => f.ConversionRate) 
+            : 0;
+
+        // Get Pipeline and Deal stats
+        var totalPipelines = await _context.Pipelines.CountAsync(p => p.TenantId == user.TenantId && p.IsActive);
+        var pipelines = await _context.Pipelines
+            .Where(p => p.TenantId == user.TenantId && p.IsActive)
+            .Include(p => p.Stages)
+            .OrderBy(p => p.Order)
+            .ToListAsync();
+
+        var totalDeals = await _context.Deals.CountAsync(d => d.TenantId == user.TenantId);
+        var openDeals = await _context.Deals.CountAsync(d => d.TenantId == user.TenantId && d.Status == DealStatus.Open);
+        var wonDeals = await _context.Deals.CountAsync(d => d.TenantId == user.TenantId && d.Status == DealStatus.Won);
+        var lostDeals = await _context.Deals.CountAsync(d => d.TenantId == user.TenantId && d.Status == DealStatus.Lost);
+        var totalDealValue = await _context.Deals
+            .Where(d => d.TenantId == user.TenantId)
+            .SumAsync(d => d.Amount);
+        var wonDealValue = await _context.Deals
+            .Where(d => d.TenantId == user.TenantId && d.Status == DealStatus.Won)
+            .SumAsync(d => d.Amount);
+
+        var recentDeals = await _context.Deals
+            .Where(d => d.TenantId == user.TenantId)
+            .OrderByDescending(d => d.UpdatedAt)
+            .Take(5)
+            .Include(d => d.Lead)
+            .ToListAsync();
+
+        // Get Activity stats
+        var totalActivities = await _context.LeadActivities.CountAsync(a => a.TenantId == user.TenantId);
+        var activitiesToday = await _context.LeadActivities.CountAsync(a => a.TenantId == user.TenantId && a.CreatedAt >= today);
+        var recentActivities = await _context.LeadActivities
+            .Where(a => a.TenantId == user.TenantId)
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(10)
+            .Include(a => a.Lead)
+            .Include(a => a.PerformedBy)
+            .ToListAsync();
+
         var model = new UserDashboardViewModel
         {
             UsageStats = usage,
             AnalyticsSummary = analytics,
             RecentPopups = popups.Take(5).ToList(),
-            TotalPopups = popups.Count()
+            TotalPopups = popups.Count(),
+            // Lead Stats
+            TotalLeads = totalLeads,
+            NewLeadsToday = newLeadsToday,
+            NewLeadsThisWeek = newLeadsThisWeek,
+            QualifiedLeads = qualifiedLeads,
+            LeadsInPipeline = leadsInPipeline,
+            TotalPipelineValue = pipelineValue,
+            RecentLeads = recentLeads,
+            HasCrmAccess = hasCrmAccess,
+            // Forms Stats
+            TotalForms = totalForms,
+            PublishedForms = publishedForms,
+            TotalFormSubmissions = totalFormSubmissions,
+            FormSubmissionsToday = formSubmissionsToday,
+            FormSubmissionsThisWeek = formSubmissionsThisWeek,
+            AverageFormConversion = avgFormConversion,
+            RecentForms = recentForms,
+            // Pipeline Stats
+            TotalPipelines = totalPipelines,
+            TotalDeals = totalDeals,
+            OpenDeals = openDeals,
+            WonDeals = wonDeals,
+            LostDeals = lostDeals,
+            TotalDealValue = totalDealValue,
+            WonDealValue = wonDealValue,
+            Pipelines = pipelines,
+            RecentDeals = recentDeals,
+            // Activity Stats
+            TotalActivities = totalActivities,
+            ActivitiesToday = activitiesToday,
+            RecentActivities = recentActivities
         };
+
+        // Pass plan ID to view for navigation
+        ViewBag.PlanId = tenant?.SubscriptionPlanId ?? 1;
 
         return View(model);
     }
@@ -429,6 +547,43 @@ public class UserDashboardViewModel
     public object? AnalyticsSummary { get; set; }
     public List<Popup> RecentPopups { get; set; } = new();
     public int TotalPopups { get; set; }
+    
+    // Lead Stats
+    public int TotalLeads { get; set; }
+    public int NewLeadsThisWeek { get; set; }
+    public int NewLeadsToday { get; set; }
+    public int QualifiedLeads { get; set; }
+    public int LeadsInPipeline { get; set; }
+    public decimal TotalPipelineValue { get; set; }
+    public List<Lead> RecentLeads { get; set; } = new();
+    
+    // CRM Access
+    public bool HasCrmAccess { get; set; }
+    
+    // Forms Stats
+    public int TotalForms { get; set; }
+    public int PublishedForms { get; set; }
+    public int TotalFormSubmissions { get; set; }
+    public int FormSubmissionsToday { get; set; }
+    public int FormSubmissionsThisWeek { get; set; }
+    public decimal AverageFormConversion { get; set; }
+    public List<WebsiteForm> RecentForms { get; set; } = new();
+    
+    // Pipeline Stats
+    public int TotalPipelines { get; set; }
+    public int TotalDeals { get; set; }
+    public int OpenDeals { get; set; }
+    public int WonDeals { get; set; }
+    public int LostDeals { get; set; }
+    public decimal TotalDealValue { get; set; }
+    public decimal WonDealValue { get; set; }
+    public List<Pipeline> Pipelines { get; set; } = new();
+    public List<Deal> RecentDeals { get; set; } = new();
+    
+    // Activity Stats
+    public int TotalActivities { get; set; }
+    public int ActivitiesToday { get; set; }
+    public List<LeadActivity> RecentActivities { get; set; } = new();
 }
 
 public class UsageDashboardViewModel

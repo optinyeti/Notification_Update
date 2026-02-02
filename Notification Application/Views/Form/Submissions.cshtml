@@ -1,0 +1,272 @@
+@model Notification_Application.Models.WebsiteForm
+@{
+    ViewData["Title"] = "Form Submissions - " + Model.Name;
+    var form = Model;
+    var submissions = ViewBag.Submissions as List<Notification_Application.Models.FormSubmission> ?? new List<Notification_Application.Models.FormSubmission>();
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Form")">Forms</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Builder", "Form", new { id = form.Id })">@form.Name</a></li>
+                    <li class="breadcrumb-item active">Submissions</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">Submissions</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" onclick="exportSubmissions()">
+                <i class="bi bi-download me-2"></i>Export CSV
+            </button>
+            <a href="@Url.Action("Analytics", "Form", new { id = form.Id })" class="btn btn-outline-primary">
+                <i class="bi bi-graph-up me-2"></i>View Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Total Submissions</h6>
+                    <h2 class="mb-0">@submissions.Count.ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">This Week</h6>
+                    <h2 class="mb-0">@submissions.Count(s => s.SubmittedAt >= DateTime.UtcNow.AddDays(-7)).ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Today</h6>
+                    <h2 class="mb-0">@submissions.Count(s => s.SubmittedAt.Date == DateTime.UtcNow.Date).ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Leads Created</h6>
+                    <h2 class="mb-0">@submissions.Count(s => s.LeadId.HasValue).ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (submissions.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="submissionsTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0 ps-4">Date</th>
+                                <th class="border-0">Email</th>
+                                <th class="border-0">Name</th>
+                                <th class="border-0">Source</th>
+                                <th class="border-0">Status</th>
+                                <th class="border-0 text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var submission in submissions.OrderByDescending(s => s.SubmittedAt))
+                            {
+                                var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(submission.Data ?? "{}") ?? new Dictionary<string, object>();
+                                var email = data.TryGetValue("email", out var e) ? e?.ToString() : 
+                                           data.TryGetValue("Email", out var e2) ? e2?.ToString() : "-";
+                                var firstName = data.TryGetValue("firstname", out var fn) ? fn?.ToString() : 
+                                               data.TryGetValue("first_name", out var fn2) ? fn2?.ToString() : "";
+                                var lastName = data.TryGetValue("lastname", out var ln) ? ln?.ToString() : 
+                                              data.TryGetValue("last_name", out var ln2) ? ln2?.ToString() : "";
+                                var name = string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName) ? "-" : $"{firstName} {lastName}".Trim();
+                                
+                                <tr>
+                                    <td class="ps-4">
+                                        <div>@submission.SubmittedAt.ToString("MMM d, yyyy")</div>
+                                        <small class="text-muted">@submission.SubmittedAt.ToString("h:mm tt")</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">@email</span>
+                                    </td>
+                                    <td>@name</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(submission.UtmSource))
+                                        {
+                                            <span class="badge bg-secondary">@submission.UtmSource</span>
+                                        }
+                                        else if (!string.IsNullOrEmpty(submission.Referrer))
+                                        {
+                                            <small class="text-muted" title="@submission.Referrer">@(new Uri(submission.Referrer).Host)</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Direct</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (submission.LeadId.HasValue)
+                                        {
+                                            <span class="badge bg-success"><i class="bi bi-person-check me-1"></i>Lead Created</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info">Submitted</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewSubmission(@submission.Id)">
+                                            <i class="bi bi-eye"></i> View
+                                        </button>
+                                        @if (submission.LeadId.HasValue)
+                                        {
+                                            <a href="@Url.Action("LeadDetail", "Crm", new { id = submission.LeadId })" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-person"></i> Lead
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-inbox display-1 text-muted opacity-50"></i>
+                </div>
+                <h4>No submissions yet</h4>
+                <p class="text-muted mb-4">Submissions will appear here once visitors submit your form</p>
+                <a href="@Url.Action("Builder", "Form", new { id = form.Id })" class="btn btn-primary">
+                    <i class="bi bi-pencil me-2"></i>Edit Form
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Submission Detail Modal -->
+<div class="modal fade" id="submissionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-text me-2"></i>Submission Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="submissionDetails">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const submissions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(submissions.Select(s => new {
+        id = s.Id,
+        data = s.Data,
+        submittedAt = s.SubmittedAt,
+        ipAddress = s.IpAddress,
+        userAgent = s.UserAgent,
+        referrer = s.Referrer,
+        pageUrl = s.PageUrl,
+        utmSource = s.UtmSource,
+        utmMedium = s.UtmMedium,
+        utmCampaign = s.UtmCampaign,
+        leadId = s.LeadId
+    })));
+    
+    function viewSubmission(id) {
+        const submission = submissions.find(s => s.id === id);
+        if (!submission) return;
+        
+        const data = JSON.parse(submission.data || '{}');
+        
+        let html = `
+            <div class="mb-4">
+                <h6 class="text-muted mb-3">Form Data</h6>
+                <table class="table table-sm">
+                    <tbody>
+        `;
+        
+        for (const [key, value] of Object.entries(data)) {
+            if (!key.startsWith('_')) {
+                html += `<tr><td class="fw-medium">${key}</td><td>${value}</td></tr>`;
+            }
+        }
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">Submission Info</h6>
+                    <p class="mb-1"><strong>Date:</strong> ${new Date(submission.submittedAt).toLocaleString()}</p>
+                    <p class="mb-1"><strong>IP Address:</strong> ${submission.ipAddress || 'N/A'}</p>
+                    <p class="mb-1"><strong>Page URL:</strong> ${submission.pageUrl || 'N/A'}</p>
+                    <p class="mb-0"><strong>Referrer:</strong> ${submission.referrer || 'Direct'}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">UTM Parameters</h6>
+                    <p class="mb-1"><strong>Source:</strong> ${submission.utmSource || 'N/A'}</p>
+                    <p class="mb-1"><strong>Medium:</strong> ${submission.utmMedium || 'N/A'}</p>
+                    <p class="mb-0"><strong>Campaign:</strong> ${submission.utmCampaign || 'N/A'}</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('submissionDetails').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('submissionModal')).show();
+    }
+    
+    function exportSubmissions() {
+        const headers = new Set(['Email', 'Name', 'Date', 'Source']);
+        submissions.forEach(s => {
+            const data = JSON.parse(s.data || '{}');
+            Object.keys(data).forEach(k => {
+                if (!k.startsWith('_')) headers.add(k);
+            });
+        });
+        
+        const headerRow = Array.from(headers).join(',');
+        const rows = submissions.map(s => {
+            const data = JSON.parse(s.data || '{}');
+            return Array.from(headers).map(h => {
+                if (h === 'Date') return new Date(s.submittedAt).toLocaleString();
+                if (h === 'Source') return s.utmSource || 'Direct';
+                return `"${(data[h.toLowerCase()] || data[h] || '').toString().replace(/"/g, '""')}"`;
+            }).join(',');
+        });
+        
+        const csv = [headerRow, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `form-submissions-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+    }
+</script>
+}

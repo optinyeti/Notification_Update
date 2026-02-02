@@ -1,78 +1,486 @@
 @model IEnumerable<Notification_Application.Models.TemplateCategory>
 @{
-    ViewData["Title"] = "Select Template";
+    ViewData["Title"] = "Template Gallery";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/template-gallery.css" />
+    <style>
+        body { background-color: #f8f9fa; }
+        
+        .template-header {
+            background: white;
+            border-bottom: 3px solid #667eea;
+            padding: 0.75rem 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .template-header h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0;
+        }
+        
+        .template-header .lead {
+            display: none;
+        }
+        
+        .sidebar-filters {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 20px;
+        }
+        
+        .filter-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .filter-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .filter-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .filter-title i {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+        
+        .filter-option {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+            cursor: pointer;
+        }
+        
+        .filter-option input[type="checkbox"] {
+            margin-right: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .filter-option label {
+            cursor: pointer;
+            margin: 0;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+        
+        .device-filter-btn {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .device-filter-btn:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+        
+        .device-filter-btn.active {
+            border-color: #667eea;
+            background: #f0f3ff;
+            color: #667eea;
+        }
+        
+        .device-icon {
+            font-size: 1.5rem;
+        }
+        
+        .clear-filters-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        
+        .clear-filters-btn:hover {
+            background: #0284c7;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .template-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            border-color: #667eea;
+        }
+        
+        .template-preview-img {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .template-preview-img .preview-iframe {
+            width: 600px;
+            height: 400px;
+            border: none;
+            transform: scale(0.3);
+            transform-origin: center center;
+            pointer-events: none;
+            position: absolute;
+        }
+        
+        .template-icon-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: #94a3b8;
+        }
+        
+        .template-icon-preview i {
+            font-size: 3rem;
+        }
+        
+        .template-icon-preview .icon-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .template-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f59e0b;
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .template-info {
+            padding: 1rem;
+        }
+        
+        .template-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .template-date {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 4rem 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+    </style>
 }
 
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2><i class="fas fa-palette me-2"></i>Template Gallery</h2>
-            <p class="text-muted">Browse and customize templates for your popups</p>
-        </div>
+<!-- Header -->
+<div class="template-header">
+    <div class="px-4">
+        <h1><i class="bi bi-grid-3x3-gap-fill me-3"></i>Template Gallery</h1>
+        <p class="lead mb-0">Choose from professionally designed templates for your campaigns</p>
     </div>
+</div>
 
+<div class="pb-5 px-4">
     <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <!-- Category Tabs -->
-                    <ul class="nav nav-pills mb-4" id="categoryTabs" role="tablist">
-                        @foreach (var category in Model)
-                        {
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link @(category == Model.First() ? "active" : "")" 
-                                        id="@category.Id-tab" 
-                                        data-bs-toggle="pill" 
-                                        data-bs-target="#@category.Id" 
-                                        type="button" 
-                                        role="tab" 
-                                        aria-controls="@category.Id" 
-                                        aria-selected="@(category == Model.First() ? "true" : "false")"
-                                        data-category="@category.Id">
-                                    @category.Label
-                                </button>
-                            </li>
-                        }
-                    </ul>
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3">
+            <div class="sidebar-filters">
+                <!-- Seasonal Filter -->
+                <div class="filter-section">
+                    <div class="filter-title" onclick="toggleFilterSection(this)">
+                        Seasonal
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="filter-content" style="display: none;">
+                        <div class="filter-option">
+                            <input type="checkbox" id="seasonal-all" data-filter="seasonal" value="all" checked>
+                            <label for="seasonal-all">All Year</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="seasonal-spring" data-filter="seasonal" value="spring">
+                            <label for="seasonal-spring">Spring</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="seasonal-summer" data-filter="seasonal" value="summer">
+                            <label for="seasonal-summer">Summer</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="seasonal-fall" data-filter="seasonal" value="fall">
+                            <label for="seasonal-fall">Fall</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="seasonal-winter" data-filter="seasonal" value="winter">
+                            <label for="seasonal-winter">Winter</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="seasonal-holiday" data-filter="seasonal" value="holiday">
+                            <label for="seasonal-holiday">Holiday</label>
+                        </div>
+                    </div>
+                </div>
 
-                    <!-- Tab Content -->
-                    <div class="tab-content" id="categoryTabContent">
-                        @foreach (var category in Model)
+                <!-- Goals Filter -->
+                <div class="filter-section">
+                    <div class="filter-title" onclick="toggleFilterSection(this)">
+                        Goals
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="filter-content" style="display: none;">
+                        <div class="filter-option">
+                            <input type="checkbox" id="goal-leads" data-filter="goal" value="leads">
+                            <label for="goal-leads">Generate Leads</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="goal-sales" data-filter="goal" value="sales">
+                            <label for="goal-sales">Increase Sales</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="goal-engagement" data-filter="goal" value="engagement">
+                            <label for="goal-engagement">Boost Engagement</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="goal-retention" data-filter="goal" value="retention">
+                            <label for="goal-retention">Reduce Cart Abandonment</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Industry Filter -->
+                <div class="filter-section">
+                    <div class="filter-title" onclick="toggleFilterSection(this)">
+                        Industry
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="filter-content" style="display: none;">
+                        <div class="filter-option">
+                            <input type="checkbox" id="industry-ecommerce" data-filter="industry" value="ecommerce">
+                            <label for="industry-ecommerce">E-commerce</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="industry-services" data-filter="industry" value="home-services">
+                            <label for="industry-services">Home Services</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="industry-lead" data-filter="industry" value="lead-capture">
+                            <label for="industry-lead">Lead Generation</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="industry-saas" data-filter="industry" value="saas">
+                            <label for="industry-saas">SaaS</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="industry-agency" data-filter="industry" value="agency">
+                            <label for="industry-agency">Agency</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags Filter -->
+                <div class="filter-section">
+                    <div class="filter-title" onclick="toggleFilterSection(this)">
+                        Tags
+                        <i class="bi bi-chevron-up"></i>
+                    </div>
+                    <div class="filter-content">
+                        <div class="filter-option">
+                            <input type="checkbox" id="tag-popular" data-filter="tag" value="popular">
+                            <label for="tag-popular">Popular</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="tag-featured" data-filter="tag" value="featured">
+                            <label for="tag-featured">Featured</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="tag-new" data-filter="tag" value="new">
+                            <label for="tag-new">New</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device Filters -->
+                <div class="filter-section">
+                    <button class="device-filter-btn active" data-device="all">
+                        <i class="bi bi-display device-icon"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">All Devices (Responsive)</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">
+                                <i class="bi bi-check-circle-fill" style="color: #10b981;"></i> Optimized
+                            </div>
+                        </div>
+                    </button>
+                    <button class="device-filter-btn" data-device="mobile">
+                        <i class="bi bi-phone device-icon"></i>
+                        <div style="font-weight: 600; font-size: 0.9rem;">Mobile Optimized</div>
+                    </button>
+                </div>
+
+                <!-- Clear Filters Button -->
+                <button class="clear-filters-btn" onclick="clearAllFilters()">
+                    <i class="bi bi-x-circle me-2"></i>Clear Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Template Grid -->
+        <div class="col-lg-9">
+            <div class="mb-4">
+                <ul class="nav nav-pills" id="categoryTabs" role="tablist">
+                    @foreach (var category in Model)
+                    {
+                        <li class="nav-item me-2" role="presentation">
+                            <button class="nav-link @(category == Model.First() ? "active" : "")" 
+                                    id="@category.Id-tab" 
+                                    data-bs-toggle="pill" 
+                                    data-bs-target="#@category.Id" 
+                                    type="button" 
+                                    role="tab" 
+                                    aria-controls="@category.Id" 
+                                    aria-selected="@(category == Model.First() ? "true" : "false")"
+                                    data-category="@category.Id">
+                                @category.Label
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="categoryTabContent">
+                @foreach (var category in Model)
+                {
+                    var templates = ViewBag.AllTemplates[category.Id] as IEnumerable<Notification_Application.Models.TemplateInfo>;
+                    
+                    <div class="tab-pane fade @(category == Model.First() ? "show active" : "")" 
+                         id="@category.Id" 
+                         role="tabpanel" 
+                         aria-labelledby="@category.Id-tab">
+                        
+                        @if (templates != null && templates.Any())
                         {
-                            <div class="tab-pane fade @(category == Model.First() ? "show active" : "")" 
-                                 id="@category.Id" 
-                                 role="tabpanel" 
-                                 aria-labelledby="@category.Id-tab">
-                                
-                                <!-- Loading Spinner -->
-                                <div class="text-center my-5 loading-spinner" id="loading-@category.Id">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
+                            <!-- Template Grid -->
+                            <div class="template-grid" id="grid-@category.Id">
+                                @{ int index = 0; }
+                                @foreach (var template in templates)
+                                {
+                                    var isFeatured = index % 3 == 0;
+                                    var isNew = index < 10; // Mark first 10 as new
+                                    var isPopular = index % 2 == 0;
+                                    
+                                    string icon = "bi-file-earmark-code";
+                                    string iconLabel = "Template";
+                                    
+                                    if (category.Id.Contains("home-services") || category.Id.Contains("homeservices")) { icon = "bi-house-fill"; iconLabel = "Home Service"; }
+                                    else if (category.Id.Contains("ecommerce")) { icon = "bi-cart-fill"; iconLabel = "E-commerce"; }
+                                    else if (category.Id.Contains("professional")) { icon = "bi-briefcase-fill"; iconLabel = "Professional"; }
+                                    else if (category.Id.Contains("healthcare")) { icon = "bi-heart-pulse-fill"; iconLabel = "Healthcare"; }
+                                    else if (category.Id.Contains("education")) { icon = "bi-book-fill"; iconLabel = "Education"; }
+                                    else if (category.Id.Contains("saas")) { icon = "bi-cloud-fill"; iconLabel = "SaaS"; }
+                                    else if (category.Id.Contains("hospitality")) { icon = "bi-building-fill"; iconLabel = "Hospitality"; }
+                                    else if (category.Id.Contains("automotive")) { icon = "bi-car-front-fill"; iconLabel = "Automotive"; }
+                                    else if (category.Id.Contains("nonprofit")) { icon = "bi-heart-fill"; iconLabel = "Non-Profit"; }
+                                    else if (category.Id.Contains("lead")) { icon = "bi-people-fill"; iconLabel = "Lead Capture"; }
+                                    else if (category.Id.Contains("popup")) { icon = "bi-window-sidebar"; iconLabel = "Popup"; }
+                                    else if (category.Id.Contains("floating")) { icon = "bi-align-bottom"; iconLabel = "Floating Bar"; }
+                                    else if (category.Id.Contains("slide")) { icon = "bi-box-arrow-in-right"; iconLabel = "Slide-in"; }
+                                    else if (category.Id.Contains("gamified")) { icon = "bi-controller"; iconLabel = "Gamified"; }
+                                    
+                                    <div class="template-card" 
+                                         data-mobile-optimized="true"
+                                         data-new="@(isNew ? "true" : "false")"
+                                         data-featured="@(isFeatured ? "true" : "false")"
+                                         data-popular="@(isPopular ? "true" : "false")">
+                                        <div class="template-preview-img" onclick="useTemplate('@category.Id', '@template.Name')">
+                                            @if (isFeatured)
+                                            {
+                                                <div class="template-badge">FEATURED</div>
+                                            }
+                                            <div class="template-icon-preview">
+                                                <i class="bi @icon"></i>
+                                                <span class="icon-label">@iconLabel</span>
+                                            </div>
+                                        </div>
+                                        <div class="template-info">
+                                            <div class="template-name">@template.Title</div>
+                                            <div class="template-date">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                @template.ModifiedAt.ToString("MMM dd, yyyy")
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p class="mt-2 text-muted">Loading templates...</p>
-                                </div>
-
-                                <!-- Template Grid -->
-                                <div class="row template-grid g-4" id="grid-@category.Id" style="display: none;">
-                                    <!-- Templates will be loaded here dynamically -->
-                                </div>
-
-                                <!-- Empty State -->
-                                <div class="text-center my-5 empty-state" id="empty-@category.Id" style="display: none;">
-                                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">No templates found in this category</p>
-                                    <button class="btn btn-primary" onclick="createNewTemplate('@category.Id')">
-                                        <i class="fas fa-plus me-2"></i>Create New Template
-                                    </button>
-                                </div>
+                                    
+                                    index++;
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Empty State -->
+                            <div class="empty-state">
+                                <i class="bi bi-folder2-open" style="font-size: 4rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                                <h4 style="color: #64748b;">No templates found</h4>
+                                <p class="text-muted">No templates available in this category yet</p>
                             </div>
                         }
                     </div>
-                </div>
+                }
             </div>
         </div>
     </div>
@@ -169,5 +577,115 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/template-manager.js"></script>
+    <script>
+        let currentDevice = 'all';
+
+        // Toggle filter section
+        function toggleFilterSection(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('bi-chevron-down');
+                icon.classList.add('bi-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('bi-chevron-up');
+                icon.classList.add('bi-chevron-down');
+            }
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            document.querySelectorAll('.device-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('.device-filter-btn[data-device="all"]').classList.add('active');
+            currentDevice = 'all';
+            applyFilters();
+        }
+
+        // Device filter click
+        document.querySelectorAll('.device-filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.device-filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentDevice = this.dataset.device;
+                applyFilters();
+            });
+        });
+
+        // Filter checkbox change
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', applyFilters);
+        });
+
+        // Apply filters
+        function applyFilters() {
+            const activeCategory = document.querySelector('.nav-link.active')?.dataset?.category;
+            if (!activeCategory) return;
+
+            const filters = {
+                seasonal: Array.from(document.querySelectorAll('input[data-filter="seasonal"]:checked')).map(cb => cb.value),
+                goal: Array.from(document.querySelectorAll('input[data-filter="goal"]:checked')).map(cb => cb.value),
+                industry: Array.from(document.querySelectorAll('input[data-filter="industry"]:checked')).map(cb => cb.value),
+                tag: Array.from(document.querySelectorAll('input[data-filter="tag"]:checked')).map(cb => cb.value)
+            };
+
+            const grid = document.getElementById(`grid-${activeCategory}`);
+            if (!grid) return;
+            
+            const cards = grid.querySelectorAll('.template-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                let visible = true;
+
+                // Apply device filter
+                if (currentDevice === 'mobile' && !card.dataset.mobileOptimized) {
+                    visible = false;
+                }
+
+                // Apply category filters (if any selected)
+                if (filters.industry.length > 0) {
+                    const categoryMatch = filters.industry.includes(activeCategory);
+                    if (!categoryMatch) visible = false;
+                }
+
+                // Apply tag filters
+                if (filters.tag.length > 0) {
+                    const hasTag = filters.tag.some(tag => card.dataset[tag] === 'true');
+                    if (!hasTag) visible = false;
+                }
+
+                card.style.display = visible ? 'block' : 'none';
+                if (visible) visibleCount++;
+            });
+        }
+
+        // Templates are rendered server-side, just apply filters when switching tabs
+        document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function (e) {
+                applyFilters();
+            });
+        });
+
+        // Use template - redirect to designer
+        function useTemplate(category, templateName) {
+            const categoryFormatted = category.split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join('');
+            
+            window.location.href = `/Popup/Designer?templateFile=${templateName}&category=${categoryFormatted}`;
+        }
+
+        // Apply filters when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            applyFilters();
+        });
+    </script>
 }

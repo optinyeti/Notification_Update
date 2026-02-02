@@ -17,33 +17,4 @@ public class ApiUsage
     public string? ApiKey { get; set; }
 }
 
-public class Integration
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public IntegrationType Type { get; set; }
-    public bool IsEnabled { get; set; } = true;
-    
-    public int TenantId { get; set; }
-    public Tenant? Tenant { get; set; }
-    
-    // Configuration stored as JSON
-    public string Configuration { get; set; } = string.Empty;
-    public string? ApiKey { get; set; }
-    public string? WebhookUrl { get; set; }
-    
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? LastSyncAt { get; set; }
-}
-
-public enum IntegrationType
-{
-    Zapier,
-    WebHook,
-    GoogleAnalytics,
-    FacebookPixel,
-    Mailchimp,
-    HubSpot,
-    Salesforce,
-    LookerStudio
-}
+// Integration model moved to Integration.cs

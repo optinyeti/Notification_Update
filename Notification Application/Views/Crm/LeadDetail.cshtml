@@ -1,0 +1,651 @@
+@model Notification_Application.Models.Lead
+@{
+    ViewData["Title"] = $"Lead: {Model.FirstName} {Model.LastName}";
+    var availableStages = ViewBag.AvailableStages as List<Notification_Application.Models.PipelineStage> ?? new List<Notification_Application.Models.PipelineStage>();
+    var pipelines = ViewBag.Pipelines as List<Notification_Application.Models.Pipeline> ?? new List<Notification_Application.Models.Pipeline>();
+    var availableTags = ViewBag.AvailableTags as List<Notification_Application.Models.LeadTag> ?? new List<Notification_Application.Models.LeadTag>();
+    var teamMembers = ViewBag.TeamMembers as dynamic;
+}
+
+<div class="container-fluid px-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Crm")">CRM</a></li>
+            <li class="breadcrumb-item active">Lead Details</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Main Lead Info -->
+        <div class="col-lg-8">
+            <!-- Lead Header Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 64px; height: 64px; font-size: 24px;">
+                                @(Model.FirstName?.Substring(0, 1).ToUpper() ?? "?")@(Model.LastName?.Substring(0, 1).ToUpper() ?? "")
+                            </div>
+                            <div>
+                                <h3 class="mb-1">@Model.FirstName @Model.LastName</h3>
+                                <div class="text-muted">
+                                    @if (!string.IsNullOrEmpty(Model.JobTitle))
+                                    {
+                                        <span>@Model.JobTitle</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Company))
+                                    {
+                                        <span>at <strong>@Model.Company</strong></span>
+                                    }
+                                </div>
+                                <div class="mt-2">
+                                    @{
+                                        var statusClass = Model.Status switch
+                                        {
+                                            Notification_Application.Models.LeadStatus.New => "secondary",
+                                            Notification_Application.Models.LeadStatus.Contacted => "info",
+                                            Notification_Application.Models.LeadStatus.Qualified => "primary",
+                                            Notification_Application.Models.LeadStatus.Converted => "success",
+                                            Notification_Application.Models.LeadStatus.Unqualified => "danger",
+                                            Notification_Application.Models.LeadStatus.Archived => "dark",
+                                            _ => "secondary"
+                                        };
+                                    }
+                                    <span class="badge bg-@statusClass me-1">@Model.Status</span>
+                                    @if (Model.Stage != null)
+                                    {
+                                        <span class="badge" style="background-color: @Model.Stage.Color;">@Model.Stage.Name</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center justify-content-end mb-2">
+                                <span class="text-muted me-2">Lead Score:</span>
+                                <span class="h4 mb-0 fw-bold @(Model.Score >= 70 ? "text-success" : Model.Score >= 40 ? "text-warning" : "text-secondary")">
+                                    @Model.Score
+                                </span>
+                            </div>
+                            <div class="progress" style="width: 100px; height: 8px;">
+                                <div class="progress-bar @(Model.Score >= 70 ? "bg-success" : Model.Score >= 40 ? "bg-warning" : "bg-secondary")" 
+                                     style="width: @Model.Score%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact & Company Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h6 class="mb-0 fw-semibold"><i class="bi bi-person me-2"></i>Contact Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="bi bi-envelope text-muted me-2"></i>
+                                    <a href="mailto:@Model.Email">@Model.Email</a>
+                                </li>
+                                @if (!string.IsNullOrEmpty(Model.Phone))
+                                {
+                                    <li class="mb-2">
+                                        <i class="bi bi-telephone text-muted me-2"></i>
+                                        <a href="tel:@Model.Phone">@Model.Phone</a>
+                                    </li>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Website))
+                                {
+                                    <li class="mb-2">
+                                        <i class="bi bi-globe text-muted me-2"></i>
+                                        <a href="@Model.Website" target="_blank">@Model.Website</a>
+                                    </li>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.City) || !string.IsNullOrEmpty(Model.State) || !string.IsNullOrEmpty(Model.Country))
+                                {
+                                    <li class="mb-0">
+                                        <i class="bi bi-geo-alt text-muted me-2"></i>
+                                        @Model.City@(!string.IsNullOrEmpty(Model.State) ? $", {Model.State}" : "")@(!string.IsNullOrEmpty(Model.Country) ? $", {Model.Country}" : "")
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h6 class="mb-0 fw-semibold"><i class="bi bi-building me-2"></i>Company Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                @if (!string.IsNullOrEmpty(Model.Company))
+                                {
+                                    <li class="mb-2">
+                                        <i class="bi bi-briefcase text-muted me-2"></i>
+                                        @Model.Company
+                                    </li>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Industry))
+                                {
+                                    <li class="mb-2">
+                                        <i class="bi bi-diagram-3 text-muted me-2"></i>
+                                        @Model.Industry
+                                    </li>
+                                }
+                                @if (Model.EmployeeCount.HasValue)
+                                {
+                                    <li class="mb-2">
+                                        <i class="bi bi-people text-muted me-2"></i>
+                                        @Model.EmployeeCount employees
+                                    </li>
+                                }
+                                @if (Model.AnnualRevenue.HasValue)
+                                {
+                                    <li class="mb-0">
+                                        <i class="bi bi-currency-dollar text-muted me-2"></i>
+                                        $@Model.AnnualRevenue.Value.ToString("N0") annual revenue
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-semibold"><i class="bi bi-clock-history me-2"></i>Activity Timeline</h6>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                            <i class="bi bi-plus me-1"></i>Add Activity
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Activities?.Any() == true)
+                    {
+                        <div class="timeline">
+                            @foreach (var activity in Model.Activities.Take(10))
+                            {
+                                var typeIcon = activity.Type switch
+                                {
+                                    Notification_Application.Models.ActivityType.Email => "bi-envelope",
+                                    Notification_Application.Models.ActivityType.Call => "bi-telephone",
+                                    Notification_Application.Models.ActivityType.Meeting => "bi-calendar-event",
+                                    Notification_Application.Models.ActivityType.Note => "bi-sticky",
+                                    Notification_Application.Models.ActivityType.StageChanged => "bi-arrow-right",
+                                    Notification_Application.Models.ActivityType.LeadCreated => "bi-person-plus",
+                                    Notification_Application.Models.ActivityType.PageView => "bi-eye",
+                                    Notification_Application.Models.ActivityType.FormSubmitted => "bi-ui-checks",
+                                    Notification_Application.Models.ActivityType.Task => "bi-check-square",
+                                    _ => "bi-circle"
+                                };
+                                var typeColor = activity.Type switch
+                                {
+                                    Notification_Application.Models.ActivityType.Email => "primary",
+                                    Notification_Application.Models.ActivityType.Call => "success",
+                                    Notification_Application.Models.ActivityType.Meeting => "warning",
+                                    Notification_Application.Models.ActivityType.StageChanged => "info",
+                                    Notification_Application.Models.ActivityType.LeadCreated => "success",
+                                    Notification_Application.Models.ActivityType.PageView => "secondary",
+                                    _ => "secondary"
+                                };
+                                <div class="d-flex mb-3">
+                                    <div class="me-3">
+                                        <div class="rounded-circle bg-@typeColor text-white d-flex align-items-center justify-content-center" 
+                                             style="width: 36px; height: 36px;">
+                                            <i class="bi @typeIcon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>@activity.Title</strong>
+                                            <small class="text-muted">@activity.CreatedAt.ToString("MMM dd, HH:mm")</small>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(activity.Description))
+                                        {
+                                            <p class="text-muted mb-0 small">@activity.Description</p>
+                                        }
+                                        @if (activity.PerformedBy != null)
+                                        {
+                                            <small class="text-muted">by @activity.PerformedBy.FirstName @activity.PerformedBy.LastName</small>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-clock-history fs-1 text-muted"></i>
+                            <p class="text-muted mt-2">No activities recorded yet</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Deals -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Deals</h6>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createDealModal">
+                            <i class="bi bi-plus me-1"></i>Create Deal
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Deals?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Deal Name</th>
+                                        <th>Amount</th>
+                                        <th>Probability</th>
+                                        <th>Expected Close</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var deal in Model.Deals)
+                                    {
+                                        var dealStatusClass = deal.Status switch
+                                        {
+                                            Notification_Application.Models.DealStatus.Open => "primary",
+                                            Notification_Application.Models.DealStatus.Won => "success",
+                                            Notification_Application.Models.DealStatus.Lost => "danger",
+                                            _ => "secondary"
+                                        };
+                                        <tr>
+                                            <td class="fw-semibold">@deal.Name</td>
+                                            <td>@deal.Currency@deal.Amount.ToString("N0")</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                        <div class="progress-bar" style="width: @deal.Probability%"></div>
+                                                    </div>
+                                                    <small>@deal.Probability%</small>
+                                                </div>
+                                            </td>
+                                            <td>@(deal.ExpectedCloseDate?.ToString("MMM dd, yyyy") ?? "-")</td>
+                                            <td><span class="badge bg-@dealStatusClass">@deal.Status</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-briefcase fs-1 text-muted"></i>
+                            <p class="text-muted mt-2 mb-0">No deals associated with this lead</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="mailto:@Model.Email" class="btn btn-outline-primary">
+                            <i class="bi bi-envelope me-2"></i>Send Email
+                        </a>
+                        @if (!string.IsNullOrEmpty(Model.Phone))
+                        {
+                            <a href="tel:@Model.Phone" class="btn btn-outline-success">
+                                <i class="bi bi-telephone me-2"></i>Call
+                            </a>
+                        }
+                        <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                            <i class="bi bi-plus-square me-2"></i>Add Task
+                        </button>
+                        <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                            <i class="bi bi-sticky me-2"></i>Add Note
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Stage -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-kanban me-2"></i>Pipeline Stage</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Pipeline != null && availableStages.Any())
+                    {
+                        <form asp-action="UpdateStage" method="post">
+                            <input type="hidden" name="leadId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label">Current Pipeline</label>
+                                <input type="text" class="form-control" value="@Model.Pipeline.Name" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Stage</label>
+                                <select name="stageId" class="form-select">
+                                    @foreach (var stage in availableStages)
+                                    {
+                                        <option value="@stage.Id" selected="@(stage.Id == Model.StageId)">@stage.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Notes</label>
+                                <textarea name="notes" class="form-control" rows="2" placeholder="Optional notes about this change..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Update Stage</button>
+                        </form>
+                        @if (Model.StageEnteredAt.HasValue)
+                        {
+                            <div class="mt-3 text-center">
+                                <small class="text-muted">
+                                    In current stage for @((int)(DateTime.UtcNow - Model.StageEnteredAt.Value).TotalDays) days
+                                </small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No pipeline assigned to this lead.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Lead Owner -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-person-badge me-2"></i>Lead Owner</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Owner != null)
+                    {
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" 
+                                 style="width: 40px; height: 40px;">
+                                @Model.Owner.FirstName?.Substring(0, 1)@Model.Owner.LastName?.Substring(0, 1)
+                            </div>
+                            <div>
+                                <div class="fw-semibold">@Model.Owner.FirstName @Model.Owner.LastName</div>
+                                <small class="text-muted">@Model.Owner.Email</small>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No owner assigned</p>
+                    }
+                    @if (teamMembers != null)
+                    {
+                        <form asp-action="AssignOwner" method="post">
+                            <input type="hidden" name="leadId" value="@Model.Id" />
+                            <div class="input-group">
+                                <select name="ownerId" class="form-select">
+                                    <option value="">Select owner...</option>
+                                    @foreach (var member in teamMembers)
+                                    {
+                                        <option value="@member.Id">@member.FirstName @member.LastName</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-outline-primary">Assign</button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <!-- Source & UTM -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-signpost me-2"></i>Lead Source</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-2">
+                            <span class="text-muted">Source:</span>
+                            <span class="ms-2">@(Model.LeadSource ?? "Direct")</span>
+                        </li>
+                        @if (!string.IsNullOrEmpty(Model.UtmSource))
+                        {
+                            <li class="mb-2">
+                                <span class="text-muted">UTM Source:</span>
+                                <span class="ms-2">@Model.UtmSource</span>
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.UtmMedium))
+                        {
+                            <li class="mb-2">
+                                <span class="text-muted">UTM Medium:</span>
+                                <span class="ms-2">@Model.UtmMedium</span>
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.UtmCampaign))
+                        {
+                            <li class="mb-2">
+                                <span class="text-muted">UTM Campaign:</span>
+                                <span class="ms-2">@Model.UtmCampaign</span>
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Referrer))
+                        {
+                            <li class="mb-0">
+                                <span class="text-muted">Referrer:</span>
+                                <span class="ms-2 text-break">@Model.Referrer</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Engagement Stats -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-bar-chart me-2"></i>Engagement</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded bg-light">
+                                <div class="h4 mb-0">@Model.PageViews</div>
+                                <small class="text-muted">Page Views</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded bg-light">
+                                <div class="h4 mb-0">@Model.TotalVisits</div>
+                                <small class="text-muted">Total Visits</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded bg-light">
+                                <div class="h4 mb-0">@Model.EmailOpens</div>
+                                <small class="text-muted">Email Opens</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded bg-light">
+                                <div class="h4 mb-0">@Model.EmailClicks</div>
+                                <small class="text-muted">Email Clicks</small>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.FirstVisitAt.HasValue || Model.LastVisitAt.HasValue)
+                    {
+                        <hr />
+                        <ul class="list-unstyled mb-0 small">
+                            @if (Model.FirstVisitAt.HasValue)
+                            {
+                                <li class="mb-1">
+                                    <span class="text-muted">First Visit:</span>
+                                    <span class="ms-2">@Model.FirstVisitAt.Value.ToString("MMM dd, yyyy")</span>
+                                </li>
+                            }
+                            @if (Model.LastVisitAt.HasValue)
+                            {
+                                <li>
+                                    <span class="text-muted">Last Visit:</span>
+                                    <span class="ms-2">@Model.LastVisitAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Activity Modal -->
+<div class="modal fade" id="addActivityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="AddActivity" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="leadId" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Activity Type</label>
+                        <select name="type" class="form-select" required>
+                            <option value="@Notification_Application.Models.ActivityType.Note">Note</option>
+                            <option value="@Notification_Application.Models.ActivityType.Email">Email</option>
+                            <option value="@Notification_Application.Models.ActivityType.Call">Call</option>
+                            <option value="@Notification_Application.Models.ActivityType.Meeting">Meeting</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" required placeholder="Activity title..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Add details..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Activity</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="AddTask" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="leadId" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Task Title</label>
+                        <input type="text" name="title" class="form-control" required placeholder="Task title..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Task details..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Due Date</label>
+                        <input type="datetime-local" name="dueDate" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <select name="priority" class="form-select">
+                            <option value="@Notification_Application.Models.TaskPriority.Low">Low</option>
+                            <option value="@Notification_Application.Models.TaskPriority.Medium" selected>Medium</option>
+                            <option value="@Notification_Application.Models.TaskPriority.High">High</option>
+                            <option value="@Notification_Application.Models.TaskPriority.Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    @if (teamMembers != null)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Assign To</label>
+                            <select name="assignedToUserId" class="form-select">
+                                <option value="">Unassigned</option>
+                                @foreach (var member in teamMembers)
+                                {
+                                    <option value="@member.Id">@member.FirstName @member.LastName</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Deal Modal -->
+<div class="modal fade" id="createDealModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Deal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CreateDeal" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="leadId" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Deal Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="Deal name..." />
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-8">
+                            <label class="form-label">Amount</label>
+                            <input type="number" name="amount" class="form-control" required step="0.01" min="0" placeholder="0.00" />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Currency</label>
+                            <select name="currency" class="form-select">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Win Probability (%)</label>
+                        <input type="number" name="probability" class="form-control" value="50" min="0" max="100" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Expected Close Date</label>
+                        <input type="date" name="expectedCloseDate" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Deal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

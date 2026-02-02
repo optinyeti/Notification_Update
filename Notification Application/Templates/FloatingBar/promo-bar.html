@@ -1,0 +1,35 @@
+<div class="floating-bar-promo" style="width: 100%; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 14px 24px; display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+    <div style="display: flex; align-items: center; gap: 12px; color: white;">
+        <span style="font-size: 20px;">🎁</span>
+        <span style="font-size: 15px; font-weight: 600;">Free Shipping on Orders Over $50!</span>
+    </div>
+    
+    <button style="padding: 10px 24px; background: white; color: #1e293b; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;">Shop Now</button>
+    
+    <button class="close-bar" style="position: absolute; right: 16px; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 20px; cursor: pointer;">&times;</button>
+</div>
+
+<style>
+.floating-bar-promo {
+    position: relative;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.floating-bar-promo button:first-of-type:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.close-bar:hover {
+    color: white;
+}
+</style>

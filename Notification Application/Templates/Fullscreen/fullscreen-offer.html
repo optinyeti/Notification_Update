@@ -1,0 +1,67 @@
+<div class="fullscreen-offer" style="width: 100vw; height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+    <!-- Background Pattern -->
+    <div style="position: absolute; inset: 0; background-image: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);"></div>
+    
+    <button class="close-btn" style="position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 28px; cursor: pointer; color: white; z-index: 10; transition: all 0.2s;">&times;</button>
+    
+    <div style="max-width: 640px; padding: 40px; text-align: center; position: relative; z-index: 1;">
+        <span style="display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); color: white; padding: 8px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; margin-bottom: 28px; letter-spacing: 1px;">✨ EXCLUSIVE OFFER</span>
+        
+        <h1 style="font-size: 56px; font-weight: 900; color: white; margin: 0 0 20px 0; line-height: 1.1;">Get 50% Off<br><span style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Your First Month</span></h1>
+        
+        <p style="font-size: 20px; color: rgba(255,255,255,0.8); margin: 0 0 40px 0; line-height: 1.6;">Join thousands of happy customers and transform your experience with our premium features.</p>
+        
+        <form style="max-width: 440px; margin: 0 auto;">
+            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                <input type="email" placeholder="Enter your email address" style="flex: 1; padding: 18px 24px; border: none; border-radius: 12px; font-size: 16px; background: rgba(255,255,255,0.95);" required>
+                <button type="submit" style="padding: 18px 36px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all 0.2s;">Claim Offer</button>
+            </div>
+            <p style="font-size: 14px; color: rgba(255,255,255,0.6); margin: 0;">🔒 No credit card required. Cancel anytime.</p>
+        </form>
+        
+        <div style="display: flex; justify-content: center; gap: 32px; margin-top: 48px; flex-wrap: wrap;">
+            <div style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 900; color: white;">10K+</div>
+                <div style="font-size: 14px; color: rgba(255,255,255,0.6);">Happy Users</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 900; color: white;">4.9</div>
+                <div style="font-size: 14px; color: rgba(255,255,255,0.6);">Star Rating</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 900; color: white;">24/7</div>
+                <div style="font-size: 14px; color: rgba(255,255,255,0.6);">Support</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.fullscreen-offer {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fullscreen-offer input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+}
+
+.fullscreen-offer button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(236, 72, 153, 0.4);
+}
+
+.close-btn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: rotate(90deg);
+}
+</style>

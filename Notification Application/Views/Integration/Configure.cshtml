@@ -1,0 +1,493 @@
+@model ConfigureIntegrationViewModel
+@{
+    ViewData["Title"] = $"Configure {Model.Info.Name}";
+    
+    string GetIntegrationIcon(IntegrationType type)
+    {
+        return type switch
+        {
+            IntegrationType.Mailchimp => "fas fa-mail-bulk",
+            IntegrationType.Brevo => "fas fa-envelope",
+            IntegrationType.ConvertKit => "fas fa-paper-plane",
+            IntegrationType.MailerLite => "fas fa-envelope-open-text",
+            IntegrationType.ActiveCampaign => "fas fa-bullseye",
+            IntegrationType.Klaviyo => "fas fa-chart-line",
+            IntegrationType.HubSpot => "fab fa-hubspot",
+            IntegrationType.Salesforce => "fab fa-salesforce",
+            IntegrationType.Zapier => "fas fa-bolt",
+            IntegrationType.Make => "fas fa-cogs",
+            IntegrationType.n8n => "fas fa-project-diagram",
+            IntegrationType.GoogleAnalytics4 => "fab fa-google",
+            IntegrationType.FacebookPixel => "fab fa-facebook",
+            IntegrationType.Slack => "fab fa-slack",
+            IntegrationType.Discord => "fab fa-discord",
+            IntegrationType.Shopify => "fab fa-shopify",
+            IntegrationType.WooCommerce => "fab fa-wordpress",
+            IntegrationType.Webhook => "fas fa-code",
+            IntegrationType.CustomAPI => "fas fa-plug",
+            _ => "fas fa-puzzle-piece"
+        };
+    }
+    
+    string GetCategoryGradient(IntegrationCategory category)
+    {
+        return category switch
+        {
+            IntegrationCategory.EmailMarketing => "from-blue-500 to-blue-700",
+            IntegrationCategory.CRM => "from-purple-500 to-purple-700",
+            IntegrationCategory.Automation => "from-orange-500 to-orange-700",
+            IntegrationCategory.Analytics => "from-green-500 to-green-700",
+            IntegrationCategory.Communication => "from-pink-500 to-pink-700",
+            IntegrationCategory.eCommerce => "from-teal-500 to-teal-700",
+            IntegrationCategory.Custom => "from-gray-500 to-gray-700",
+            _ => "from-gray-500 to-gray-700"
+        };
+    }
+    
+    string GetCategoryButtonColor(IntegrationCategory category)
+    {
+        return category switch
+        {
+            IntegrationCategory.EmailMarketing => "bg-blue-600 hover:bg-blue-700",
+            IntegrationCategory.CRM => "bg-purple-600 hover:bg-purple-700",
+            IntegrationCategory.Automation => "bg-orange-600 hover:bg-orange-700",
+            IntegrationCategory.Analytics => "bg-green-600 hover:bg-green-700",
+            IntegrationCategory.Communication => "bg-pink-600 hover:bg-pink-700",
+            IntegrationCategory.eCommerce => "bg-teal-600 hover:bg-teal-700",
+            IntegrationCategory.Custom => "bg-gray-600 hover:bg-gray-700",
+            _ => "bg-indigo-600 hover:bg-indigo-700"
+        };
+    }
+}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm">
+            <li>
+                <a asp-action="Index" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-plug me-1"></i>Integrations
+                </a>
+            </li>
+            <li><i class="fas fa-chevron-right text-gray-400 text-xs"></i></li>
+            <li class="text-gray-900 font-medium">@Model.Info.Name</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm mb-8 overflow-hidden">
+        <div class="bg-gradient-to-r @GetCategoryGradient(Model.Info.Category) px-6 py-8">
+            <div class="flex items-center gap-4">
+                <div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                    <i class="@GetIntegrationIcon(Model.Info.Type) text-white text-4xl"></i>
+                </div>
+                <div class="text-white">
+                    <h1 class="text-3xl font-bold">@Model.Info.Name</h1>
+                    <p class="text-white/80 mt-1">@Model.Info.Description</p>
+                    @if (Model.ExistingIntegration != null && Model.ExistingIntegration.IsConnected)
+                    {
+                        <span class="inline-flex items-center gap-1.5 mt-3 px-3 py-1 bg-white/20 rounded-full text-sm">
+                            <i class="fas fa-check-circle"></i> Connected
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Form -->
+        <div class="p-6">
+            <form asp-action="Save" method="post" id="integrationForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="IntegrationType" value="@Model.IntegrationType" />
+                <input type="hidden" name="IntegrationId" value="@Model.ExistingIntegration?.Id" />
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        <div>
+                            <p class="font-semibold text-green-800">@TempData["Success"]</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (TempData["Error"] != null)
+                {
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+                        <i class="fas fa-exclamation-circle text-red-600 text-xl"></i>
+                        <div>
+                            <p class="font-semibold text-red-800">@TempData["Error"]</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Common API Key Field -->
+                <div class="space-y-6">
+                    @if (Model.Info.Category == IntegrationCategory.EmailMarketing || 
+                         Model.Info.Category == IntegrationCategory.CRM ||
+                         Model.Info.Category == IntegrationCategory.Analytics ||
+                         Model.Info.Category == IntegrationCategory.eCommerce)
+                    {
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-key me-1"></i>API Key
+                            </label>
+                            <input type="password" name="ApiKey" 
+                                   value="@Model.ExistingIntegration?.ApiKey"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                   placeholder="Enter your @Model.Info.Name API key">
+                            <p class="mt-2 text-sm text-gray-500">
+                                <i class="fas fa-info-circle me-1"></i>Find your API key in your @Model.Info.Name account settings
+                            </p>
+                        </div>
+                    }
+
+                    @if (Model.Info.Category == IntegrationCategory.CRM && 
+                         (Model.Info.Type == IntegrationType.Salesforce))
+                    {
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-lock me-1"></i>API Secret
+                            </label>
+                            <input type="password" name="ApiSecret" 
+                                   value="@Model.ExistingIntegration?.ApiSecret"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                   placeholder="Enter API secret or client secret">
+                        </div>
+                    }
+
+                    <!-- Webhook URL for Automation/Communication -->
+                    @if (Model.Info.Category == IntegrationCategory.Automation || 
+                         Model.Info.Category == IntegrationCategory.Communication ||
+                         Model.Info.Category == IntegrationCategory.Custom)
+                    {
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-link me-1"></i>Webhook URL
+                            </label>
+                            <input type="url" name="WebhookUrl" 
+                                   value="@Model.ExistingIntegration?.WebhookUrl"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                   placeholder="https://hooks.example.com/...">
+                                   
+                            @if (Model.Info.Type == IntegrationType.Zapier)
+                            {
+                                <div class="mt-4 bg-orange-50 border border-orange-200 rounded-xl p-4">
+                                    <h4 class="font-semibold text-orange-800 mb-2"><i class="fas fa-bolt me-2"></i>Zapier Setup</h4>
+                                    <ol class="text-sm text-orange-700 space-y-2 list-decimal list-inside">
+                                        <li>In Zapier, create a new Zap</li>
+                                        <li>Choose "Webhooks by Zapier" as the trigger</li>
+                                        <li>Select "Catch Hook" and copy the webhook URL</li>
+                                        <li>Paste the URL above</li>
+                                    </ol>
+                                </div>
+                            }
+                            
+                            @if (Model.Info.Type == IntegrationType.Make)
+                            {
+                                <div class="mt-4 bg-orange-50 border border-orange-200 rounded-xl p-4">
+                                    <h4 class="font-semibold text-orange-800 mb-2"><i class="fas fa-cogs me-2"></i>Make.com Setup</h4>
+                                    <ol class="text-sm text-orange-700 space-y-2 list-decimal list-inside">
+                                        <li>In Make.com, create a new scenario</li>
+                                        <li>Add "Webhooks" as the first module</li>
+                                        <li>Select "Custom webhook" and copy the URL</li>
+                                        <li>Paste the URL above</li>
+                                    </ol>
+                                </div>
+                            }
+                            
+                            @if (Model.Info.Type == IntegrationType.Slack)
+                            {
+                                <div class="mt-4 bg-pink-50 border border-pink-200 rounded-xl p-4">
+                                    <h4 class="font-semibold text-pink-800 mb-2"><i class="fab fa-slack me-2"></i>Slack Setup</h4>
+                                    <ol class="text-sm text-pink-700 space-y-2 list-decimal list-inside">
+                                        <li>Go to api.slack.com/apps and create a new app</li>
+                                        <li>Enable "Incoming Webhooks" in the features</li>
+                                        <li>Add to a channel and copy the webhook URL</li>
+                                        <li>Paste the URL above</li>
+                                    </ol>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- List/Audience ID for Email Marketing -->
+                    @if (Model.Info.Category == IntegrationCategory.EmailMarketing)
+                    {
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-list me-1"></i>List/Audience ID <span class="text-gray-400 font-normal">(optional)</span>
+                            </label>
+                            <input type="text" name="ListId" 
+                                   value="@Model.ExistingIntegration?.ExternalListId"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                   placeholder="Enter list or audience ID">
+                            <p class="mt-2 text-sm text-gray-500">
+                                <i class="fas fa-info-circle me-1"></i>Specific list/audience to add subscribers to. Leave blank for default.
+                            </p>
+                        </div>
+                    }
+
+                    <!-- GA4 Specific -->
+                    @if (Model.Info.Type == IntegrationType.GoogleAnalytics4)
+                    {
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                            <h4 class="font-semibold text-green-800 mb-2"><i class="fab fa-google me-2"></i>Google Analytics 4 Setup</h4>
+                            <p class="text-sm text-green-700">We'll automatically send events to GA4 when users interact with your popups.</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-hashtag me-1"></i>Measurement ID
+                            </label>
+                            <input type="text" name="AccountId" 
+                                   value="@Model.ExistingIntegration?.ExternalAccountId"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+                                   placeholder="G-XXXXXXXXXX">
+                            <p class="mt-2 text-sm text-gray-500">
+                                <i class="fas fa-info-circle me-1"></i>Found in GA4 > Admin > Data Streams > Your stream
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-xl p-4 mt-4">
+                            <h5 class="font-semibold text-gray-800 mb-3"><i class="fas fa-paper-plane me-2"></i>Events We'll Track</h5>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div class="flex items-center gap-2 text-gray-600">
+                                    <i class="fas fa-check text-green-500"></i> popup_view
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600">
+                                    <i class="fas fa-check text-green-500"></i> popup_close
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600">
+                                    <i class="fas fa-check text-green-500"></i> popup_conversion
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600">
+                                    <i class="fas fa-check text-green-500"></i> lead_captured
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- HubSpot Specific -->
+                    @if (Model.Info.Type == IntegrationType.HubSpot)
+                    {
+                        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                            <h4 class="font-semibold text-purple-800 mb-2"><i class="fab fa-hubspot me-2"></i>HubSpot Setup</h4>
+                            <ol class="text-sm text-purple-700 space-y-2 list-decimal list-inside">
+                                <li>Go to HubSpot > Settings > Integrations > Private Apps</li>
+                                <li>Create a new private app with <strong>CRM > Contacts</strong> scopes</li>
+                                <li>Copy the generated access token above</li>
+                            </ol>
+                        </div>
+                    }
+
+                    <!-- Shopify Specific -->
+                    @if (Model.Info.Type == IntegrationType.Shopify)
+                    {
+                        <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-4">
+                            <h4 class="font-semibold text-teal-800 mb-2"><i class="fab fa-shopify me-2"></i>Shopify Setup</h4>
+                            <ol class="text-sm text-teal-700 space-y-2 list-decimal list-inside">
+                                <li>Go to your Shopify admin > Settings > Apps and sales channels</li>
+                                <li>Develop apps > Create an app</li>
+                                <li>Configure Admin API scopes: write_customers, read_customers</li>
+                                <li>Install the app and copy the Admin API access token above</li>
+                            </ol>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-store me-1"></i>Store URL <span class="text-gray-400 font-normal">(optional)</span>
+                            </label>
+                            <input type="text" name="AccountId" 
+                                   value="@Model.ExistingIntegration?.ExternalAccountId"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                                   placeholder="your-store.myshopify.com">
+                        </div>
+                    }
+                </div>
+
+                <!-- Sync Settings -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fas fa-sync-alt me-2"></i>Sync Settings</h3>
+                    <div class="space-y-4">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" name="SyncLeads" value="true"
+                                   @(Model.ExistingIntegration?.SyncLeads ?? true ? "checked" : "")
+                                   class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="text-gray-700">
+                                <strong>Sync Leads</strong>
+                                <span class="block text-sm text-gray-500">Automatically push new leads when captured</span>
+                            </span>
+                        </label>
+                        
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" name="SyncForms" value="true"
+                                   @(Model.ExistingIntegration?.SyncForms ?? true ? "checked" : "")
+                                   class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="text-gray-700">
+                                <strong>Sync Form Submissions</strong>
+                                <span class="block text-sm text-gray-500">Send form submission data</span>
+                            </span>
+                        </label>
+                        
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" name="SyncEvents" value="true"
+                                   @(Model.ExistingIntegration?.SyncEvents ?? false ? "checked" : "")
+                                   class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="text-gray-700">
+                                <strong>Sync Events</strong>
+                                <span class="block text-sm text-gray-500">Track popup views and interactions</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 @GetCategoryButtonColor(Model.Info.Category) text-white rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl">
+                        <i class="fas fa-save"></i>
+                        @(Model.ExistingIntegration != null ? "Save Changes" : "Connect Integration")
+                    </button>
+                    
+                    @if (Model.ExistingIntegration != null)
+                    {
+                        <button type="button" onclick="testConnection()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-bold transition-all inline-flex items-center justify-center gap-2">
+                            <i class="fas fa-flask"></i>
+                            Test Connection
+                        </button>
+                    }
+                    
+                    <a asp-action="Index" class="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-bold transition-all text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Integration Logs -->
+    @if (Model.ExistingIntegration != null && Model.RecentLogs?.Any() == true)
+    {
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-gray-900"><i class="fas fa-history me-2"></i>Recent Activity</h2>
+                <a asp-action="Logs" asp-route-id="@Model.ExistingIntegration.Id" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                    View All Logs <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @foreach (var log in Model.RecentLogs.Take(5))
+                {
+                    <div class="px-6 py-4 flex items-center gap-4">
+                        @if (log.IsSuccess)
+                        {
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-green-600"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-times text-red-600"></i>
+                            </div>
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">@log.Type.ToString()</p>
+                            <p class="text-sm text-gray-500">@log.CreatedAt.ToString("MMM d, h:mm tt")</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(log.Message))
+                        {
+                            <span class="text-sm text-gray-500 truncate max-w-xs">@log.Message</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Test Result Modal -->
+<div id="testResultModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+        <div id="testResultHeader" class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-bold text-gray-900">Connection Test</h3>
+        </div>
+        <div id="testResultBody" class="p-6">
+            <!-- Content loaded dynamically -->
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <button onclick="closeTestModal()" class="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition-all">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function testConnection() {
+        const integrationId = @(Model.ExistingIntegration?.Id ?? 0);
+        if (!integrationId) return;
+        
+        const modal = document.getElementById('testResultModal');
+        const body = document.getElementById('testResultBody');
+        
+        body.innerHTML = '<div class="flex items-center justify-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-indigo-600"></i><span class="ml-3 text-gray-600">Testing connection...</span></div>';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        fetch('/Integration/Test/' + integrationId, {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': document.querySelector('[name="__RequestVerificationToken"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                body.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-check text-green-600 text-3xl"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Connection Successful!</h4>
+                        <p class="text-gray-600">${data.message || 'Your integration is working correctly.'}</p>
+                    </div>
+                `;
+            } else {
+                body.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-times text-red-600 text-3xl"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Connection Failed</h4>
+                        <p class="text-gray-600">${data.message || 'Please check your credentials and try again.'}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            body.innerHTML = `
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-3xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 mb-2">Test Error</h4>
+                    <p class="text-gray-600">An error occurred while testing the connection.</p>
+                </div>
+            `;
+        });
+    }
+    
+    function closeTestModal() {
+        const modal = document.getElementById('testResultModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeTestModal();
+    });
+</script>
+}
