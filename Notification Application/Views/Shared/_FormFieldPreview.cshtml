@@ -1,0 +1,137 @@
+@model dynamic
+
+@{
+    var field = Model;
+    var fieldType = field.FieldType?.ToString() ?? "text";
+    var isRequired = field.IsRequired ?? false;
+}
+
+<div class="form-field-preview mb-3" data-field-id="@field.Id">
+    <label class="form-label">
+        @field.Label
+        @if (isRequired)
+        {
+            <span class="text-danger">*</span>
+        }
+    </label>
+
+    @switch (fieldType.ToLower())
+    {
+        case "text":
+        case "email":
+        case "phone":
+        case "number":
+            <input type="@fieldType" 
+                   class="form-control" 
+                   placeholder="@field.Placeholder" 
+                   @(isRequired ? "required" : "") 
+                   disabled />
+            break;
+
+        case "textarea":
+            <textarea class="form-control" 
+                      rows="3" 
+                      placeholder="@field.Placeholder" 
+                      @(isRequired ? "required" : "") 
+                      disabled></textarea>
+            break;
+
+        case "select":
+        case "dropdown":
+            <select class="form-select" @(isRequired ? "required" : "") disabled>
+                <option value="">Select an option</option>
+                @if (field.Options != null)
+                {
+                    @foreach (var option in field.Options)
+                    {
+                        <option value="@option">@option</option>
+                    }
+                }
+            </select>
+            break;
+
+        case "radio":
+            @if (field.Options != null)
+            {
+                @foreach (var option in field.Options)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" 
+                               type="radio" 
+                               name="@field.Name" 
+                               id="@(field.Id)_@option" 
+                               disabled />
+                        <label class="form-check-label" for="@(field.Id)_@option">
+                            @option
+                        </label>
+                    </div>
+                }
+            }
+            break;
+
+        case "checkbox":
+            @if (field.Options != null)
+            {
+                @foreach (var option in field.Options)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" 
+                               type="checkbox" 
+                               id="@(field.Id)_@option" 
+                               disabled />
+                        <label class="form-check-label" for="@(field.Id)_@option">
+                            @option
+                        </label>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="form-check">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           id="@field.Id" 
+                           @(isRequired ? "required" : "") 
+                           disabled />
+                    <label class="form-check-label" for="@field.Id">
+                        @field.Label
+                    </label>
+                </div>
+            }
+            break;
+
+        case "date":
+            <input type="date" 
+                   class="form-control" 
+                   @(isRequired ? "required" : "") 
+                   disabled />
+            break;
+
+        case "time":
+            <input type="time" 
+                   class="form-control" 
+                   @(isRequired ? "required" : "") 
+                   disabled />
+            break;
+
+        case "file":
+            <input type="file" 
+                   class="form-control" 
+                   @(isRequired ? "required" : "") 
+                   disabled />
+            break;
+
+        default:
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="@field.Placeholder" 
+                   @(isRequired ? "required" : "") 
+                   disabled />
+            break;
+    }
+
+    @if (!string.IsNullOrEmpty(field.HelpText?.ToString()))
+    {
+        <small class="form-text text-muted">@field.HelpText</small>
+    }
+</div>

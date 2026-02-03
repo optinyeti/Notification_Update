@@ -14,6 +14,9 @@ public class Tenant
     // Public host override for embeds and API URLs
     public string? PublicHostUrl { get; set; }
     
+    // Website Integration - User's actual website for testing
+    public string? WebsiteUrl { get; set; }
+    
     // Usage tracking
     public int PopupCount { get; set; } = 0;
     public int MonthlyPopupViews { get; set; } = 0;
@@ -34,6 +37,10 @@ public class Tenant
     // API & Tracking
     public string? ApiKey { get; set; } // For API authentication
     public string? TrackingCode { get; set; } // Unique code for pixel tracking
+    
+    // Google Analytics Integration (Account-wide)
+    public string? GoogleTagManagerId { get; set; } // GTM-XXXXXXX format
+    public string? GoogleAnalytics4Id { get; set; } // G-XXXXXXXXXX format
     
     // Navigation properties
     public ICollection<User> Users { get; set; } = new List<User>();

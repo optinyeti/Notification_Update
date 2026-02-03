@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Notification_Application.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIntegrationsTable : Migration
+    public partial class AddIntegrationsAndPhoneTracking : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,20 +19,34 @@ namespace Notification_Application.Migrations
                 name: "FK_Deals_Tenants_TenantId",
                 table: "Deals");
 
-            migrationBuilder.RenameColumn(
-                name: "Type",
-                table: "LeadActivities",
-                newName: "ActivityType");
+            migrationBuilder.DropForeignKey(
+                name: "FK_Leads_Popups_PopupId",
+                table: "Leads");
 
-            migrationBuilder.RenameColumn(
-                name: "IsEnabled",
-                table: "Integrations",
-                newName: "SyncPopups");
+            // Column already renamed manually, skip this operation
+            // migrationBuilder.RenameColumn(
+            //     name: "Type",
+            //     table: "LeadActivities",
+            //     newName: "ActivityType");
 
-            migrationBuilder.RenameColumn(
-                name: "Configuration",
-                table: "Integrations",
-                newName: "Settings");
+            // Integrations table doesn't exist yet, these renames are not needed
+            // migrationBuilder.RenameColumn(
+            //     name: "IsEnabled",
+            //     table: "Integrations",
+            //     newName: "SyncPopups");
+
+            // migrationBuilder.RenameColumn(
+            //     name: "Configuration",
+            //     table: "Integrations",
+            //     newName: "Settings");
+
+            migrationBuilder.AlterColumn<int>(
+                name: "PopupId",
+                table: "Leads",
+                type: "INTEGER",
+                nullable: true,
+                oldClrType: typeof(int),
+                oldType: "INTEGER");
 
             migrationBuilder.AddColumn<int>(
                 name: "AssignedDealId",
@@ -228,6 +242,47 @@ namespace Notification_Application.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PhoneNumbers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    Number = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    FriendlyName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    TwilioSid = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
+                    AreaCode = table.Column<string>(type: "TEXT", maxLength: 5, nullable: true),
+                    City = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    State = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    ForwardToNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    PurchasedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CanceledDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    MonthlyFee = table.Column<decimal>(type: "decimal(10,4)", nullable: false),
+                    PerMinuteRate = table.Column<decimal>(type: "decimal(10,4)", nullable: false),
+                    UtmSource = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmMedium = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmCampaign = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmTerm = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmContent = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    TotalCalls = table.Column<int>(type: "INTEGER", nullable: false),
+                    TotalMinutes = table.Column<int>(type: "INTEGER", nullable: false),
+                    TotalCost = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    LastCallDate = table.Column<DateTime>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PhoneNumbers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PhoneNumbers_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WebsiteForms",
                 columns: table => new
                 {
@@ -301,6 +356,50 @@ namespace Notification_Application.Migrations
                         name: "FK_WebsiteForms_Tenants_TenantId",
                         column: x => x.TenantId,
                         principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PhoneCalls",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PhoneNumberId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CallSid = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    FromNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    ToNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    ForwardedTo = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    CallDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DurationSeconds = table.Column<int>(type: "INTEGER", nullable: false),
+                    Cost = table.Column<decimal>(type: "decimal(10,4)", nullable: false),
+                    CallerCity = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    CallerState = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    CallerCountry = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    CallerZip = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
+                    UtmSource = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmMedium = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmCampaign = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmTerm = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    UtmContent = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
+                    RecordingUrl = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    LeadId = table.Column<int>(type: "INTEGER", nullable: true),
+                    ConvertedToLead = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PhoneCalls", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PhoneCalls_Leads_LeadId",
+                        column: x => x.LeadId,
+                        principalTable: "Leads",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PhoneCalls_PhoneNumbers_PhoneNumberId",
+                        column: x => x.PhoneNumberId,
+                        principalTable: "PhoneNumbers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -425,28 +524,28 @@ namespace Notification_Application.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(4899));
+                value: new DateTime(2026, 2, 2, 21, 47, 58, 574, DateTimeKind.Utc).AddTicks(4874));
 
             migrationBuilder.UpdateData(
                 table: "SubscriptionPlans",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(7269));
+                value: new DateTime(2026, 2, 2, 21, 47, 58, 575, DateTimeKind.Utc).AddTicks(340));
 
             migrationBuilder.UpdateData(
                 table: "SubscriptionPlans",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(7276));
+                value: new DateTime(2026, 2, 2, 21, 47, 58, 575, DateTimeKind.Utc).AddTicks(348));
 
             migrationBuilder.UpdateData(
                 table: "SubscriptionPlans",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2026, 2, 2, 0, 24, 19, 720, DateTimeKind.Utc).AddTicks(7279));
+                value: new DateTime(2026, 2, 2, 21, 47, 58, 575, DateTimeKind.Utc).AddTicks(352));
 
             migrationBuilder.CreateIndex(
                 name: "IX_Leads_AssignedDealId",
@@ -492,6 +591,21 @@ namespace Notification_Application.Migrations
                 name: "IX_IntegrationLogs_LeadId",
                 table: "IntegrationLogs",
                 column: "LeadId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PhoneCalls_LeadId",
+                table: "PhoneCalls",
+                column: "LeadId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PhoneCalls_PhoneNumberId",
+                table: "PhoneCalls",
+                column: "PhoneNumberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PhoneNumbers_UserId",
+                table: "PhoneNumbers",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WebsiteForms_CreatedById",
@@ -543,6 +657,13 @@ namespace Notification_Application.Migrations
                 principalTable: "Deals",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Leads_Popups_PopupId",
+                table: "Leads",
+                column: "PopupId",
+                principalTable: "Popups",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
@@ -564,6 +685,10 @@ namespace Notification_Application.Migrations
                 name: "FK_Leads_Deals_AssignedDealId",
                 table: "Leads");
 
+            migrationBuilder.DropForeignKey(
+                name: "FK_Leads_Popups_PopupId",
+                table: "Leads");
+
             migrationBuilder.DropTable(
                 name: "FormAnalytics");
 
@@ -577,7 +702,13 @@ namespace Notification_Application.Migrations
                 name: "IntegrationLogs");
 
             migrationBuilder.DropTable(
+                name: "PhoneCalls");
+
+            migrationBuilder.DropTable(
                 name: "WebsiteForms");
+
+            migrationBuilder.DropTable(
+                name: "PhoneNumbers");
 
             migrationBuilder.DropIndex(
                 name: "IX_Leads_AssignedDealId",
@@ -687,20 +818,32 @@ namespace Notification_Application.Migrations
                 name: "WebhookSecret",
                 table: "Integrations");
 
-            migrationBuilder.RenameColumn(
-                name: "ActivityType",
-                table: "LeadActivities",
-                newName: "Type");
+            // Column already renamed manually, skip reverse operation
+            // migrationBuilder.RenameColumn(
+            //     name: "ActivityType",
+            //     table: "LeadActivities",
+            //     newName: "Type");
 
-            migrationBuilder.RenameColumn(
-                name: "SyncPopups",
-                table: "Integrations",
-                newName: "IsEnabled");
+            // Integrations table will be dropped, these renames are not needed
+            // migrationBuilder.RenameColumn(
+            //     name: "SyncPopups",
+            //     table: "Integrations",
+            //     newName: "IsEnabled");
 
-            migrationBuilder.RenameColumn(
-                name: "Settings",
-                table: "Integrations",
-                newName: "Configuration");
+            // migrationBuilder.RenameColumn(
+            //     name: "Settings",
+            //     table: "Integrations",
+            //     newName: "Configuration");
+
+            migrationBuilder.AlterColumn<int>(
+                name: "PopupId",
+                table: "Leads",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: 0,
+                oldClrType: typeof(int),
+                oldType: "INTEGER",
+                oldNullable: true);
 
             migrationBuilder.UpdateData(
                 table: "SubscriptionPlans",
@@ -742,6 +885,14 @@ namespace Notification_Application.Migrations
                 table: "Deals",
                 column: "TenantId",
                 principalTable: "Tenants",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Leads_Popups_PopupId",
+                table: "Leads",
+                column: "PopupId",
+                principalTable: "Popups",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
         }

@@ -417,8 +417,152 @@
             this.renderPopup(popup);
         },
 
+        renderPromotionBar: function(popup) {
+            console.log('Rendering promotion bar:', popup.name);
+            
+            // Parse content
+            let contentHtml = '';
+            try {
+                if (typeof popup.content === 'string') {
+                    if (popup.content.trim().startsWith('<')) {
+                        contentHtml = popup.content;
+                    } else {
+                        try {
+                            const content = JSON.parse(popup.content);
+                            if (Array.isArray(content)) {
+                                contentHtml = this.renderBlocks(content);
+                            } else if (content.html) {
+                                contentHtml = content.html;
+                            } else if (content.content) {
+                                contentHtml = content.content;
+                            } else {
+                                contentHtml = '<div style="padding: 15px; text-align: center;">Limited Time Offer!</div>';
+                            }
+                        } catch (jsonError) {
+                            contentHtml = popup.content;
+                        }
+                    }
+                } else if (Array.isArray(popup.content)) {
+                    contentHtml = this.renderBlocks(popup.content);
+                } else if (typeof popup.content === 'object') {
+                    contentHtml = popup.content.html || popup.content.content || '<div style="padding: 15px; text-align: center;">Limited Time Offer!</div>';
+                }
+            } catch (e) {
+                console.error('Failed to parse promotion bar content:', e);
+                contentHtml = '<div style="padding: 15px; text-align: center;">Limited Time Offer!</div>';
+            }
+
+            // Create promotion bar container
+            const promoBar = document.createElement('div');
+            promoBar.id = 'promotion-bar-' + popup.id;
+            promoBar.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                z-index: 999999;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                animation: slideDown 0.4s ease-out;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            `;
+
+            // Create close button
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 50%;
+                right: 20px;
+                transform: translateY(-50%);
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                font-size: 20px;
+                line-height: 1;
+                cursor: pointer;
+                color: white;
+                transition: all 0.2s;
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            closeBtn.onmouseover = function() {
+                this.style.background = 'rgba(255, 255, 255, 0.3)';
+            };
+            closeBtn.onmouseout = function() {
+                this.style.background = 'rgba(255, 255, 255, 0.2)';
+            };
+            closeBtn.onclick = () => {
+                this.track('close', popup.id, { userInitiated: true });
+                this.closePromotionBar(popup.id);
+            };
+
+            // Content wrapper
+            const contentWrapper = document.createElement('div');
+            contentWrapper.style.cssText = 'padding: 15px 60px 15px 20px; min-height: 50px; display: flex; align-items: center; justify-content: center;';
+            contentWrapper.innerHTML = contentHtml;
+
+            // Add click tracking to CTA buttons
+            const ctaButtons = contentWrapper.querySelectorAll('button, a.btn, .cta-button, a');
+            ctaButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.track('click', popup.id, {
+                        buttonText: btn.textContent,
+                        buttonType: btn.tagName
+                    });
+                });
+            });
+
+            // Build promotion bar
+            promoBar.appendChild(contentWrapper);
+            promoBar.appendChild(closeBtn);
+
+            // Add to page
+            document.body.insertBefore(promoBar, document.body.firstChild);
+
+            // Push body content down
+            const promoBarHeight = promoBar.offsetHeight;
+            document.body.style.marginTop = promoBarHeight + 'px';
+            document.body.style.transition = 'margin-top 0.4s ease-out';
+
+            // Add CSS animations if not already added
+            if (!document.getElementById('promotion-bar-animations-style')) {
+                const style = document.createElement('style');
+                style.id = 'promotion-bar-animations-style';
+                style.textContent = `
+                    @keyframes slideDown {
+                        from { 
+                            transform: translateY(-100%); 
+                            opacity: 0; 
+                        }
+                        to { 
+                            transform: translateY(0); 
+                            opacity: 1; 
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Setup event tracking
+            this.setupPopupTracking(promoBar, popup.id);
+        },
+
         renderPopup: function(popup) {
-            console.log('Rendering popup:', popup.name, 'with content:', popup.content);
+            console.log('Rendering popup:', popup.name, 'with content:', popup.content, 'type:', popup.type);
+            
+            // Check if this is a promotion bar type
+            const isPromotionBar = popup.type === 'PromotionBar' || popup.type === 9; // 9 is the enum value for PromotionBar
+            
+            if (isPromotionBar) {
+                this.renderPromotionBar(popup);
+                return;
+            }
             
             // Parse content - handle multiple formats
             let contentHtml = '';
@@ -625,6 +769,39 @@
             if (overlay) {
                 overlay.style.animation = 'fadeOut 0.3s ease';
                 setTimeout(() => overlay.remove(), 300);
+            }
+        },
+
+        closePromotionBar: function(popupId) {
+            const promoBar = document.getElementById('promotion-bar-' + popupId);
+            if (promoBar) {
+                // Animate out
+                promoBar.style.animation = 'slideUp 0.3s ease-out forwards';
+                
+                // Reset body margin
+                document.body.style.marginTop = '0px';
+                
+                // Remove after animation
+                setTimeout(() => promoBar.remove(), 300);
+            }
+            
+            // Add slideUp animation if not already added
+            if (!document.getElementById('promotion-bar-slideup-style')) {
+                const style = document.createElement('style');
+                style.id = 'promotion-bar-slideup-style';
+                style.textContent = `
+                    @keyframes slideUp {
+                        from { 
+                            transform: translateY(0); 
+                            opacity: 1; 
+                        }
+                        to { 
+                            transform: translateY(-100%); 
+                            opacity: 0; 
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
             }
         },
 

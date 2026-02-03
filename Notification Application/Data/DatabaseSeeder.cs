@@ -25,6 +25,12 @@ public static class DatabaseSeeder
         
         // Seed playbooks
         await PlaybookSeeder.SeedAsync(context);
+        
+        // Seed website pages (CMS)
+        await SeedWebsitePagesAsync(context);
+        
+        // Seed test leads data
+        await SeedTestLeadsAsync(context);
     }
 
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
@@ -120,6 +126,29 @@ public static class DatabaseSeeder
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(regularUser, "User");
+            }
+        }
+
+        // Create special admin user with role switching capability
+        var joeUser = await userManager.FindByEmailAsync("joe.whyte@gmail.com");
+        if (joeUser == null)
+        {
+            joeUser = new User
+            {
+                UserName = "joe.whyte@gmail.com",
+                Email = "joe.whyte@gmail.com",
+                FirstName = "Joe",
+                LastName = "Whyte",
+                TenantId = defaultTenant.Id,
+                Role = UserRole.Admin,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(joeUser, "Jojo123$");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(joeUser, "Admin");
+                await userManager.AddToRoleAsync(joeUser, "User");
             }
         }
     }
@@ -1488,7 +1517,212 @@ public static class DatabaseSeeder
             SortOrder = 45
         });
 
+        // ==================== PROMOTION BAR TEMPLATES (3) ====================
+        templates.Add(new PopupTemplate
+        {
+            Name = "Black Friday Sale Bar",
+            Description = "Top banner for limited time promotions",
+            Category = "Promotions",
+            Type = PopupType.PromotionBar,
+            Content = @"<div style='display: flex; align-items: center; justify-content: center; gap: 20px;'>
+                <span style='font-size: 18px; font-weight: bold;'>🔥 BLACK FRIDAY SALE</span>
+                <span style='font-size: 16px;'>Up to 70% OFF Everything | Ends Tonight!</span>
+                <a href='#' style='background: white; color: #667eea; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;'>Shop Now</a>
+            </div>",
+            ImageUrl = "https://placehold.co/600x100/667eea/ffffff?text=Black+Friday+Sale",
+            PreviewImageUrl = "https://placehold.co/400x80/667eea/ffffff?text=Sale+Bar",
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 0,
+            DefaultFrequency = PopupFrequency.OncePerDay,
+            SortOrder = 46
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Limited Time Offer Bar",
+            Description = "Countdown promotion banner",
+            Category = "Promotions",
+            Type = PopupType.PromotionBar,
+            Content = @"<div style='display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;'>
+                <span style='font-size: 16px; font-weight: 600;'>⚡ FLASH SALE</span>
+                <span style='font-size: 14px;'>Get 50% OFF with code FLASH50</span>
+                <span style='background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 4px; font-family: monospace;'>Ends in 3:45:12</span>
+                <a href='#' style='background: #fbbf24; color: #000; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;'>Claim Offer</a>
+            </div>",
+            ImageUrl = "https://placehold.co/600x100/764ba2/ffffff?text=Flash+Sale",
+            PreviewImageUrl = "https://placehold.co/400x80/764ba2/ffffff?text=Limited+Offer",
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 1000,
+            DefaultFrequency = PopupFrequency.OncePerSession,
+            SortOrder = 47
+        });
+
+        templates.Add(new PopupTemplate
+        {
+            Name = "Free Shipping Bar",
+            Description = "Announce free shipping promotion",
+            Category = "Promotions",
+            Type = PopupType.PromotionBar,
+            Content = @"<div style='display: flex; align-items: center; justify-content: center; gap: 12px;'>
+                <span style='font-size: 20px;'>📦</span>
+                <span style='font-size: 16px; font-weight: 600;'>FREE SHIPPING on orders over $50</span>
+                <span style='font-size: 14px; opacity: 0.9;'>+ Free Returns</span>
+                <a href='#' style='background: rgba(255,255,255,0.25); color: white; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: 500; border: 1px solid rgba(255,255,255,0.3);'>Shop Now</a>
+            </div>",
+            ImageUrl = "https://placehold.co/600x100/10b981/ffffff?text=Free+Shipping",
+            PreviewImageUrl = "https://placehold.co/400x80/10b981/ffffff?text=Shipping+Promo",
+            DefaultTrigger = PopupTrigger.OnPageLoad,
+            DefaultDelayMs = 2000,
+            DefaultFrequency = PopupFrequency.EveryVisit,
+            SortOrder = 48
+        });
+
         context.PopupTemplates.AddRange(templates);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedWebsitePagesAsync(ApplicationDbContext context)
+    {
+        if (!await context.WebsitePages.AnyAsync())
+        {
+            var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "admin@popupmanager.com");
+            
+            var pages = new List<WebsitePage>
+            {
+                new WebsitePage
+                {
+                    Title = "Home",
+                    Slug = "home",
+                    MetaDescription = "OptinYeti - The smartest growth marketing platform for SMBs to Enterprise. Convert more visitors with intelligent popups, landing pages, and integrated CRM.",
+                    MetaKeywords = "popup software, lead generation, marketing automation, CRM, landing pages",
+                    Content = "<!-- This page is managed through the Admin Panel -->",
+                    IsPublished = true,
+                    IsHomepage = true,
+                    TenantId = 1,
+                    CreatedById = adminUser?.Id,
+                    PublishedAt = DateTime.UtcNow
+                },
+                new WebsitePage
+                {
+                    Title = "Features",
+                    Slug = "features",
+                    MetaDescription = "Explore OptinYeti's powerful features including smart popups, landing page builder, form builder, CRM, analytics, and marketing automation.",
+                    MetaKeywords = "popup features, landing page builder, form builder, CRM features",
+                    Content = "<h1>Features</h1><p>Discover all the powerful features of OptinYeti.</p>",
+                    IsPublished = true,
+                    TenantId = 1,
+                    CreatedById = adminUser?.Id,
+                    PublishedAt = DateTime.UtcNow
+                },
+                new WebsitePage
+                {
+                    Title = "Pricing",
+                    Slug = "pricing",
+                    MetaDescription = "Simple, transparent pricing for OptinYeti. Choose the plan that fits your business needs - Starter, Professional, or Enterprise.",
+                    MetaKeywords = "pricing, plans, subscription, enterprise pricing",
+                    Content = "<h1>Pricing</h1><p>Choose the perfect plan for your business.</p>",
+                    IsPublished = true,
+                    TenantId = 1,
+                    CreatedById = adminUser?.Id,
+                    PublishedAt = DateTime.UtcNow
+                },
+                new WebsitePage
+                {
+                    Title = "About Us",
+                    Slug = "about",
+                    MetaDescription = "Learn about OptinYeti's mission to help businesses grow smarter with powerful marketing automation tools.",
+                    MetaKeywords = "about us, company, mission, team",
+                    Content = "<h1>About OptinYeti</h1><p>We're on a mission to help businesses grow smarter.</p>",
+                    IsPublished = true,
+                    TenantId = 1,
+                    CreatedById = adminUser?.Id,
+                    PublishedAt = DateTime.UtcNow
+                },
+                new WebsitePage
+                {
+                    Title = "Contact",
+                    Slug = "contact",
+                    MetaDescription = "Get in touch with OptinYeti. Contact our support team for help with your marketing campaigns.",
+                    MetaKeywords = "contact, support, help, customer service",
+                    Content = "<h1>Contact Us</h1><p>Get in touch with our team.</p>",
+                    IsPublished = true,
+                    TenantId = 1,
+                    CreatedById = adminUser?.Id,
+                    PublishedAt = DateTime.UtcNow
+                }
+            };
+
+            context.WebsitePages.AddRange(pages);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    private static async Task SeedTestLeadsAsync(ApplicationDbContext context)
+    {
+        // Get joe.whyte user
+        var joeUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "joe.whyte@gmail.com");
+        
+        if (joeUser == null)
+        {
+            return;
+        }
+        
+        // Check if this tenant already has leads
+        var existingLeadsCount = await context.Leads.CountAsync(l => l.TenantId == joeUser.TenantId);
+        if (existingLeadsCount >= 50)
+        {
+            return;
+        }
+        
+        // Get first popup for this tenant
+        var firstPopup = await context.Popups.FirstOrDefaultAsync(p => p.TenantId == joeUser.TenantId);
+
+        var random = new Random();
+        var leads = new List<Lead>();
+        
+        // Create 50 test leads with varying data
+        var firstNames = new[] { "John", "Jane", "Mike", "Sarah", "David", "Emily", "Chris", "Lisa", "Tom", "Maria" };
+        var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez" };
+        var companies = new[] { "TechCorp", "Innovate Inc", "Digital Solutions", "Growth Partners", "Smart Systems", null };
+        var sources = new[] { "https://example.com/landing", "https://example.com/blog", "https://example.com/pricing", "https://example.com/" };
+        var utmSources = new[] { "google", "facebook", "twitter", "linkedin", "email", "direct" };
+        var utmMediums = new[] { "cpc", "social", "email", "organic", "referral" };
+        var utmCampaigns = new[] { "black-friday", "newsletter", "free-trial", "webinar", "product-launch" };
+
+        for (int i = 0; i < 50; i++)
+        {
+            var firstName = firstNames[random.Next(firstNames.Length)];
+            var lastName = lastNames[random.Next(lastNames.Length)];
+            var email = $"{firstName.ToLower()}.{lastName.ToLower()}{random.Next(1, 100)}@example.com";
+            
+            var lead = new Lead
+            {
+                TenantId = joeUser.TenantId,
+                PopupId = firstPopup?.Id,
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName,
+                Phone = $"+1{random.Next(200, 999)}{random.Next(100, 999)}{random.Next(1000, 9999)}",
+                Company = companies[random.Next(companies.Length)],
+                CapturedAt = DateTime.UtcNow.AddDays(-random.Next(0, 90)),
+                Source = sources[random.Next(sources.Length)],
+                UtmSource = utmSources[random.Next(utmSources.Length)],
+                UtmMedium = utmMediums[random.Next(utmMediums.Length)],
+                UtmCampaign = utmCampaigns[random.Next(utmCampaigns.Length)],
+                ConsentGiven = true,
+                ConsentDate = DateTime.UtcNow.AddDays(-random.Next(0, 90)),
+                Status = (LeadStatus)random.Next(0, 5),
+                Disposition = (LeadDisposition)random.Next(0, 8),
+                PotentialValue = random.Next(0, 10) > 6 ? random.Next(100, 10000) : null,
+                IpAddress = $"{random.Next(1, 255)}.{random.Next(1, 255)}.{random.Next(1, 255)}.{random.Next(1, 255)}",
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                CustomFields = "{}"
+            };
+
+            leads.Add(lead);
+        }
+
+        context.Leads.AddRange(leads);
         await context.SaveChangesAsync();
     }
 }

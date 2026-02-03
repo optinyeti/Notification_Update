@@ -31,6 +31,12 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<MediaLibraryImage> MediaLibraryImages { get; set; }
     public DbSet<Playbook> Playbooks { get; set; }
     
+    // Website & Landing Page Management
+    public DbSet<AllowedWebsite> AllowedWebsites { get; set; }
+    public DbSet<LandingPage> LandingPages { get; set; }
+    public DbSet<WebsitePage> WebsitePages { get; set; }
+    public DbSet<OnboardingProgress> OnboardingProgress { get; set; }
+    
     // CRM DbSets
     public DbSet<LeadActivity> LeadActivities { get; set; }
     public DbSet<Pipeline> Pipelines { get; set; }
@@ -47,6 +53,10 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<FormField> FormFields { get; set; }
     public DbSet<FormSubmission> FormSubmissions { get; set; }
     public DbSet<FormAnalytics> FormAnalytics { get; set; }
+    
+    // Phone Tracking DbSets
+    public DbSet<PhoneNumber> PhoneNumbers { get; set; }
+    public DbSet<PhoneCall> PhoneCalls { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -250,69 +260,126 @@ public class ApplicationDbContext : IdentityDbContext<User>
 
         // Seed default subscription plans
         builder.Entity<SubscriptionPlan>().HasData(
+            // FREE PLAN
             new SubscriptionPlan
             {
                 Id = 1,
-                Name = "Basic Plan",
-                Description = "Best for individuals just getting started",
-                MonthlyPrice = 7,
-                YearlyPrice = 70,
-                MaxPopups = 10,
-                MaxPopupViews = 10000,
+                Name = "Free",
+                Description = "Perfect for testing and small projects",
+                MonthlyPrice = 0,
+                YearlyPrice = 0,
+                MaxPopups = 1,
+                MaxPopupViews = 1000,
+                MaxForms = 1,
+                MaxLandingPages = 0,
+                MaxWebsites = 1,
                 MaxUsers = 1,
                 HasAdvancedTargeting = false,
-                HasAnalytics = false,
+                HasAnalytics = true,
                 HasAPIAccess = false,
                 HasPrioritySupport = false,
-                HasWhiteLabel = false
+                HasWhiteLabel = false,
+                HasLandingPageBuilder = false,
+                CanRemoveBranding = false,
+                HasRoleBasedAccess = false,
+                MaxAIRequests = 0,
+                MaxContacts = 100,
+                MaxPipelines = 1,
+                MaxFormSubmissions = 50,
+                CreatedAt = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc)
             },
+            // STARTER PLAN - $29/mo
             new SubscriptionPlan
             {
                 Id = 2,
-                Name = "Plus Plan",
-                Description = "Best for growing businesses and creators",
-                MonthlyPrice = 17,
-                YearlyPrice = 170,
-                MaxPopups = 25,
-                MaxPopupViews = 50000,
-                MaxUsers = 3,
+                Name = "Starter",
+                Description = "Everything you need to start growing",
+                MonthlyPrice = 29,
+                YearlyPrice = 288, // $24/mo billed annually
+                MaxPopups = 3,
+                MaxPopupViews = 10000,
+                MaxForms = 5,
+                MaxLandingPages = 3,
+                MaxWebsites = 1,
+                MaxUsers = 2,
                 HasAdvancedTargeting = true,
                 HasAnalytics = true,
                 HasAPIAccess = false,
                 HasPrioritySupport = false,
-                HasWhiteLabel = false
+                HasWhiteLabel = false,
+                HasLandingPageBuilder = true,
+                CanRemoveBranding = false,
+                HasRoleBasedAccess = false,
+                MaxAIRequests = 0,
+                MaxContacts = 1000,
+                MaxPipelines = 2,
+                MaxFormSubmissions = 500,
+                CreatedAt = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc),
+                StripeProductId = "prod_starter_2026",
+                StripePriceIdMonthly = "price_starter_monthly_29",
+                StripePriceIdYearly = "price_starter_yearly_288"
             },
+            // PROFESSIONAL PLAN - $79/mo (MOST POPULAR)
             new SubscriptionPlan
             {
                 Id = 3,
-                Name = "Pro Plan",
-                Description = "Best for professionals and power users",
-                MonthlyPrice = 25,
-                YearlyPrice = 250,
-                MaxPopups = -1,
-                MaxPopupViews = -1,
-                MaxUsers = 5,
+                Name = "Professional",
+                Description = "AI-powered growth for serious businesses",
+                MonthlyPrice = 79,
+                YearlyPrice = 804, // $67/mo billed annually
+                MaxPopups = 15,
+                MaxPopupViews = 100000,
+                MaxForms = 25,
+                MaxLandingPages = 25,
+                MaxWebsites = 5,
+                MaxUsers = 10,
                 HasAdvancedTargeting = true,
                 HasAnalytics = true,
                 HasAPIAccess = true,
-                HasPrioritySupport = true,
-                HasWhiteLabel = false
+                HasPrioritySupport = false,
+                HasWhiteLabel = true,
+                HasLandingPageBuilder = true,
+                CanRemoveBranding = true,
+                HasRoleBasedAccess = true,
+                MaxAIRequests = 500,
+                MaxContacts = 25000,
+                MaxPipelines = 10,
+                MaxFormSubmissions = 5000,
+                CreatedAt = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc),
+                StripeProductId = "prod_professional_2026",
+                StripePriceIdMonthly = "price_professional_monthly_79",
+                StripePriceIdYearly = "price_professional_yearly_804"
             },
+            // ENTERPRISE PLAN - $199/mo
             new SubscriptionPlan
             {
                 Id = 4,
-                Name = "Growth Plan",
-                Description = "Best for teams and scaling businesses",
-                MonthlyPrice = 37,
-                YearlyPrice = 370,
+                Name = "Enterprise",
+                Description = "Unlimited power for large organizations",
+                MonthlyPrice = 199,
+                YearlyPrice = 2028, // $169/mo billed annually
                 MaxPopups = -1, // Unlimited
                 MaxPopupViews = -1, // Unlimited
+                MaxForms = -1,
+                MaxLandingPages = -1,
+                MaxWebsites = -1,
                 MaxUsers = -1, // Unlimited
                 HasAdvancedTargeting = true,
                 HasAnalytics = true,
                 HasAPIAccess = true,
                 HasPrioritySupport = true,
-                HasWhiteLabel = true
+                HasWhiteLabel = true,
+                HasLandingPageBuilder = true,
+                CanRemoveBranding = true,
+                HasRoleBasedAccess = true,
+                MaxAIRequests = -1, // Unlimited AI
+                MaxContacts = -1,
+                MaxPipelines = -1,
+                MaxFormSubmissions = -1,
+                CreatedAt = new DateTime(2026, 2, 3, 0, 0, 0, DateTimeKind.Utc),
+                StripeProductId = "prod_enterprise_2026",
+                StripePriceIdMonthly = "price_enterprise_monthly_199",
+                StripePriceIdYearly = "price_enterprise_yearly_2028"
             }
         );
     }

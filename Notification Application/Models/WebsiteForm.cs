@@ -12,7 +12,15 @@ public class WebsiteForm
     // Form Settings
     public FormType FormType { get; set; } = FormType.ContactForm;
     public FormStyle Style { get; set; } = FormStyle.Standard;
+    public FormStepType StepType { get; set; } = FormStepType.SingleStep;
+    public FormEffect Effect { get; set; } = FormEffect.None;
     public string Theme { get; set; } = "light"; // light, dark, custom
+    
+    // Multi-Step Configuration
+    public bool ShowProgressBar { get; set; } = true;
+    public bool ShowStepNumbers { get; set; } = true;
+    public bool AllowBackNavigation { get; set; } = true;
+    public string? StepConfiguration { get; set; } // JSON: Array of step definitions
     
     // Appearance
     public string? BackgroundColor { get; set; } = "#ffffff";
@@ -182,26 +190,46 @@ public class FormAnalytics
 // Enums
 public enum FormType
 {
-    ContactForm,
-    LeadCapture,
-    Newsletter,
-    Registration,
-    Survey,
-    Feedback,
-    Support,
-    Quote,
-    Booking,
-    Custom
+    ContactForm,        // Simple contact us form
+    LeadCapture,        // Lead generation form
+    Newsletter,         // Email signup
+    Registration,       // User registration
+    Survey,            // Survey/questionnaire
+    Feedback,          // Feedback collection
+    Support,           // Support ticket
+    Quote,             // Quote request
+    Booking,           // Appointment booking
+    Application,       // Job/program application
+    Custom             // Custom form
 }
 
 public enum FormStyle
 {
-    Standard,
-    Inline,
-    Floating,
-    Slide,
-    Modal,
-    FullPage
+    Standard,          // Regular form on page
+    Inline,            // Inline with content
+    Floating,          // Floating button that opens form
+    Slide,             // Slides in from side
+    Modal,             // Popup modal
+    FullPage           // Dedicated full page
+}
+
+public enum FormStepType
+{
+    SingleStep,        // Traditional single-page form
+    MultiStep,         // Multi-step wizard form
+    Progressive        // Progressive disclosure (shows fields as you fill)
+}
+
+public enum FormEffect
+{
+    None,              // No animation
+    FadeIn,            // Fade in animation
+    SlideUp,           // Slide up from bottom
+    SlideDown,         // Slide down from top
+    SlideLeft,         // Slide in from left
+    SlideRight,        // Slide in from right
+    ZoomIn,            // Zoom in effect
+    Shake              // Shake attention grabber
 }
 
 public enum FormStatus

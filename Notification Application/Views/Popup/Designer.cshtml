@@ -57,11 +57,15 @@
         .popup-canvas.position-side { align-items: stretch; justify-content: flex-end; }
         .canvas-dropzone { pointer-events: all; padding: 0; min-height: auto; border: 2px dashed #cbd5e1; background: white; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; z-index: 20; box-sizing: border-box; }
         .canvas-dropzone:hover { border-color: #3b82f6; }
-        /* Type-specific styling - FIXED SACRED DIMENSIONS */
+        /* Type-specific styling - FIXED SACRED DIMENSIONS (See Constants/PopupDimensions.cs) */
+        /* PROMOTION BAR (Top/Bottom): 100% × 192px (2 inches at 96 DPI) */
         .popup-canvas.position-top .canvas-dropzone,
-        .popup-canvas.position-bottom .canvas-dropzone { width: 100%; height: 120px; min-height: 120px; max-height: 120px; border-radius: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0; }
+        .popup-canvas.position-bottom .canvas-dropzone { width: 100%; height: 192px; min-height: 192px; max-height: 192px; border-radius: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0; }
+        /* CENTER MODAL/LIGHTBOX: 800px × 600px */
         .popup-canvas.position-center .canvas-dropzone { width: 800px; height: 600px; min-width: 800px; max-width: 800px; min-height: 600px; max-height: 600px; border-radius: 12px; padding: 0; }
+        /* FULLSCREEN: 100% × 100% */
         .popup-canvas.position-fullscreen .canvas-dropzone { width: 100%; height: 100%; min-width: 100%; max-width: 100%; min-height: 100%; max-height: 100%; border-radius: 0; padding: 0; }
+        /* SIDE PANEL/SLIDE-IN: 400px × 100% */
         .popup-canvas.position-side .canvas-dropzone { width: 400px; height: 100%; min-width: 400px; max-width: 400px; min-height: 100%; max-height: 100%; border-radius: 0; padding: 0; }
         .canvas-dropzone.drag-over { border-color: #2563eb; background: #eff6ff; }
         .canvas-dropzone .canvas-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; z-index: 1; }
@@ -178,7 +182,7 @@
 <body>
     <div class="top-navbar">
         <div class="navbar-left">
-            <a href="/Popup/Index" class="brand-logo">PopupManager</a>
+            <a href="/Popup/Index" class="brand-logo">OptinYeti</a>
             <div class="campaign-name">@Model.Name</div>
         </div>
         <div class="navbar-center">

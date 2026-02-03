@@ -118,12 +118,12 @@ public class PopupService : IPopupService
         if (popup == null || popup.Status != PopupStatus.Published)
             return "console.log('Popup not found or not published');";
 
-        // Resolve host: tenant override → ProductionUrl → BaseUrl → localhost
+        // Resolve host: tenant override → ProductionUrl → BaseUrl → optinyeti.com
         var tenant = await _context.Tenants.FindAsync(popup.TenantId);
         var host = tenant?.PublicHostUrl
             ?? _configuration["AppSettings:ProductionUrl"]
             ?? _configuration["AppSettings:BaseUrl"]
-            ?? "http://localhost:5117";
+            ?? "https://optinyeti.com";
 
         // Generate JavaScript embed code
         var script = $@"

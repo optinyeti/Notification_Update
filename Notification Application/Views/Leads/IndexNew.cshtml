@@ -1,0 +1,666 @@
+@model IEnumerable<Notification_Application.Models.Lead>
+@{
+    ViewData["Title"] = "Contacts";
+    var stats = ViewBag.Stats as dynamic ?? new { Total = 0, New = 0, Contacted = 0, Qualified = 0, Converted = 0 };
+}
+
+@section Styles {
+<style>
+    /* HubSpot-inspired Clean Design */
+    body {
+        background: #f5f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    .contacts-container {
+        padding: 20px 32px;
+        max-width: 100%;
+    }
+    
+    .contacts-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+    
+    .contacts-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .contacts-title h1 {
+        font-size: 28px;
+        font-weight: 600;
+        color: #33475b;
+        margin: 0;
+    }
+    
+    .contacts-count {
+        background: #eaf0f6;
+        color: #33475b;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-hubspot {
+        padding: 10px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid #cbd6e2;
+        background: white;
+        color: #33475b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-hubspot:hover {
+        background: #f5f8fa;
+        border-color: #99acc2;
+    }
+    
+    .btn-primary-hubspot {
+        background: #ff7a59;
+        border-color: #ff7a59;
+        color: white;
+    }
+    
+    .btn-primary-hubspot:hover {
+        background: #ff6444;
+        border-color: #ff6444;
+    }
+    
+    .filters-bar {
+        background: white;
+        border: 1px solid #cbd6e2;
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .filters-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-dropdown {
+        position: relative;
+    }
+    
+    .filter-btn {
+        padding: 8px 12px;
+        background: white;
+        border: 1px solid #cbd6e2;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #33475b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+    
+    .filter-btn:hover {
+        background: #f5f8fa;
+        border-color: #99acc2;
+    }
+    
+    .filter-btn.active {
+        background: #eaf0f6;
+        border-color: #5e6c84;
+    }
+    
+    .search-box {
+        flex: 1;
+        max-width: 300px;
+        position: relative;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #cbd6e2;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #5e6c84;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7c98b6;
+    }
+    
+    .table-controls {
+        background: white;
+        border: 1px solid #cbd6e2;
+        border-top: none;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .table-actions-left {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .table-actions-right {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .contacts-table-container {
+        background: white;
+        border: 1px solid #cbd6e2;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .contacts-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .contacts-table thead {
+        background: #f5f8fa;
+        border-bottom: 2px solid #cbd6e2;
+    }
+    
+    .contacts-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5e6c84;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .contacts-table th:first-child {
+        width: 40px;
+    }
+    
+    .contacts-table tbody tr {
+        border-bottom: 1px solid #eaf0f6;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    
+    .contacts-table tbody tr:hover {
+        background: #f5f8fa;
+    }
+    
+    .contacts-table td {
+        padding: 16px;
+        font-size: 14px;
+        color: #33475b;
+        vertical-align: middle;
+    }
+    
+    .contact-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .contact-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    
+    .contact-info-name {
+        font-weight: 500;
+        color: #0091ae;
+        margin-bottom: 2px;
+    }
+    
+    .contact-info-email {
+        font-size: 13px;
+        color: #7c98b6;
+    }
+    
+    .status-badge-hubspot {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-new { background: #d3e5ef; color: #0b5cab; }
+    .status-contacted { background: #f4e5fb; color: #6929c4; }
+    .status-qualified { background: #fdecd2; color: #8e6105; }
+    .status-converted { background: #d1f0dd; color: #0e6027; }
+    .status-unqualified { background: #e6e6e6; color: #4d4d4d; }
+    
+    .pagination-bar {
+        background: white;
+        border: 1px solid #cbd6e2;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .pagination-info {
+        font-size: 14px;
+        color: #5e6c84;
+    }
+    
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .page-btn {
+        padding: 6px 12px;
+        border: 1px solid #cbd6e2;
+        border-radius: 3px;
+        background: white;
+        color: #33475b;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    
+    .page-btn:hover:not(:disabled) {
+        background: #f5f8fa;
+    }
+    
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .page-btn.active {
+        background: #eaf0f6;
+        border-color: #5e6c84;
+    }
+    
+    .checkbox-hubspot {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #cbd6e2;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    
+    .icon-btn {
+        padding: 8px 12px;
+        background: white;
+        border: 1px solid #cbd6e2;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #5e6c84;
+        transition: all 0.2s;
+    }
+    
+    .icon-btn:hover {
+        background: #f5f8fa;
+        border-color: #99acc2;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 64px;
+        color: #cbd6e2;
+        margin-bottom: 16px;
+    }
+    
+    .empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #33475b;
+        margin-bottom: 8px;
+    }
+    
+    .empty-description {
+        font-size: 14px;
+        color: #7c98b6;
+        margin-bottom: 24px;
+    }
+</style>
+}
+
+<div class="contacts-container">
+    <!-- Header -->
+    <div class="contacts-header">
+        <div class="contacts-title">
+            <h1>Contacts</h1>
+            <span class="contacts-count">@(ViewBag.TotalLeads ?? Model.Count())</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-hubspot" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="fas fa-download me-1"></i>Export
+            </button>
+            <a asp-controller="Popup" asp-action="CreateCampaign" class="btn-hubspot btn-primary-hubspot">
+                <i class="fas fa-plus me-1"></i>Add contacts
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <form method="get" id="filterForm">
+            <div class="filters-top">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
+                           placeholder="Search name, email, company..." class="search-input">
+                </div>
+                
+                <select name="status" class="filter-btn">
+                    <option value="">Lead status</option>
+                    <option value="New" selected="@(ViewBag.CurrentStatus == "New")">New</option>
+                    <option value="Contacted" selected="@(ViewBag.CurrentStatus == "Contacted")">Contacted</option>
+                    <option value="Qualified" selected="@(ViewBag.CurrentStatus == "Qualified")">Qualified</option>
+                    <option value="Converted" selected="@(ViewBag.CurrentStatus == "Converted")">Converted</option>
+                    <option value="Unqualified" selected="@(ViewBag.CurrentStatus == "Unqualified")">Unqualified</option>
+                </select>
+                
+                <select name="popupId" class="filter-btn">
+                    <option value="">All campaigns</option>
+                    @if (ViewBag.Popups != null)
+                    {
+                        foreach (var popup in ViewBag.Popups)
+                        {
+                            <option value="@popup.Id" selected="@(ViewBag.CurrentPopupId?.ToString() == popup.Id.ToString())">@popup.Name</option>
+                        }
+                    }
+                </select>
+                
+                <button type="button" class="filter-btn" onclick="toggleAdvancedFilters()">
+                    <i class="fas fa-sliders-h me-1"></i>More filters
+                </button>
+                
+                <button type="submit" class="btn-hubspot btn-primary-hubspot">Apply</button>
+                @if (!string.IsNullOrEmpty(ViewBag.SearchTerm) || !string.IsNullOrEmpty(ViewBag.CurrentStatus))
+                {
+                    <a href="@Url.Action("Index")" class="btn-hubspot">Clear filters</a>
+                }
+            </div>
+            
+            <!-- Advanced Filters (Collapsible) -->
+            <div id="advancedFilters" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid #eaf0f6;">
+                <div class="filters-top">
+                    <select name="disposition" class="filter-btn">
+                        <option value="">Disposition</option>
+                        <option value="Hot" selected="@(ViewBag.CurrentDisposition == "Hot")">Hot</option>
+                        <option value="Warm" selected="@(ViewBag.CurrentDisposition == "Warm")">Warm</option>
+                        <option value="Cold" selected="@(ViewBag.CurrentDisposition == "Cold")">Cold</option>
+                    </select>
+                    
+                    <select name="utmSource" class="filter-btn">
+                        <option value="">UTM Source</option>
+                        @if (ViewBag.UtmSources != null)
+                        {
+                            foreach (var source in ViewBag.UtmSources)
+                            {
+                                <option value="@source" selected="@(ViewBag.CurrentUtmSource == source)">@source</option>
+                            }
+                        }
+                    </select>
+                    
+                    <input type="date" name="startDate" value="@ViewBag.StartDate?.ToString("yyyy-MM-dd")" 
+                           class="filter-btn" placeholder="Start date">
+                    <input type="date" name="endDate" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")" 
+                           class="filter-btn" placeholder="End date">
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Table Controls -->
+    <div class="table-controls">
+        <div class="table-actions-left">
+            <button class="icon-btn" title="Table view">
+                <i class="fas fa-table"></i>
+            </button>
+            <button class="icon-btn" title="Edit columns">
+                <i class="fas fa-columns"></i>
+            </button>
+            <button class="icon-btn" title="Filter">
+                <i class="fas fa-filter"></i>
+            </button>
+            <button class="icon-btn" title="Sort">
+                <i class="fas fa-sort"></i>
+            </button>
+        </div>
+        <div class="table-actions-right">
+            <button class="icon-btn" title="Metrics">
+                <i class="fas fa-chart-line"></i>
+            </button>
+            <button class="icon-btn" data-bs-toggle="modal" data-bs-target="#exportModal" title="Export">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="icon-btn" title="Save view">
+                <i class="fas fa-save"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Contacts Table -->
+    <div class="contacts-table-container">
+        @if (Model.Any())
+        {
+            <table class="contacts-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" class="checkbox-hubspot" id="selectAll"></th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone number</th>
+                        <th>Contact owner</th>
+                        <th>Primary company</th>
+                        <th>Lead status</th>
+                        <th>Create date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lead in Model)
+                    {
+                        var initials = "";
+                        if (!string.IsNullOrEmpty(lead.FirstName))
+                            initials = lead.FirstName[0].ToString().ToUpper();
+                        else if (!string.IsNullOrEmpty(lead.Email))
+                            initials = lead.Email[0].ToString().ToUpper();
+                        else
+                            initials = "?";
+                        
+                        <tr data-lead-id="@lead.Id">
+                            <td><input type="checkbox" class="checkbox-hubspot lead-checkbox" value="@lead.Id"></td>
+                            <td>
+                                <div class="contact-cell">
+                                    <div class="contact-avatar">@initials</div>
+                                    <div>
+                                        <div class="contact-info-name">
+                                            @if (!string.IsNullOrEmpty(lead.FirstName) || !string.IsNullOrEmpty(lead.LastName))
+                                            {
+                                                @lead.FirstName @lead.LastName
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No name</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="contact-info-email">@lead.Email</span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(lead.Phone))
+                                {
+                                    <span>@lead.Phone</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">--</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="text-muted">No owner</span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(lead.Company))
+                                {
+                                    <span>@lead.Company</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">--</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="status-badge-hubspot status-@lead.Status.ToString().ToLower()">
+                                    @lead.Status.ToString()
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-muted">@lead.CapturedAt.ToString("MMM d, yyyy")</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="empty-title">No contacts yet</div>
+                <div class="empty-description">Start capturing leads by creating and publishing your campaigns.</div>
+                <a asp-controller="Popup" asp-action="CreateCampaign" class="btn-hubspot btn-primary-hubspot">
+                    <i class="fas fa-plus me-1"></i>Create Your First Campaign
+                </a>
+            </div>
+        }
+    </div>
+    
+    <!-- Pagination -->
+    @if (Model.Any())
+    {
+        <div class="pagination-bar">
+            <div class="pagination-info">
+                Showing @(((ViewBag.CurrentPage - 1) * 50) + 1) - @(Math.Min(ViewBag.CurrentPage * 50, ViewBag.TotalLeads ?? Model.Count())) 
+                of @(ViewBag.TotalLeads ?? Model.Count())
+            </div>
+            <div class="pagination-controls">
+                <button class="page-btn" @(ViewBag.CurrentPage == 1 ? "disabled" : "") 
+                        onclick="window.location.href='@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })'">
+                    <i class="fas fa-chevron-left"></i> Prev
+                </button>
+                
+                @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages ?? 1, ViewBag.CurrentPage + 2); i++)
+                {
+                    <button class="page-btn @(i == ViewBag.CurrentPage ? "active" : "")" 
+                            onclick="window.location.href='@Url.Action("Index", new { page = i })'">
+                        @i
+                    </button>
+                }
+                
+                <button class="page-btn" @(ViewBag.CurrentPage >= (ViewBag.TotalPages ?? 1) ? "disabled" : "")
+                        onclick="window.location.href='@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })'">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 8px;">
+            <div class="modal-header" style="border-bottom: 1px solid #eaf0f6;">
+                <h5 class="modal-title" style="color: #33475b; font-weight: 600;">
+                    <i class="fas fa-download me-2"></i>Export Contacts
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p style="color: #7c98b6; margin-bottom: 20px;">Choose your export format:</p>
+                
+                <div class="d-grid gap-3">
+                    <a asp-action="ExportCsv" class="btn-hubspot d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-file-csv me-2"></i>Export as CSV</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a asp-action="ExportExcel" class="btn-hubspot d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-file-excel me-2"></i>Export as Excel</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function toggleAdvancedFilters() {
+        const advFilters = document.getElementById('advancedFilters');
+        advFilters.style.display = advFilters.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    // Make rows clickable
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select all checkbox
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            document.querySelectorAll('.lead-checkbox').forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+        
+        // Make table rows clickable
+        document.querySelectorAll('.contacts-table tbody tr').forEach(row => {
+            row.addEventListener('click', function(e) {
+                if (!e.target.closest('input[type="checkbox"]')) {
+                    const leadId = this.dataset.leadId;
+                    if (leadId) {
+                        window.location.href = '/Leads/Details/' + leadId;
+                    }
+                }
+            });
+        });
+    });
+</script>
+}

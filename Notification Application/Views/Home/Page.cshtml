@@ -1,0 +1,75 @@
+@model Notification_Application.Models.WebsitePage
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["MetaDescription"] = Model.MetaDescription;
+    ViewData["MetaKeywords"] = Model.MetaKeywords;
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <article class="page-content">
+                <header class="mb-5 text-center">
+                    <h1 class="display-4 fw-bold mb-3">@Model.Title</h1>
+                    @if (!string.IsNullOrEmpty(Model.MetaDescription))
+                    {
+                        <p class="lead text-muted">@Model.MetaDescription</p>
+                    }
+                </header>
+
+                <div class="content">
+                    @Html.Raw(Model.Content)
+                </div>
+
+                @if (Model.UpdatedAt.HasValue)
+                {
+                    <footer class="mt-5 pt-4 border-top text-muted small">
+                        <p class="mb-0">Last updated: @Model.UpdatedAt.Value.ToString("MMMM dd, yyyy")</p>
+                    </footer>
+                }
+            </article>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+
+    .page-content h2 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .page-content h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .page-content p {
+        margin-bottom: 1.25rem;
+    }
+
+    .page-content ul, .page-content ol {
+        margin-bottom: 1.25rem;
+    }
+
+    .page-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .page-content blockquote {
+        border-left: 4px solid #007bff;
+        padding-left: 1.5rem;
+        margin: 1.5rem 0;
+        font-style: italic;
+        color: #6c757d;
+    }
+</style>

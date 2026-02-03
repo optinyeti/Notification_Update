@@ -57,7 +57,8 @@ public enum PopupType
     Inline,
     SpinWheel,
     VideoPopup,
-    Coupon
+    Coupon,
+    PromotionBar
 }
 
 public enum PopupStatus

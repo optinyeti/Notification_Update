@@ -33,39 +33,22 @@ namespace Notification_Application.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (!User.Identity?.IsAuthenticated ?? false)
+            // Redirect authenticated users to the main UserDashboard
+            if (User.Identity?.IsAuthenticated ?? false)
             {
-                // Get latest blog posts for landing page
-                var blogPosts = await _context.BlogPosts
-                    .Where(p => p.Status == BlogPostStatus.Published)
-                    .OrderByDescending(p => p.PublishedAt)
-                    .Take(3)
-                    .Include(p => p.Categories)
-                    .ToListAsync();
-                
-                ViewBag.BlogPosts = blogPosts;
-                return View();
+                return RedirectToAction("Index", "UserDashboard");
             }
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            // Get dashboard data
-            var popups = await _popupService.GetPopupsAsync(user.TenantId);
-            var analytics = await _analyticsService.GetAnalyticsSummaryAsync(user.TenantId);
-
-            var model = new DashboardViewModel
-            {
-                TotalPopups = popups.Count(),
-                ActivePopups = popups.Count(p => p.Status == PopupStatus.Published),
-                AnalyticsSummary = analytics,
-                RecentPopups = popups.Take(5).ToList()
-            };
-
-            return View("Dashboard", model);
+            // For anonymous users, show the landing page with blog posts
+            var blogPosts = await _context.BlogPosts
+                .Where(p => p.Status == BlogPostStatus.Published)
+                .OrderByDescending(p => p.PublishedAt)
+                .Take(3)
+                .Include(p => p.Categories)
+                .ToListAsync();
+            
+            ViewBag.BlogPosts = blogPosts;
+            return View();
         }
 
         public IActionResult Privacy()
@@ -103,6 +86,21 @@ namespace Notification_Application.Controllers
         public IActionResult Features()
         {
             return View();
+        }
+
+        // Dynamic page route - replaces #anchor links with real pages
+        [Route("page/{slug}")]
+        public async Task<IActionResult> Page(string slug)
+        {
+            var page = await _context.WebsitePages
+                .FirstOrDefaultAsync(p => p.Slug == slug && p.IsPublished);
+
+            if (page == null)
+            {
+                return NotFound();
+            }
+
+            return View(page);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

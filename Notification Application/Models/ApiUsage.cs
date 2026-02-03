@@ -15,6 +15,12 @@ public class ApiUsage
     public string? IpAddress { get; set; }
     public string? UserAgent { get; set; }
     public string? ApiKey { get; set; }
+    
+    // AI-specific fields
+    public string? ApiType { get; set; } // e.g., "OpenAI", "Claude", etc.
+    public int? TokensUsed { get; set; }
+    public decimal? Cost { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 // Integration model moved to Integration.cs

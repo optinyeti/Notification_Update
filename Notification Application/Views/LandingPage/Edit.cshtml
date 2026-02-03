@@ -1,0 +1,346 @@
+@model Notification_Application.Models.LandingPage
+@{
+    ViewData["Title"] = "Edit Landing Page";
+}
+
+<div class="flex flex-col h-screen">
+    <!-- Top Bar -->
+    <div class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <a href="@Url.Action("Index")" class="text-gray-600 hover:text-gray-900">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-lg font-semibold text-gray-900">@Model.Name</h1>
+                <p class="text-sm text-gray-500">/@Model.Slug</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button id="saveBtn" class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                    </svg>
+                    Save Draft
+                </span>
+            </button>
+
+            @if (Model.IsPublished)
+            {
+                <a href="@Url.Action("View", new { slug = Model.Slug })" target="_blank" class="px-4 py-2 text-sm border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors">
+                    View Live
+                </a>
+                <button id="unpublishBtn" class="px-4 py-2 text-sm bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors">
+                    Unpublish
+                </button>
+            }
+            else
+            {
+                <button id="publishBtn" class="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                    Publish
+                </button>
+            }
+
+            <button id="settingsBtn" class="px-4 py-2 text-sm border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Editor Area -->
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Code Editor Panel -->
+        <div class="w-1/2 border-r border-gray-200 flex flex-col">
+            <div class="bg-gray-50 border-b border-gray-200 px-4 py-2">
+                <div class="flex space-x-4">
+                    <button class="tab-btn active px-3 py-1 text-sm font-medium text-blue-600 border-b-2 border-blue-600" data-tab="html">
+                        HTML
+                    </button>
+                    <button class="tab-btn px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-900" data-tab="css">
+                        CSS
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-auto">
+                <textarea id="htmlEditor" class="w-full h-full p-4 font-mono text-sm border-0 focus:ring-0 resize-none">@Model.HtmlContent</textarea>
+                <textarea id="cssEditor" class="w-full h-full p-4 font-mono text-sm border-0 focus:ring-0 resize-none hidden">@Model.CssContent</textarea>
+            </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="w-1/2 bg-gray-100 flex flex-col">
+            <div class="bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-700">Preview</span>
+                <div class="flex items-center space-x-2">
+                    <button id="desktopView" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </button>
+                    <button id="mobileView" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </button>
+                    <button id="refreshPreview" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-auto p-4 flex justify-center items-start">
+                <div id="previewContainer" class="w-full bg-white shadow-lg transition-all duration-300">
+                    <iframe id="previewFrame" class="w-full h-full border-0" style="min-height: 800px;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900">Page Settings</h2>
+                <button id="closeSettings" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="p-6 space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Page Title</label>
+                <input type="text" id="pageTitle" value="@Model.Name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">URL Slug</label>
+                <input type="text" id="pageSlug" value="@Model.Slug" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Meta Description</label>
+                <textarea id="metaDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">@Model.MetaDescription</textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Custom Domain</label>
+                <input type="text" id="customDomain" value="@Model.CustomDomain" placeholder="landing.yourdomain.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <p class="mt-1 text-sm text-gray-500">Point your domain's A record to our server IP.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Open Graph Image URL</label>
+                <input type="text" id="ogImage" value="@Model.OgImageUrl" placeholder="https://..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <p class="mt-1 text-sm text-gray-500">Image shown when sharing on social media (1200x630px recommended).</p>
+            </div>
+        </div>
+        <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+            <button id="cancelSettings" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                Cancel
+            </button>
+            <button id="saveSettings" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const pageId = '@Model.Id';
+        let autoSaveTimeout;
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active', 'text-blue-600', 'border-b-2', 'border-blue-600');
+                    b.classList.add('text-gray-600');
+                });
+                this.classList.add('active', 'text-blue-600', 'border-b-2', 'border-blue-600');
+                this.classList.remove('text-gray-600');
+                
+                if (tab === 'html') {
+                    document.getElementById('htmlEditor').classList.remove('hidden');
+                    document.getElementById('cssEditor').classList.add('hidden');
+                } else {
+                    document.getElementById('htmlEditor').classList.add('hidden');
+                    document.getElementById('cssEditor').classList.remove('hidden');
+                }
+            });
+        });
+
+        // Preview updates
+        function updatePreview() {
+            const html = document.getElementById('htmlEditor').value;
+            const css = document.getElementById('cssEditor').value;
+            const iframe = document.getElementById('previewFrame');
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            doc.open();
+            doc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>${css}</style>
+                </head>
+                <body>${html}</body>
+                </html>
+            `);
+            doc.close();
+        }
+
+        // Auto-update preview on edit
+        document.getElementById('htmlEditor').addEventListener('input', () => {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                updatePreview();
+                autoSave();
+            }, 1000);
+        });
+
+        document.getElementById('cssEditor').addEventListener('input', () => {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                updatePreview();
+                autoSave();
+            }, 1000);
+        });
+
+        document.getElementById('refreshPreview').addEventListener('click', updatePreview);
+
+        // Responsive preview
+        document.getElementById('mobileView').addEventListener('click', function() {
+            document.getElementById('previewContainer').style.maxWidth = '375px';
+        });
+
+        document.getElementById('desktopView').addEventListener('click', function() {
+            document.getElementById('previewContainer').style.maxWidth = '100%';
+        });
+
+        // Auto-save
+        function autoSave() {
+            const data = {
+                htmlContent: document.getElementById('htmlEditor').value,
+                cssContent: document.getElementById('cssEditor').value
+            };
+
+            fetch(`/LandingPage/Save/${pageId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify(data)
+            }).catch(err => console.error('Auto-save failed:', err));
+        }
+
+        // Manual save
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            autoSave();
+            Swal.fire({
+                title: 'Saved!',
+                text: 'Your changes have been saved.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        });
+
+        // Publish/Unpublish
+        document.getElementById('publishBtn')?.addEventListener('click', function() {
+            fetch(`/LandingPage/Publish/${pageId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Published!',
+                        text: 'Your landing page is now live.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                }
+            });
+        });
+
+        document.getElementById('unpublishBtn')?.addEventListener('click', function() {
+            fetch(`/LandingPage/Publish/${pageId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Unpublished!',
+                        text: 'Your landing page is now a draft.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                }
+            });
+        });
+
+        // Settings modal
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeSettings').addEventListener('click', () => {
+            document.getElementById('settingsModal').classList.add('hidden');
+        });
+
+        document.getElementById('cancelSettings').addEventListener('click', () => {
+            document.getElementById('settingsModal').classList.add('hidden');
+        });
+
+        document.getElementById('saveSettings').addEventListener('click', () => {
+            const settings = {
+                title: document.getElementById('pageTitle').value,
+                slug: document.getElementById('pageSlug').value,
+                metaDescription: document.getElementById('metaDescription').value,
+                customDomain: document.getElementById('customDomain').value,
+                ogImageUrl: document.getElementById('ogImage').value,
+                htmlContent: document.getElementById('htmlEditor').value,
+                cssContent: document.getElementById('cssEditor').value
+            };
+
+            fetch(`/LandingPage/Save/${pageId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('settingsModal').classList.add('hidden');
+                    Swal.fire({
+                        title: 'Settings Saved!',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                }
+            });
+        });
+
+        // Initial preview
+        updatePreview();
+    </script>
+}

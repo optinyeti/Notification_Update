@@ -8,10 +8,31 @@
         <div>
             <h1 class="h3 mb-1">Website Forms</h1>
             <p class="text-muted mb-0">Create embeddable forms to capture leads from your website</p>
+            @if (ViewBag.MaxForms != null)
+            {
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Using @ViewBag.TotalForms of @(ViewBag.MaxForms == 9999 ? "unlimited" : ViewBag.MaxForms.ToString()) forms on @ViewBag.PlanName plan
+                </small>
+            }
         </div>
-        <a href="@Url.Action("Create", "Form")" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Create Form
-        </a>
+        @if (ViewBag.IsAtLimit == true)
+        {
+            <div class="text-end">
+                <button class="btn btn-secondary" disabled>
+                    <i class="bi bi-lock me-2"></i>Form Limit Reached
+                </button>
+                <p class="text-muted small mb-0 mt-2">
+                    <a href="/UserDashboard/Subscription" class="text-primary">Upgrade your plan</a> to create more forms
+                </p>
+            </div>
+        }
+        else
+        {
+            <a href="@Url.Action("Create", "Form")" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Create Form
+            </a>
+        }
     </div>
 
     @if (TempData["Success"] != null)

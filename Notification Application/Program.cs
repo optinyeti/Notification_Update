@@ -47,6 +47,10 @@ builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IUnsplashService, UnsplashService>();
 builder.Services.AddScoped<IPipelineService, PipelineService>();
+builder.Services.AddScoped<OpenAIService>();
+
+// Add HttpClient for OpenAI service
+builder.Services.AddHttpClient();
 
 // Add MVC
 builder.Services.AddControllersWithViews();

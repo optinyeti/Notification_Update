@@ -20,7 +20,9 @@ public class User : IdentityUser
 
 public enum UserRole
 {
-    SuperAdmin,
-    Admin,
-    User
+    UltraAdmin,  // joe.whyte@gmail.com - Ultimate access above everything
+    MasterAdmin, // Platform-wide admin
+    SuperAdmin,  // Tenant super admin
+    Admin,       // Tenant admin
+    User         // Regular user
 }

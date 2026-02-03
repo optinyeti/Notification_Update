@@ -180,6 +180,43 @@ public class UserDashboardController : Controller
         // Pass plan ID to view for navigation
         ViewBag.PlanId = tenant?.SubscriptionPlanId ?? 1;
 
+        // Get or create onboarding progress
+        var onboardingProgress = await _context.OnboardingProgress
+            .FirstOrDefaultAsync(op => op.UserId == user.Id);
+
+        if (onboardingProgress == null)
+        {
+            // Create new onboarding progress for first-time users
+            onboardingProgress = new OnboardingProgress
+            {
+                UserId = user.Id,
+                TenantId = user.TenantId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.OnboardingProgress.Add(onboardingProgress);
+            await _context.SaveChangesAsync();
+        }
+
+        // Auto-update onboarding steps based on actual progress
+        onboardingProgress.HasAddedWebsite = await _context.AllowedWebsites.AnyAsync(w => w.TenantId == user.TenantId && w.IsActive);
+        onboardingProgress.HasCreatedPopup = await _context.Popups.AnyAsync(p => p.TenantId == user.TenantId);
+        onboardingProgress.HasInstalledPixel = !string.IsNullOrEmpty(tenant?.TrackingCode);
+        onboardingProgress.HasConnectedIntegration = await _context.Integrations.AnyAsync(i => i.TenantId == user.TenantId && i.IsActive && i.IsConnected);
+        onboardingProgress.HasConfiguredTargeting = await _context.Popups.AnyAsync(p => p.TenantId == user.TenantId && !string.IsNullOrEmpty(p.TargetingRules));
+        onboardingProgress.HasViewedAnalytics = (analytics as dynamic)?.TotalViews > 0 || (analytics as dynamic)?.TotalConversions > 0;
+        onboardingProgress.HasCustomizedBranding = !string.IsNullOrEmpty(tenant?.PublicHostUrl);
+
+        // Check if onboarding is complete
+        if (onboardingProgress.IsComplete && onboardingProgress.CompletedAt == null)
+        {
+            onboardingProgress.CompletedAt = DateTime.UtcNow;
+        }
+
+        onboardingProgress.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        ViewBag.OnboardingProgress = onboardingProgress;
+
         return View(model);
     }
 
@@ -537,6 +574,26 @@ public class UserDashboardController : Controller
         await _context.SaveChangesAsync();
 
         return Json(new { success = true });
+    }
+
+    // POST: UserDashboard/DismissOnboarding
+    [HttpPost]
+    public async Task<IActionResult> DismissOnboarding()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var onboardingProgress = await _context.OnboardingProgress
+            .FirstOrDefaultAsync(op => op.UserId == user.Id);
+
+        if (onboardingProgress != null)
+        {
+            onboardingProgress.HasDismissed = true;
+            onboardingProgress.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new { success = true });
     }
 }
 

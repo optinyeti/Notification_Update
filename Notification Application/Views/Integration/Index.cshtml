@@ -134,6 +134,252 @@
         </div>
     </div>
 
+    <!-- Website URL Configuration -->
+    <div class="mb-10">
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 p-6 shadow-md">
+            <div class="flex items-start gap-4">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 shadow-lg">
+                    <i class="fas fa-globe text-white text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">Your Website</h2>
+                    <p class="text-gray-600 text-sm mb-4">Configure your website URL to enable live testing and preview features</p>
+                    <form id="websiteUrlForm" class="flex gap-3">
+                        @Html.AntiForgeryToken()
+                        <div class="flex-1">
+                            <input type="url" 
+                                   id="websiteUrl" 
+                                   name="websiteUrl" 
+                                   value="@ViewBag.WebsiteUrl" 
+                                   placeholder="https://yourwebsite.com" 
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                   required />
+                        </div>
+                        <button type="submit" 
+                                class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl">
+                            <i class="fas fa-save mr-2"></i>Save URL
+                        </button>
+                    </form>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>This URL will be used for live popup previews and testing
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pixel Tracking & Testing -->
+    <div class="mb-10">
+        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200 p-6 shadow-md">
+            <div class="flex items-start gap-4">
+                <div class="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl p-3 shadow-lg">
+                    <i class="fas fa-code text-white text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">Universal Tracking Pixel</h2>
+                    <p class="text-gray-600 text-sm mb-2">Install this script once to enable popups, forms, landing pages, and CRM tracking across all your websites</p>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-magic text-blue-600 mt-1"></i>
+                            <div class="text-sm text-blue-800">
+                                <strong>One pixel does it all:</strong> This single script tracks popup views & conversions, form submissions, page visits, and lead behavior. Install once, works everywhere.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pixel Script Display -->
+                    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+                        <code class="text-green-400 text-sm font-mono" id="pixelScriptCode">&lt;script src="@ViewBag.AppUrl/js/pixel.js?key=@ViewBag.TenantKey" async&gt;&lt;/script&gt;</code>
+                    </div>
+                    
+                    <div class="flex gap-3 mb-4">
+                        <button type="button" onclick="copyPixelScript()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-copy me-2"></i>Copy Script
+                        </button>
+                        <button type="button" class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors" data-bs-toggle="collapse" data-bs-target="#gtmInstructions">
+                            <i class="fab fa-google me-2"></i>GTM Instructions
+                        </button>
+                        <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" data-bs-toggle="collapse" data-bs-target="#pixelFeatures">
+                            <i class="fas fa-list me-2"></i>What It Tracks
+                        </button>
+                    </div>
+                    
+                    <!-- What Pixel Tracks (Collapsed) -->
+                    <div class="collapse" id="pixelFeatures">
+                        <div class="bg-white rounded-lg p-4 border border-purple-200 mb-4">
+                            <h4 class="font-bold text-gray-900 mb-3"><i class="fas fa-check-circle text-green-600 me-2"></i>Automatic Tracking Features</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="text-sm">
+                                    <div class="font-semibold text-gray-900 mb-1">✅ Popups</div>
+                                    <ul class="text-gray-600 text-xs space-y-1 ml-4">
+                                        <li>• Views & impressions</li>
+                                        <li>• Button clicks</li>
+                                        <li>• Conversions & leads</li>
+                                        <li>• Close/dismiss events</li>
+                                    </ul>
+                                </div>
+                                <div class="text-sm">
+                                    <div class="font-semibold text-gray-900 mb-1">✅ Forms</div>
+                                    <ul class="text-gray-600 text-xs space-y-1 ml-4">
+                                        <li>• Form views</li>
+                                        <li>• Submissions</li>
+                                        <li>• Field interactions</li>
+                                        <li>• Abandonment tracking</li>
+                                    </ul>
+                                </div>
+                                <div class="text-sm">
+                                    <div class="font-semibold text-gray-900 mb-1">✅ Landing Pages</div>
+                                    <ul class="text-gray-600 text-xs space-y-1 ml-4">
+                                        <li>• Page visits</li>
+                                        <li>• Time on page</li>
+                                        <li>• Scroll depth</li>
+                                        <li>• Exit intent</li>
+                                    </ul>
+                                </div>
+                                <div class="text-sm">
+                                    <div class="font-semibold text-gray-900 mb-1">✅ CRM & Leads</div>
+                                    <ul class="text-gray-600 text-xs space-y-1 ml-4">
+                                        <li>• Lead identification</li>
+                                        <li>• Activity timeline</li>
+                                        <li>• Behavior scoring</li>
+                                        <li>• Session tracking</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- GTM Instructions (Collapsed) -->
+                    <div class="collapse" id="gtmInstructions">
+                        <div class="bg-white rounded-lg p-4 border border-purple-200 mb-4">
+                            <h4 class="font-bold text-gray-900 mb-2"><i class="fab fa-google me-2"></i>Google Tag Manager Setup</h4>
+                            <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                                <li>Log in to Google Tag Manager</li>
+                                <li>Create a new tag: <strong>Custom HTML</strong></li>
+                                <li>Paste the pixel script above</li>
+                                <li>Set trigger to: <strong>All Pages</strong></li>
+                                <li>Save and publish your container</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <!-- Pixel Testing -->
+                    <div class="bg-white rounded-lg p-4 border border-purple-200">
+                        <h4 class="font-bold text-gray-900 mb-3">
+                            <i class="fas fa-flask me-2"></i>Test Pixel Installation
+                        </h4>
+                        <p class="text-sm text-gray-600 mb-3">Enter a website URL to verify the tracking pixel is properly installed</p>
+                        
+                        <div class="flex gap-3 mb-3">
+                            <input type="url" 
+                                   id="testPixelUrl" 
+                                   placeholder="https://yourwebsite.com" 
+                                   class="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none" />
+                            <button type="button" onclick="testPixelInstallation()" class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                                <i class="fas fa-search me-2"></i>Test
+                            </button>
+                        </div>
+                        
+                        <div id="pixelTestLoading" class="d-none text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-purple-600 me-2" role="status"></div>
+                            <span class="text-sm text-gray-600">Testing pixel installation...</span>
+                        </div>
+                        
+                        <div id="pixelTestResults" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Allowed Websites Management -->
+    <div class="mb-10">
+        <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Allowed Websites</h2>
+                    <p class="text-sm text-gray-600 mt-1">Manage which websites can use your popups and tracking pixels</p>
+                    <p class="text-xs text-blue-600 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>Your plan allows <strong>@ViewBag.MaxWebsites</strong> website(s) - Currently using: <strong id="websiteCount">@ViewBag.CurrentWebsiteCount</strong>
+                    </p>
+                </div>
+                <button type="button" 
+                        id="addWebsiteBtn"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    Add Website
+                </button>
+            </div>
+
+            <!-- Websites List -->
+            <div id="websitesList" class="space-y-3">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Analytics Configuration -->
+    <div class="mb-10">
+        <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-start gap-4 mb-6">
+                <div class="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-3 shadow-lg">
+                    <i class="fab fa-google text-white text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold text-gray-900">Google Analytics & Tag Manager</h2>
+                    <p class="text-sm text-gray-600 mt-1">Configure account-wide tracking for all your popups, forms, and landing pages</p>
+                </div>
+            </div>
+
+            <form id="analyticsForm" class="space-y-4">
+                @Html.AntiForgeryToken()
+                <div>
+                    <label for="gtmId" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-tags mr-1"></i>Google Tag Manager ID
+                    </label>
+                    <input type="text" 
+                           id="gtmId" 
+                           name="gtmId" 
+                           value="@ViewBag.GTM" 
+                           placeholder="GTM-XXXXXXX" 
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                           pattern="GTM-[A-Z0-9]+" />
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>Format: GTM-XXXXXXX - <a href="https://tagmanager.google.com" target="_blank" class="text-blue-600 hover:underline">Get your GTM ID</a>
+                    </p>
+                </div>
+
+                <div>
+                    <label for="ga4Id" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-chart-line mr-1"></i>Google Analytics 4 ID
+                    </label>
+                    <input type="text" 
+                           id="ga4Id" 
+                           name="ga4Id" 
+                           value="@ViewBag.GA4" 
+                           placeholder="G-XXXXXXXXXX" 
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                           pattern="G-[A-Z0-9]+" />
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>Format: G-XXXXXXXXXX - <a href="https://analytics.google.com" target="_blank" class="text-blue-600 hover:underline">Get your GA4 ID</a>
+                    </p>
+                </div>
+
+                <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <i class="fas fa-lightbulb text-blue-600 text-lg mt-1"></i>
+                    <div class="text-sm text-blue-900">
+                        <strong>Automatic Tracking:</strong> Once configured, these tracking codes will be automatically injected into all your popups, forms, landing pages, and embedded content.
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-red-700 transition-all shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>Save Analytics Configuration
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Connected Integrations -->
     @if (Model.ConnectedIntegrations.Any())
     {
@@ -640,6 +886,501 @@
                 section.style.display = section.dataset.category === category ? 'block' : 'none';
             }
         });
+    }
+
+    // Website URL form submission
+    document.getElementById('websiteUrlForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const websiteUrl = document.getElementById('websiteUrl').value.trim();
+        const saveBtn = this.querySelector('button[type="submit"]');
+        const originalText = saveBtn.innerHTML;
+        
+        // Basic URL validation
+        if (!websiteUrl) {
+            alert('Please enter a website URL');
+            return;
+        }
+        
+        if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+            alert('Website URL must start with http:// or https://');
+            return;
+        }
+        
+        // Show loading state
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+        
+        try {
+            const response = await fetch('/Integration/SaveWebsiteUrl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ websiteUrl: websiteUrl })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                // Show success message
+                saveBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Saved!';
+                saveBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                saveBtn.classList.add('bg-green-600');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.classList.remove('bg-green-600');
+                    saveBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    saveBtn.disabled = false;
+                }, 2000);
+                
+                // Show toast notification
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Website URL Saved',
+                        text: 'Your website URL has been configured for live testing.',
+                        timer: 3000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                }
+            } else {
+                throw new Error('Failed to save website URL');
+            }
+        } catch (error) {
+            console.error('Error saving website URL:', error);
+            alert('Failed to save website URL. Please try again.');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    });
+
+    // Allowed Websites Management
+    const maxWebsites = @ViewBag.MaxWebsites;
+    let currentWebsiteCount = @ViewBag.CurrentWebsiteCount;
+
+    // Load allowed websites on page load
+    async function loadAllowedWebsites() {
+        try {
+            const response = await fetch('/Integration/GetAllowedWebsites');
+            const data = await response.json();
+            
+            if (data.success && data.websites) {
+                renderWebsitesList(data.websites);
+                currentWebsiteCount = data.websites.length;
+                updateWebsiteCount();
+            }
+        } catch (error) {
+            console.error('Error loading websites:', error);
+        }
+    }
+
+    function renderWebsitesList(websites) {
+        const container = document.getElementById('websitesList');
+        
+        if (websites.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-globe text-4xl mb-3 opacity-30"></i>
+                    <p>No websites added yet. Click "Add Website" to get started.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = websites.map(website => {
+            const pixelScript = `<script src="@ViewBag.AppUrl/js/pixel.js?key=${website.trackingKey || '@ViewBag.TenantKey'}" async></script>`;
+            return `
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-globe text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900">${website.domain}</div>
+                            <div class="text-sm text-gray-500">${website.url}</div>
+                            ${website.notes ? `<div class="text-xs text-gray-400 mt-1">${website.notes}</div>` : ''}
+                        </div>
+                    </div>
+                    <button onclick="removeWebsite(${website.id}, '${website.domain}')" 
+                            class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                
+                <!-- Per-Website Pixel Script -->
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-gray-600 uppercase">
+                            <i class="fas fa-code mr-1"></i>Pixel for this site
+                        </span>
+                        <button onclick="copyWebsitePixel(${website.id}, '${pixelScript.replace(/'/g, "\\'")}')" 
+                                class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
+                            <i class="fas fa-copy mr-1"></i>Copy
+                        </button>
+                    </div>
+                    <code class="text-xs bg-gray-900 text-green-400 p-2 rounded block overflow-x-auto" style="font-family: monospace;">
+                        ${pixelScript}
+                    </code>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>This unique pixel tracks only this website's activity
+                    </p>
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    function updateWebsiteCount() {
+        document.getElementById('websiteCount').textContent = currentWebsiteCount;
+    }
+
+    // Add website button click
+    document.getElementById('addWebsiteBtn').addEventListener('click', async function() {
+        // Check limit
+        if (currentWebsiteCount >= maxWebsites && maxWebsites < 9999) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Limit Reached',
+                    html: `You've reached your plan limit of <strong>${maxWebsites}</strong> website(s).<br><br>
+                           <a href="/Payment" class="text-blue-600 hover:underline">Upgrade your plan</a> to add more websites.`,
+                    showConfirmButton: true
+                });
+            } else {
+                alert(`You've reached your plan limit of ${maxWebsites} website(s). Please upgrade to add more.`);
+            }
+            return;
+        }
+
+        // Show input dialog
+        if (typeof Swal !== 'undefined') {
+            const { value: formValues } = await Swal.fire({
+                title: 'Add Website',
+                html: `
+                    <input id="swal-url" class="swal2-input" placeholder="https://example.com" type="url" required>
+                    <input id="swal-notes" class="swal2-input" placeholder="Notes (optional)">
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Add Website',
+                preConfirm: () => {
+                    const url = document.getElementById('swal-url').value;
+                    const notes = document.getElementById('swal-notes').value;
+                    
+                    if (!url) {
+                        Swal.showValidationMessage('Please enter a website URL');
+                        return false;
+                    }
+                    
+                    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        Swal.showValidationMessage('URL must start with http:// or https://');
+                        return false;
+                    }
+                    
+                    return { url, notes };
+                }
+            });
+
+            if (formValues) {
+                await addWebsite(formValues.url, formValues.notes);
+            }
+        } else {
+            const url = prompt('Enter website URL (e.g., https://example.com):');
+            if (url) {
+                await addWebsite(url, '');
+            }
+        }
+    });
+
+    async function addWebsite(url, notes) {
+        try {
+            const response = await fetch('/Integration/AddAllowedWebsite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url, notes })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Website Added',
+                        text: 'Your website has been added successfully.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                }
+                await loadAllowedWebsites();
+            } else {
+                throw new Error(data.message || 'Failed to add website');
+            }
+        } catch (error) {
+            console.error('Error adding website:', error);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to add website. Please try again.'
+                });
+            } else {
+                alert(error.message || 'Failed to add website. Please try again.');
+            }
+        }
+    }
+
+    async function removeWebsite(id, domain) {
+        const confirmed = typeof Swal !== 'undefined' 
+            ? await Swal.fire({
+                title: 'Remove Website?',
+                text: `Are you sure you want to remove ${domain}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Yes, remove it'
+            }).then(result => result.isConfirmed)
+            : confirm(`Are you sure you want to remove ${domain}?`);
+
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`/Integration/RemoveAllowedWebsite/${id}`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Website Removed',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                }
+                await loadAllowedWebsites();
+            } else {
+                throw new Error(data.message || 'Failed to remove website');
+            }
+        } catch (error) {
+            console.error('Error removing website:', error);
+            alert('Failed to remove website. Please try again.');
+        }
+    }
+
+    // Load websites on page load
+    loadAllowedWebsites();
+
+    // Google Analytics & GTM Configuration
+    document.getElementById('analyticsForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const gtmId = document.getElementById('gtmId').value.trim();
+        const ga4Id = document.getElementById('ga4Id').value.trim();
+        const saveBtn = this.querySelector('button[type="submit"]');
+        const originalText = saveBtn.innerHTML;
+        
+        // Validate formats
+        if (gtmId && !/^GTM-[A-Z0-9]+$/.test(gtmId)) {
+            alert('GTM ID must be in format: GTM-XXXXXXX');
+            return;
+        }
+        
+        if (ga4Id && !/^G-[A-Z0-9]+$/.test(ga4Id)) {
+            alert('GA4 ID must be in format: G-XXXXXXXXXX');
+            return;
+        }
+        
+        // Show loading state
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+        
+        try {
+            const response = await fetch('/Integration/SaveAnalyticsConfig', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ gtmId, ga4Id })
+            });
+            
+            if (response.ok) {
+                // Show success message
+                saveBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Saved!';
+                const btnClasses = saveBtn.className.split(' ');
+                saveBtn.className = btnClasses.filter(c => !c.includes('orange') && !c.includes('red')).join(' ') + ' bg-green-600';
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.className = 'px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-red-700 transition-all shadow-lg hover:shadow-xl';
+                    saveBtn.disabled = false;
+                }, 2000);
+                
+                // Show toast notification
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Analytics Configured',
+                        text: 'Your tracking codes will now be automatically added to all content.',
+                        timer: 3000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                }
+            } else {
+                throw new Error('Failed to save analytics configuration');
+            }
+        } catch (error) {
+            console.error('Error saving analytics config:', error);
+            alert('Failed to save analytics configuration. Please try again.');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    });
+
+    // Pixel Script Functions
+    function copyPixelScript() {
+        const scriptText = document.getElementById('pixelScriptCode').textContent;
+        navigator.clipboard.writeText(scriptText).then(() => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copied!',
+                    text: 'Universal tracking pixel copied to clipboard',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            } else {
+                alert('Pixel script copied to clipboard!');
+            }
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy script. Please copy manually.');
+        });
+    }
+
+    function copyWebsitePixel(websiteId, pixelScript) {
+        navigator.clipboard.writeText(pixelScript).then(() => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copied!',
+                    text: 'Website-specific pixel copied to clipboard',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            } else {
+                alert('Website pixel copied to clipboard!');
+            }
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy script. Please copy manually.');
+        });
+    }
+
+    async function testPixelInstallation() {
+        const url = document.getElementById('testPixelUrl').value.trim();
+        
+        if (!url) {
+            alert('Please enter a website URL to test');
+            return;
+        }
+        
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            alert('Please enter a valid URL (including http:// or https://)');
+            return;
+        }
+        
+        const loadingDiv = document.getElementById('pixelTestLoading');
+        const resultsDiv = document.getElementById('pixelTestResults');
+        
+        loadingDiv.classList.remove('d-none');
+        resultsDiv.innerHTML = '';
+        
+        try {
+            const response = await fetch('/Integration/TestPixel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            });
+            
+            const result = await response.json();
+            
+            loadingDiv.classList.add('d-none');
+            
+            if (result.installed) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-success border-2 border-green-300">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-green-900 mb-2">✓ Pixel Installed Successfully!</h5>
+                                <p class="text-sm text-green-800 mb-2">The tracking pixel is properly installed on this website.</p>
+                                <div class="text-xs text-green-700">
+                                    <div><strong>Pixel Version:</strong> ${result.pixelVersion || 'v1.0'}</div>
+                                    ${result.popupsFound ? `<div><strong>Active Popups:</strong> ${result.popupsFound} found</div>` : ''}
+                                    ${result.lastSeen ? `<div><strong>Last Activity:</strong> ${result.lastSeen}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-warning border-2 border-orange-300">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-orange-600 text-2xl"></i>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-orange-900 mb-2">⚠ Pixel Not Detected</h5>
+                                <p class="text-sm text-orange-800 mb-2">The tracking pixel was not found on this website.</p>
+                                <div class="text-xs text-orange-700">
+                                    <strong>Possible reasons:</strong>
+                                    <ul class="list-disc list-inside mt-1 ml-2">
+                                        <li>Script not added to website</li>
+                                        <li>Script in GTM but not published</li>
+                                        <li>Website behind firewall or authentication</li>
+                                        <li>Incorrect tenant key</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            loadingDiv.classList.add('d-none');
+            resultsDiv.innerHTML = `
+                <div class="alert alert-danger border-2 border-red-300">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                        <div class="flex-1">
+                            <h5 class="font-bold text-red-900 mb-2">✗ Test Failed</h5>
+                            <p class="text-sm text-red-800">${error.message || 'Unable to reach the website. Please check the URL and try again.'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     }
 </script>
 }

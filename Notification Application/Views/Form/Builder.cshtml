@@ -301,8 +301,27 @@
         <div class="field-type" draggable="true" data-field-type="consent">
             <i class="bi bi-shield-check"></i> Consent
         </div>
+        
+        <div class="mb-3 mt-4">
+            <small class="text-muted fw-medium">Tracking</small>
+        </div>
         <div class="field-type" draggable="true" data-field-type="hidden">
             <i class="bi bi-eye-slash"></i> Hidden Field
+        </div>
+        <div class="field-type" draggable="true" data-field-type="utm_source">
+            <i class="bi bi-tag"></i> UTM Source
+        </div>
+        <div class="field-type" draggable="true" data-field-type="utm_medium">
+            <i class="bi bi-tag"></i> UTM Medium
+        </div>
+        <div class="field-type" draggable="true" data-field-type="utm_campaign">
+            <i class="bi bi-tag"></i> UTM Campaign
+        </div>
+        <div class="field-type" draggable="true" data-field-type="utm_term">
+            <i class="bi bi-tag"></i> UTM Term
+        </div>
+        <div class="field-type" draggable="true" data-field-type="utm_content">
+            <i class="bi bi-tag"></i> UTM Content
         </div>
     </div>
     
@@ -544,7 +563,12 @@
             'paragraph': 'Additional information text',
             'divider': '',
             'consent': 'I agree to the terms and conditions',
-            'hidden': 'Hidden Field'
+            'hidden': 'Hidden Field',
+            'utm_source': 'UTM Source',
+            'utm_medium': 'UTM Medium',
+            'utm_campaign': 'UTM Campaign',
+            'utm_term': 'UTM Term',
+            'utm_content': 'UTM Content'
         };
         
         const defaultMappings = {
@@ -556,10 +580,14 @@
             'website': 'website'
         };
         
+        // UTM parameter types should use 'hidden' as the base type
+        const isUtmField = type.startsWith('utm_');
+        const actualType = isUtmField ? 'hidden' : type;
+        
         const field = {
             id: nextTempId--,
-            type: type,
-            name: type + '_' + Date.now(),
+            type: actualType,
+            name: isUtmField ? type : (type + '_' + Date.now()),
             label: defaultLabels[type] || 'New Field',
             placeholder: '',
             helpText: '',
@@ -610,7 +638,7 @@
             case 'divider':
                 return `<hr>`;
             case 'hidden':
-                return `<div class="text-muted small"><i class="bi bi-eye-slash me-2"></i>Hidden: ${field.name}</div>`;
+                return `<div class="text-muted small"><i class="bi bi-eye-slash me-2"></i>Hidden: ${field.label} (${field.name})</div>`;
             case 'textarea':
                 return `
                     <label class="form-label">${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}</label>

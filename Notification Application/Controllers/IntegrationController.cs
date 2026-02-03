@@ -34,7 +34,7 @@ public class IntegrationController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        // Get tenant's subscription plan
+        // Get tenant's subscription plan and website URL
         var tenant = await _context.Tenants
             .Include(t => t.SubscriptionPlan)
             .FirstOrDefaultAsync(t => t.Id == user.TenantId);
@@ -44,6 +44,10 @@ public class IntegrationController : Controller
             .Where(i => i.TenantId == user.TenantId && i.IsActive)
             .OrderBy(i => i.Name)
             .ToListAsync();
+
+        // Get allowed websites count
+        var allowedWebsitesCount = await _context.AllowedWebsites
+            .CountAsync(w => w.TenantId == user.TenantId && w.IsActive);
 
         // Get all available integrations from catalog
         var catalog = IntegrationCatalog.GetAll();
@@ -61,6 +65,17 @@ public class IntegrationController : Controller
             PlanId = tenant?.SubscriptionPlanId ?? 1,
             TenantId = user.TenantId
         };
+
+        // Pass website URL and limits to view
+        ViewBag.WebsiteUrl = tenant?.WebsiteUrl ?? "";
+        ViewBag.MaxWebsites = tenant?.SubscriptionPlan?.MaxWebsites ?? 1;
+        ViewBag.CurrentWebsiteCount = allowedWebsitesCount;
+        ViewBag.GTM = tenant?.GoogleTagManagerId ?? "";
+        ViewBag.GA4 = tenant?.GoogleAnalytics4Id ?? "";
+        
+        // Pass tenant tracking key and app URL for pixel script
+        ViewBag.TenantKey = tenant?.TrackingCode ?? tenant?.ApiKey ?? user.TenantId.ToString();
+        ViewBag.AppUrl = tenant?.PublicHostUrl ?? $"{Request.Scheme}://{Request.Host}";
 
         return View(viewModel);
     }
@@ -869,6 +884,293 @@ public class IntegrationController : Controller
             StatusCode = (int)response.StatusCode
         };
     }
+
+    // POST: Integration/SaveWebsiteUrl
+    [HttpPost]
+    public async Task<IActionResult> SaveWebsiteUrl([FromBody] SaveWebsiteUrlRequest request)
+    {
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == user.TenantId);
+            if (tenant == null) return NotFound(new { success = false, message = "Tenant not found" });
+
+            // Validate URL format
+            if (string.IsNullOrWhiteSpace(request.WebsiteUrl))
+            {
+                return BadRequest(new { success = false, message = "Website URL is required" });
+            }
+
+            if (!request.WebsiteUrl.StartsWith("http://") && !request.WebsiteUrl.StartsWith("https://"))
+            {
+                return BadRequest(new { success = false, message = "Website URL must start with http:// or https://" });
+            }
+
+            // Update tenant's website URL
+            tenant.WebsiteUrl = request.WebsiteUrl.TrimEnd('/');
+            
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Website URL updated for tenant {TenantId}: {WebsiteUrl}", tenant.Id, tenant.WebsiteUrl);
+
+            return Ok(new { success = true, message = "Website URL saved successfully", websiteUrl = tenant.WebsiteUrl });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving website URL");
+            return StatusCode(500, new { success = false, message = "Failed to save website URL" });
+        }
+    }
+
+    // POST: Integration/TestPixel
+    [HttpPost]
+    public async Task<IActionResult> TestPixel([FromBody] TestPixelRequest request)
+    {
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(request.Url))
+            {
+                return BadRequest(new { success = false, message = "URL is required" });
+            }
+
+            if (!request.Url.StartsWith("http://") && !request.Url.StartsWith("https://"))
+            {
+                return BadRequest(new { success = false, message = "URL must start with http:// or https://" });
+            }
+
+            // Get tenant key for pixel verification
+            var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == user.TenantId);
+            if (tenant == null) return NotFound(new { success = false, message = "Tenant not found" });
+
+            // Use HttpClient to fetch the webpage
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(10);
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "YetiPixelTester/1.0");
+
+            var response = await httpClient.GetAsync(request.Url);
+            var html = await response.Content.ReadAsStringAsync();
+
+            // Check if pixel script is present
+            var tenantKey = tenant.Id.ToString(); // Or use a specific pixel key if you have one
+            var pixelScriptPattern = "pixel.js"; // Look for pixel.js reference
+            var installed = html.Contains(pixelScriptPattern);
+
+            // Check for active popups (if you track this)
+            var popupsFound = 0;
+            var popupPattern = "data-popup-id"; // Adjust based on your implementation
+            if (installed)
+            {
+                // Count popup references in the HTML
+                popupsFound = System.Text.RegularExpressions.Regex.Matches(html, popupPattern).Count;
+            }
+
+            return Ok(new 
+            { 
+                installed = installed,
+                pixelVersion = installed ? "v1.0" : null,
+                popupsFound = installed ? popupsFound : 0,
+                lastSeen = installed ? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") : null,
+                message = installed ? "Pixel is properly installed" : "Pixel not detected on this website"
+            });
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error testing pixel at {Url}", request.Url);
+            return BadRequest(new { 
+                installed = false, 
+                message = $"Unable to reach website: {ex.Message}" 
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error testing pixel installation");
+            return StatusCode(500, new { 
+                installed = false, 
+                message = "Failed to test pixel installation" 
+            });
+        }
+    }
+
+    // GET: Integration/GetAllowedWebsites
+    [HttpGet]
+    public async Task<IActionResult> GetAllowedWebsites()
+    {
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var websites = await _context.AllowedWebsites
+                .Where(w => w.TenantId == user.TenantId && w.IsActive)
+                .OrderBy(w => w.CreatedAt)
+                .ToListAsync();
+
+            return Ok(new { success = true, websites });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching allowed websites");
+            return StatusCode(500, new { success = false, message = "Failed to load websites" });
+        }
+    }
+
+    // POST: Integration/AddAllowedWebsite
+    [HttpPost]
+    public async Task<IActionResult> AddAllowedWebsite([FromBody] AddWebsiteRequest request)
+    {
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var tenant = await _context.Tenants
+                .Include(t => t.SubscriptionPlan)
+                .FirstOrDefaultAsync(t => t.Id == user.TenantId);
+
+            if (tenant == null) return NotFound(new { success = false, message = "Tenant not found" });
+
+            // Validate URL
+            if (string.IsNullOrWhiteSpace(request.Url))
+            {
+                return BadRequest(new { success = false, message = "Website URL is required" });
+            }
+
+            if (!request.Url.StartsWith("http://") && !request.Url.StartsWith("https://"))
+            {
+                return BadRequest(new { success = false, message = "URL must start with http:// or https://" });
+            }
+
+            // Check plan limits
+            var currentCount = await _context.AllowedWebsites
+                .CountAsync(w => w.TenantId == user.TenantId && w.IsActive);
+
+            var maxWebsites = tenant.SubscriptionPlan?.MaxWebsites ?? 1;
+            if (currentCount >= maxWebsites && maxWebsites < 9999)
+            {
+                return BadRequest(new { success = false, message = $"You've reached your plan limit of {maxWebsites} website(s)" });
+            }
+
+            // Extract domain from URL
+            var uri = new Uri(request.Url);
+            var domain = uri.Host;
+
+            // Check if domain already exists
+            var exists = await _context.AllowedWebsites
+                .AnyAsync(w => w.TenantId == user.TenantId && w.Domain == domain && w.IsActive);
+
+            if (exists)
+            {
+                return BadRequest(new { success = false, message = "This website is already added" });
+            }
+
+            var website = new AllowedWebsite
+            {
+                TenantId = user.TenantId,
+                Domain = domain,
+                Url = request.Url.TrimEnd('/'),
+                Notes = request.Notes,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.AllowedWebsites.Add(website);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Added allowed website {Domain} for tenant {TenantId}", domain, user.TenantId);
+
+            return Ok(new { success = true, website });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding allowed website");
+            return StatusCode(500, new { success = false, message = "Failed to add website" });
+        }
+    }
+
+    // DELETE: Integration/RemoveAllowedWebsite/{id}
+    [HttpPost]
+    public async Task<IActionResult> RemoveAllowedWebsite(int id)
+    {
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var website = await _context.AllowedWebsites
+                .FirstOrDefaultAsync(w => w.Id == id && w.TenantId == user.TenantId);
+
+            if (website == null) return NotFound(new { success = false, message = "Website not found" });
+
+            website.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Removed allowed website {Domain} for tenant {TenantId}", website.Domain, user.TenantId);
+
+            return Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing allowed website");
+            return StatusCode(500, new { success = false, message = "Failed to remove website" });
+        }
+    }
+
+    // POST: Integration/SaveAnalyticsConfig
+    [HttpPost]
+    public async Task<IActionResult> SaveAnalyticsConfig([FromBody] SaveAnalyticsConfigRequest request)
+    {
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == user.TenantId);
+            if (tenant == null) return NotFound(new { success = false, message = "Tenant not found" });
+
+            // Validate formats if provided
+            if (!string.IsNullOrWhiteSpace(request.GtmId))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(request.GtmId, @"^GTM-[A-Z0-9]+$"))
+                {
+                    return BadRequest(new { success = false, message = "Invalid GTM ID format. Expected: GTM-XXXXXXX" });
+                }
+                tenant.GoogleTagManagerId = request.GtmId;
+            }
+            else
+            {
+                tenant.GoogleTagManagerId = null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Ga4Id))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(request.Ga4Id, @"^G-[A-Z0-9]+$"))
+                {
+                    return BadRequest(new { success = false, message = "Invalid GA4 ID format. Expected: G-XXXXXXXXXX" });
+                }
+                tenant.GoogleAnalytics4Id = request.Ga4Id;
+            }
+            else
+            {
+                tenant.GoogleAnalytics4Id = null;
+            }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Analytics configuration updated for tenant {TenantId}", tenant.Id);
+
+            return Ok(new { success = true, message = "Analytics configuration saved successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving analytics configuration");
+            return StatusCode(500, new { success = false, message = "Failed to save analytics configuration" });
+        }
+    }
 }
 
 // View Models
@@ -922,4 +1224,26 @@ public class IntegrationSyncResult
     public string? Message { get; set; }
     public int? StatusCode { get; set; }
     public string? ExternalId { get; set; }
+}
+
+public class SaveWebsiteUrlRequest
+{
+    public string WebsiteUrl { get; set; } = string.Empty;
+}
+
+public class TestPixelRequest
+{
+    public string Url { get; set; } = string.Empty;
+}
+
+public class AddWebsiteRequest
+{
+    public string Url { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+}
+
+public class SaveAnalyticsConfigRequest
+{
+    public string? GtmId { get; set; }
+    public string? Ga4Id { get; set; }
 }

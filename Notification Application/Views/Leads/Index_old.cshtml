@@ -1,0 +1,1014 @@
+@model IEnumerable<Notification_Application.Models.Lead>
+@{
+    ViewData["Title"] = "Leads";
+    var stats = ViewBag.Stats as dynamic ?? new { Total = 0, New = 0, Contacted = 0, Converted = 0 };
+}
+
+@section Styles {
+<style>
+    .leads-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 0;
+        margin: -1.5rem -15px 2rem -15px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255,255,255,0.95);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .stat-info h3 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+    }
+    
+    .stat-info p {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+    
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .leads-table {
+        width: 100%;
+    }
+    
+    .leads-table th {
+        background: linear-gradient(to right, #f8fafc, #f1f5f9);
+        padding: 1rem 1.25rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #475569;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .leads-table td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .leads-table tbody tr:hover {
+        background: #fafaff;
+    }
+    
+    .lead-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    
+    .lead-name {
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .lead-email {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    
+    .lead-phone {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-new { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+    .status-contacted { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+    .status-qualified { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .status-converted { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .status-unqualified { background: linear-gradient(135deg, #6b7280, #4b5563); color: white; }
+    
+    .action-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .action-btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+    
+    .action-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .action-btn-outline {
+        background: white;
+        border: 2px solid #e2e8f0;
+        color: #475569;
+    }
+    
+    .action-btn-outline:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+    
+    .dropdown-menu {
+        min-width: 200px;
+        padding: 0.5rem;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        border-radius: 12px;
+    }
+    
+    .dropdown-item {
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .dropdown-item:hover {
+        background: #f8fafc;
+    }
+    
+    .dropdown-divider {
+        margin: 0.5rem 0;
+    }
+    
+    .task-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    .task-pending { background: #fef3c7; color: #92400e; }
+    .task-overdue { background: #fee2e2; color: #991b1b; }
+    .task-today { background: #dbeafe; color: #1e40af; }
+    
+    .followup-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        color: #166534;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .source-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+    
+    .date-cell {
+        text-align: center;
+    }
+    
+    .date-month {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #667eea;
+    }
+    
+    .date-day {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        line-height: 1;
+    }
+    
+    .date-time {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+    
+    .task-modal .modal-content {
+        border: none;
+        border-radius: 16px;
+    }
+    
+    .task-modal .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px 16px 0 0;
+        padding: 1.5rem;
+    }
+    
+    .task-modal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .quick-action-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .quick-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .quick-action-btn.contacted { border-color: #c084fc; color: #7c3aed; background: #faf5ff; }
+    .quick-action-btn.contacted:hover { background: #7c3aed; color: white; }
+    
+    .quick-action-btn.qualified { border-color: #fbbf24; color: #d97706; background: #fffbeb; }
+    .quick-action-btn.qualified:hover { background: #d97706; color: white; }
+    
+    .quick-action-btn.converted { border-color: #34d399; color: #059669; background: #ecfdf5; }
+    .quick-action-btn.converted:hover { background: #059669; color: white; }
+    
+    .quick-action-btn.unqualified { border-color: #9ca3af; color: #4b5563; background: #f9fafb; }
+    .quick-action-btn.unqualified:hover { background: #4b5563; color: white; }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .empty-icon i {
+        font-size: 3.5rem;
+        color: #667eea;
+    }
+    
+    .company-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        background: #eff6ff;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: #3b82f6;
+    }
+    
+    .score-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    
+    .score-high { background: #dcfce7; color: #166534; }
+    .score-medium { background: #fef9c3; color: #854d0e; }
+    .score-low { background: #fee2e2; color: #991b1b; }
+    
+    .notes-preview {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+</style>
+}
+
+<!-- Header -->
+<div class="leads-header">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="text-white mb-1" style="font-size: 1.75rem; font-weight: 800;">
+                    <i class="fas fa-users me-2"></i>Lead Management
+                </h1>
+                <p class="text-white-50 mb-0">Track, nurture, and convert your leads effectively</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+                <a asp-controller="Popup" asp-action="CreateCampaign" class="btn btn-warning">
+                    <i class="fas fa-plus-circle me-2"></i>New Campaign
+                </a>
+            </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@(ViewBag.TotalLeads ?? Model.Count())</h3>
+                    <p>Total Leads</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.Count(l => l.Status == Notification_Application.Models.LeadStatus.New)</h3>
+                    <p>New Leads</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.Count(l => l.Status == Notification_Application.Models.LeadStatus.Contacted)</h3>
+                    <p>Contacted</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.Count(l => l.Status == Notification_Application.Models.LeadStatus.Converted)</h3>
+                    <p>Converted</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.Count(l => l.Status == Notification_Application.Models.LeadStatus.Qualified)</h3>
+                    <p>Qualified</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-4">
+    <!-- Filters -->
+    <div class="filter-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Advanced Filters</h5>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleAdvancedFilters()">
+                <i class="fas fa-sliders-h me-1"></i><span id="filterToggleText">Show Advanced</span>
+            </button>
+        </div>
+        <form method="get" id="filterForm">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-bullhorn me-1 text-purple-500"></i>Campaign</label>
+                    <select name="popupId" class="form-select">
+                        <option value="">All Campaigns</option>
+                        @if (ViewBag.Popups != null)
+                        {
+                            foreach (var popup in ViewBag.Popups)
+                            {
+                                <option value="@popup.Id" selected="@(ViewBag.CurrentPopupId?.ToString() == popup.Id.ToString())">@popup.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label"><i class="fas fa-flag me-1 text-orange-500"></i>Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="New" selected="@(ViewBag.CurrentStatus == "New")">New</option>
+                        <option value="Contacted" selected="@(ViewBag.CurrentStatus == "Contacted")">Contacted</option>
+                        <option value="Qualified" selected="@(ViewBag.CurrentStatus == "Qualified")">Qualified</option>
+                        <option value="Converted" selected="@(ViewBag.CurrentStatus == "Converted")">Converted</option>
+                        <option value="Unqualified" selected="@(ViewBag.CurrentStatus == "Unqualified")">Unqualified</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-search me-1 text-blue-500"></i>Search</label>
+                    <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Email, name, company..." class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i>Apply Filters
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Advanced Filters (collapsible) -->
+            <div id="advancedFilters" style="display: none;" class="mt-3 pt-3 border-top">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label"><i class="fas fa-tasks me-1"></i>Disposition</label>
+                        <select name="disposition" class="form-select">
+                            <option value="">All</option>
+                            <option value="Hot" selected="@(ViewBag.CurrentDisposition == "Hot")">Hot</option>
+                            <option value="Warm" selected="@(ViewBag.CurrentDisposition == "Warm")">Warm</option>
+                            <option value="Cold" selected="@(ViewBag.CurrentDisposition == "Cold")">Cold</option>
+                            <option value="NoAnswer" selected="@(ViewBag.CurrentDisposition == "NoAnswer")">No Answer</option>
+                            <option value="LeftVoicemail" selected="@(ViewBag.CurrentDisposition == "LeftVoicemail")">Left Voicemail</option>
+                            <option value="ScheduledCallback" selected="@(ViewBag.CurrentDisposition == "ScheduledCallback")">Scheduled Callback</option>
+                            <option value="NotInterested" selected="@(ViewBag.CurrentDisposition == "NotInterested")">Not Interested</option>
+                            <option value="Unreachable" selected="@(ViewBag.CurrentDisposition == "Unreachable")">Unreachable</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label"><i class="fas fa-mouse-pointer me-1"></i>UTM Source</label>
+                        <select name="utmSource" class="form-select">
+                            <option value="">All Sources</option>
+                            @if (ViewBag.UtmSources != null)
+                            {
+                                foreach (var source in ViewBag.UtmSources)
+                                {
+                                    <option value="@source" selected="@(ViewBag.CurrentUtmSource == source)">@source</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label"><i class="fas fa-bullseye me-1"></i>UTM Campaign</label>
+                        <select name="utmCampaign" class="form-select">
+                            <option value="">All Campaigns</option>
+                            @if (ViewBag.UtmCampaigns != null)
+                            {
+                                foreach (var campaign in ViewBag.UtmCampaigns)
+                                {
+                                    <option value="@campaign" selected="@(ViewBag.CurrentUtmCampaign == campaign)">@campaign</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="fas fa-calendar-day me-1"></i>Start Date</label>
+                        <input type="date" name="startDate" value="@ViewBag.StartDate?.ToString("yyyy-MM-dd")" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="fas fa-calendar-check me-1"></i>End Date</label>
+                        <input type="date" name="endDate" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Leads Table -->
+    <div class="table-card">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="leads-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar-alt me-1"></i>Date</th>
+                            <th><i class="fas fa-user me-1"></i>Contact</th>
+                            <th><i class="fas fa-building me-1"></i>Company</th>
+                            <th><i class="fas fa-bullhorn me-1"></i>Source</th>
+                            <th><i class="fas fa-flag me-1"></i>Status</th>
+                            <th><i class="fas fa-tasks me-1"></i>Tasks</th>
+                            <th><i class="fas fa-star me-1"></i>Score</th>
+                            <th style="width: 300px;"><i class="fas fa-bolt me-1"></i>Quick Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lead in Model)
+                        {
+                            var initials = "";
+                            if (!string.IsNullOrEmpty(lead.FirstName))
+                                initials = lead.FirstName[0].ToString().ToUpper();
+                            else if (!string.IsNullOrEmpty(lead.Email))
+                                initials = lead.Email[0].ToString().ToUpper();
+                            else
+                                initials = "?";
+                            
+                            var hasTasks = lead.Tasks?.Any(t => t.Status != Notification_Application.Models.CrmTaskStatus.Completed) ?? false;
+                            var overdueTask = lead.Tasks?.FirstOrDefault(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Today && t.Status != Notification_Application.Models.CrmTaskStatus.Completed);
+                            var todayTask = lead.Tasks?.FirstOrDefault(t => t.DueDate.HasValue && t.DueDate.Value.Date == DateTime.Today && t.Status != Notification_Application.Models.CrmTaskStatus.Completed);
+                            var pendingTaskCount = lead.Tasks?.Count(t => t.Status != Notification_Application.Models.CrmTaskStatus.Completed) ?? 0;
+                            
+                            <tr data-lead-id="@lead.Id">
+                                <!-- Date -->
+                                <td>
+                                    <div class="date-cell">
+                                        <div class="date-month">@lead.CapturedAt.ToString("MMM")</div>
+                                        <div class="date-day">@lead.CapturedAt.ToString("dd")</div>
+                                        <div class="date-time">@lead.CapturedAt.ToString("HH:mm")</div>
+                                    </div>
+                                </td>
+                                
+                                <!-- Contact -->
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="lead-avatar">@initials</div>
+                                        <div>
+                                            <div class="lead-name">
+                                                @if (!string.IsNullOrEmpty(lead.FirstName) || !string.IsNullOrEmpty(lead.LastName))
+                                                {
+                                                    @lead.FirstName @lead.LastName
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">No name</span>
+                                                }
+                                            </div>
+                                            <div class="lead-email">
+                                                <i class="fas fa-envelope me-1"></i>@lead.Email
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(lead.Phone))
+                                            {
+                                                <div class="lead-phone">
+                                                    <i class="fas fa-phone me-1"></i>@lead.Phone
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <!-- Company -->
+                                <td>
+                                    @if (!string.IsNullOrEmpty(lead.Company))
+                                    {
+                                        <div class="company-badge">
+                                            <i class="fas fa-building"></i>@lead.Company
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(lead.JobTitle))
+                                        {
+                                            <div class="text-muted" style="font-size: 0.75rem;">@lead.JobTitle</div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                
+                                <!-- Source -->
+                                <td>
+                                    @if (lead.Popup != null)
+                                    {
+                                        <div class="source-badge">
+                                            <i class="fas fa-bullhorn text-purple-500"></i>
+                                            <span>@lead.Popup.Name</span>
+                                        </div>
+                                    }
+                                    else if (!string.IsNullOrEmpty(lead.LeadSource))
+                                    {
+                                        <div class="source-badge">
+                                            <i class="fas fa-globe text-blue-500"></i>
+                                            <span>@lead.LeadSource</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Direct</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(lead.UtmSource))
+                                    {
+                                        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">
+                                            UTM: @lead.UtmSource
+                                        </div>
+                                    }
+                                </td>
+                                
+                                <!-- Status -->
+                                <td>
+                                    @switch (lead.Status)
+                                    {
+                                        case Notification_Application.Models.LeadStatus.New:
+                                            <span class="status-badge status-new"><i class="fas fa-star"></i>New</span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Contacted:
+                                            <span class="status-badge status-contacted"><i class="fas fa-phone"></i>Contacted</span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Qualified:
+                                            <span class="status-badge status-qualified"><i class="fas fa-check"></i>Qualified</span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Converted:
+                                            <span class="status-badge status-converted"><i class="fas fa-trophy"></i>Converted</span>
+                                            break;
+                                        case Notification_Application.Models.LeadStatus.Unqualified:
+                                            <span class="status-badge status-unqualified"><i class="fas fa-times"></i>Unqualified</span>
+                                            break;
+                                    }
+                                    @if (lead.LastContactedAt.HasValue)
+                                    {
+                                        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">
+                                            Last: @lead.LastContactedAt.Value.ToString("MMM dd")
+                                        </div>
+                                    }
+                                </td>
+                                
+                                <!-- Tasks -->
+                                <td>
+                                    @if (overdueTask != null)
+                                    {
+                                        <div class="task-badge task-overdue mb-1">
+                                            <i class="fas fa-exclamation-circle"></i>Overdue
+                                        </div>
+                                    }
+                                    else if (todayTask != null)
+                                    {
+                                        <div class="task-badge task-today mb-1">
+                                            <i class="fas fa-clock"></i>Due Today
+                                        </div>
+                                    }
+                                    else if (pendingTaskCount > 0)
+                                    {
+                                        <div class="task-badge task-pending mb-1">
+                                            <i class="fas fa-tasks"></i>@pendingTaskCount Task(s)
+                                        </div>
+                                    }
+                                    
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openTaskModal(@lead.Id, '@(lead.FirstName ?? lead.Email)')" style="font-size: 0.7rem; padding: 3px 8px;">
+                                        <i class="fas fa-plus"></i> Add Task
+                                    </button>
+                                </td>
+                                
+                                <!-- Score -->
+                                <td>
+                                    @{
+                                        var scoreClass = lead.Score >= 70 ? "score-high" : (lead.Score >= 40 ? "score-medium" : "score-low");
+                                    }
+                                    <div class="score-badge @scoreClass">@lead.Score</div>
+                                </td>
+                                
+                                <!-- Quick Actions -->
+                                <td>
+                                    <div class="quick-action-bar">
+                                        @if (lead.Status != Notification_Application.Models.LeadStatus.Contacted)
+                                        {
+                                            <form asp-action="UpdateStatus" method="post" style="display: inline;">
+                                                <input type="hidden" name="id" value="@lead.Id" />
+                                                <input type="hidden" name="status" value="Contacted" />
+                                                <button type="submit" class="quick-action-btn contacted">
+                                                    <i class="fas fa-phone"></i>Contacted
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (lead.Status != Notification_Application.Models.LeadStatus.Qualified)
+                                        {
+                                            <form asp-action="UpdateStatus" method="post" style="display: inline;">
+                                                <input type="hidden" name="id" value="@lead.Id" />
+                                                <input type="hidden" name="status" value="Qualified" />
+                                                <button type="submit" class="quick-action-btn qualified">
+                                                    <i class="fas fa-check"></i>Qualified
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (lead.Status != Notification_Application.Models.LeadStatus.Converted)
+                                        {
+                                            <form asp-action="UpdateStatus" method="post" style="display: inline;">
+                                                <input type="hidden" name="id" value="@lead.Id" />
+                                                <input type="hidden" name="status" value="Converted" />
+                                                <button type="submit" class="quick-action-btn converted">
+                                                    <i class="fas fa-trophy"></i>Converted
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (lead.Status != Notification_Application.Models.LeadStatus.Unqualified)
+                                        {
+                                            <form asp-action="UpdateStatus" method="post" style="display: inline;">
+                                                <input type="hidden" name="id" value="@lead.Id" />
+                                                <input type="hidden" name="status" value="Unqualified" />
+                                                <button type="submit" class="quick-action-btn unqualified">
+                                                    <i class="fas fa-times"></i>Close
+                                                </button>
+                                            </form>
+                                        }
+                                        <a asp-action="Details" asp-route-id="@lead.Id" class="quick-action-btn" style="border-color: #667eea; color: #667eea; background: #f0f3ff;">
+                                            <i class="fas fa-eye"></i>View
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <div class="p-4 border-top d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        Showing page <strong>@ViewBag.CurrentPage</strong> of <strong>@ViewBag.TotalPages</strong>
+                    </div>
+                    <div class="d-flex gap-2">
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" asp-route-popupId="@ViewBag.CurrentPopupId" asp-route-status="@ViewBag.CurrentStatus" asp-route-searchTerm="@ViewBag.SearchTerm" class="btn btn-outline-primary">
+                                <i class="fas fa-chevron-left me-1"></i>Previous
+                            </a>
+                        }
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <a asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" asp-route-popupId="@ViewBag.CurrentPopupId" asp-route-status="@ViewBag.CurrentStatus" asp-route-searchTerm="@ViewBag.SearchTerm" class="btn btn-primary">
+                                Next<i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 style="color: #1e293b; font-weight: 700; margin-bottom: 0.5rem;">No leads yet</h3>
+                <p class="text-muted mb-4">Start capturing leads by creating and publishing your campaigns.</p>
+                <a asp-controller="Popup" asp-action="CreateCampaign" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus-circle me-2"></i>Create Your First Campaign
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade task-modal" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-tasks me-2"></i>Add Task / Follow-up
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CreateTask" method="post" id="taskForm">
+                <div class="modal-body">
+                    <input type="hidden" name="leadId" id="taskLeadId" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Lead</label>
+                        <input type="text" class="form-control" id="taskLeadName" readonly style="background: #f8fafc;">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Task Title *</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g., Follow up call, Send proposal" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Additional details about this task..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Due Date *</label>
+                            <input type="datetime-local" name="dueDate" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Priority</label>
+                            <select name="priority" class="form-select">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Task Type</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="taskType" id="typeCall" value="call" checked>
+                                <label class="form-check-label" for="typeCall"><i class="fas fa-phone me-1"></i>Call</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="taskType" id="typeEmail" value="email">
+                                <label class="form-check-label" for="typeEmail"><i class="fas fa-envelope me-1"></i>Email</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="taskType" id="typeMeeting" value="meeting">
+                                <label class="form-check-label" for="typeMeeting"><i class="fas fa-calendar me-1"></i>Meeting</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="taskType" id="typeOther" value="other">
+                                <label class="form-check-label" for="typeOther"><i class="fas fa-tasks me-1"></i>Other</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Create Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title"><i class="fas fa-download me-2"></i>Export Leads</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-4">Choose your export format and options:</p>
+                
+                <div class="d-grid gap-3">
+                    <a asp-action="ExportCsv" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-file-csv me-2"></i>Export as CSV</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a asp-action="ExportExcel" class="btn btn-outline-success btn-lg d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-file-excel me-2"></i>Export as Excel</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6 class="mb-2"><i class="fas fa-info-circle me-1 text-primary"></i>Export includes:</h6>
+                    <ul class="mb-0 ps-3" style="font-size: 0.9rem; color: #64748b;">
+                        <li>Contact information (name, email, phone)</li>
+                        <li>Company details</li>
+                        <li>Lead status and score</li>
+                        <li>Source and campaign data</li>
+                        <li>Custom fields</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openTaskModal(leadId, leadName) {
+        document.getElementById('taskLeadId').value = leadId;
+        document.getElementById('taskLeadName').value = leadName;
+        
+        // Set default due date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+        document.querySelector('input[name="dueDate"]').value = tomorrow.toISOString().slice(0, 16);
+        
+        new bootstrap.Modal(document.getElementById('taskModal')).show();
+    }
+    
+    function toggleAdvancedFilters() {
+        const advFilters = document.getElementById('advancedFilters');
+        const toggleText = document.getElementById('filterToggleText');
+        
+        if (advFilters.style.display === 'none') {
+            advFilters.style.display = 'block';
+            toggleText.textContent = 'Hide Advanced';
+        } else {
+            advFilters.style.display = 'none';
+            toggleText.textContent = 'Show Advanced';
+        }
+    }
+    
+    // Make rows clickable to view lead details
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Make table rows clickable
+        document.querySelectorAll('.leads-table tbody tr').forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function(e) {
+                // Don't navigate if clicking on action buttons
+                if (!e.target.closest('.action-dropdown') && !e.target.closest('button')) {
+                    const leadId = this.dataset.leadId;
+                    if (leadId) {
+                        window.location.href = '/Leads/Details/' + leadId;
+                    }
+                }
+            });
+        });
+    });
+</script>
+}
+

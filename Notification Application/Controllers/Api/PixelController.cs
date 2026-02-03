@@ -33,9 +33,22 @@ public class PixelController : ControllerBase
                 return BadRequest("Tenant key is required");
             }
 
-            // Find tenant by API key or tracking code
+            // Find tenant by API key, tracking code, or website-specific tracking key
             var tenant = await _context.Tenants
                 .FirstOrDefaultAsync(t => t.ApiKey == data.TenantKey || t.TrackingCode == data.TenantKey);
+
+            // If not found by tenant keys, check if it's a website-specific tracking key
+            if (tenant == null)
+            {
+                var website = await _context.AllowedWebsites
+                    .Include(w => w.Tenant)
+                    .FirstOrDefaultAsync(w => w.TrackingKey == data.TenantKey && w.IsActive);
+                
+                if (website != null)
+                {
+                    tenant = website.Tenant;
+                }
+            }
 
             if (tenant == null)
             {
@@ -142,8 +155,22 @@ public class PixelController : ControllerBase
                 return BadRequest("Tenant key and email are required");
             }
 
+            // Find tenant by API key, tracking code, or website-specific tracking key
             var tenant = await _context.Tenants
                 .FirstOrDefaultAsync(t => t.ApiKey == data.TenantKey || t.TrackingCode == data.TenantKey);
+
+            // If not found by tenant keys, check if it's a website-specific tracking key
+            if (tenant == null)
+            {
+                var website = await _context.AllowedWebsites
+                    .Include(w => w.Tenant)
+                    .FirstOrDefaultAsync(w => w.TrackingKey == data.TenantKey && w.IsActive);
+                
+                if (website != null)
+                {
+                    tenant = website.Tenant;
+                }
+            }
 
             if (tenant == null)
             {

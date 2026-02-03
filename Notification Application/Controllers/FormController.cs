@@ -28,6 +28,11 @@ public class FormController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
+        // Load tenant with subscription plan
+        var tenant = await _context.Tenants
+            .Include(t => t.SubscriptionPlan)
+            .FirstOrDefaultAsync(t => t.Id == user.TenantId);
+
         var forms = await _context.WebsiteForms
             .Where(f => f.TenantId == user.TenantId)
             .Include(f => f.CreatedBy)
@@ -39,6 +44,11 @@ public class FormController : Controller
         ViewBag.PublishedForms = forms.Count(f => f.Status == FormStatus.Published);
         ViewBag.TotalSubmissions = forms.Sum(f => f.Submissions);
         ViewBag.TotalViews = forms.Sum(f => f.Views);
+        
+        // Usage limits
+        ViewBag.MaxForms = tenant?.SubscriptionPlan?.MaxForms ?? 1;
+        ViewBag.IsAtLimit = forms.Count >= (tenant?.SubscriptionPlan?.MaxForms ?? 1);
+        ViewBag.PlanName = tenant?.SubscriptionPlan?.Name ?? "Free";
 
         return View(forms);
     }
@@ -48,6 +58,25 @@ public class FormController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
+
+        // Load tenant with subscription plan
+        var tenant = await _context.Tenants
+            .Include(t => t.SubscriptionPlan)
+            .FirstOrDefaultAsync(t => t.Id == user.TenantId);
+        
+        if (tenant == null) return Unauthorized();
+
+        // Check form usage limits
+        var currentFormCount = await _context.WebsiteForms
+            .CountAsync(f => f.TenantId == user.TenantId);
+        
+        var maxForms = tenant.SubscriptionPlan?.MaxForms ?? 1;
+        
+        if (currentFormCount >= maxForms)
+        {
+            TempData["Error"] = $"You've reached your form limit ({maxForms} forms). Please upgrade your plan to create more forms.";
+            return RedirectToAction(nameof(Index));
+        }
 
         // Get pipelines for lead assignment
         var pipelines = await _context.Pipelines
@@ -67,6 +96,22 @@ public class FormController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
+
+        // Double-check form limits before creating
+        var tenant = await _context.Tenants
+            .Include(t => t.SubscriptionPlan)
+            .FirstOrDefaultAsync(t => t.Id == user.TenantId);
+        
+        var currentFormCount = await _context.WebsiteForms
+            .CountAsync(f => f.TenantId == user.TenantId);
+        
+        var maxForms = tenant?.SubscriptionPlan?.MaxForms ?? 1;
+        
+        if (currentFormCount >= maxForms)
+        {
+            TempData["Error"] = $"You've reached your form limit ({maxForms} forms). Please upgrade your plan.";
+            return RedirectToAction(nameof(Index));
+        }
 
         form.TenantId = user.TenantId;
         form.CreatedById = user.Id;

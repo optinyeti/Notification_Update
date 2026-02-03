@@ -1,0 +1,228 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Usage Limits & AI Settings";
+    var tenant = ViewBag.Tenant as Notification_Application.Models.Tenant;
+    var apiUsage = ViewBag.ApiUsage as List<Notification_Application.Models.ApiUsage>;
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">⚙️ Usage Limits & AI Settings</h2>
+            <p class="text-muted">Configure advanced usage limits and AI feature controls</p>
+        </div>
+    </div>
+
+    <!-- Current Usage Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">AI Requests (Month)</p>
+                            <h3 class="mb-0">@(apiUsage?.Count(a => a.ApiType == "OpenAI") ?? 0)</h3>
+                        </div>
+                        <i class="bi bi-cpu text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Limit: @(tenant?.SubscriptionPlan?.MaxAIRequests ?? 0)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Popups Created</p>
+                            <h3 class="mb-0">@tenant?.PopupCount</h3>
+                        </div>
+                        <i class="bi bi-megaphone text-success" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Limit: @(tenant?.SubscriptionPlan?.MaxPopups ?? 0)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Monthly Views</p>
+                            <h3 class="mb-0">@tenant?.MonthlyPopupViews.ToString("N0")</h3>
+                        </div>
+                        <i class="bi bi-eye text-info" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Limit: @((tenant?.SubscriptionPlan?.MaxPopupViews ?? 0).ToString("N0"))</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Forms Created</p>
+                            <h3 class="mb-0">@(ViewContext.HttpContext.Items["FormCount"] ?? 0)</h3>
+                        </div>
+                        <i class="bi bi-ui-checks text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Limit: @(tenant?.SubscriptionPlan?.MaxForms ?? 0)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Limit Configuration -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Configure Limits</h5>
+                </div>
+                <div class="card-body">
+                    <form id="limits-form">
+                        <input type="hidden" id="tenantId" value="@tenant?.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Max AI Requests per Month</label>
+                            <input type="number" class="form-control" id="maxAIRequests" value="@(tenant?.SubscriptionPlan?.MaxAIRequests ?? 100)" />
+                            <small class="text-muted">OpenAI API calls for popup generation, reports, etc.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Max Popups</label>
+                            <input type="number" class="form-control" id="maxPopups" value="@(tenant?.SubscriptionPlan?.MaxPopups ?? 10)" />
+                            <small class="text-muted">Total number of popup campaigns allowed</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Max Forms</label>
+                            <input type="number" class="form-control" id="maxForms" value="@(tenant?.SubscriptionPlan?.MaxForms ?? 5)" />
+                            <small class="text-muted">Total number of forms allowed</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Max Popup Views per Month</label>
+                            <input type="number" class="form-control" id="maxViews" value="@(tenant?.SubscriptionPlan?.MaxPopupViews ?? 10000)" />
+                            <small class="text-muted">Monthly view limit across all popups</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-save me-2"></i>Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-robot me-2"></i>AI Feature Controls</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="aiPopupBuilder" checked>
+                        <label class="form-check-label" for="aiPopupBuilder">
+                            <strong>AI Popup Builder</strong>
+                            <small class="d-block text-muted">Allow users to create popups with AI assistance</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="aiReportBuilder" checked>
+                        <label class="form-check-label" for="aiReportBuilder">
+                            <strong>AI Report Builder</strong>
+                            <small class="d-block text-muted">Generate custom reports with natural language</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="aiContentSuggestions" checked>
+                        <label class="form-check-label" for="aiContentSuggestions">
+                            <strong>AI Content Suggestions</strong>
+                            <small class="d-block text-muted">Get AI-powered content recommendations</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="aiAnalytics" checked>
+                        <label class="form-check-label" for="aiAnalytics">
+                            <strong>AI Analytics Insights</strong>
+                            <small class="d-block text-muted">AI-driven insights and predictions</small>
+                        </label>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">Recent AI Usage</h6>
+                    <div class="list-group">
+                        @if (apiUsage != null && apiUsage.Any())
+                        {
+                            @foreach (var usage in apiUsage.Take(5))
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>@usage.ApiType</strong>
+                                        <span class="badge bg-primary">@usage.TokensUsed tokens</span>
+                                    </div>
+                                    <small class="text-muted">@usage.CreatedAt.ToString("MMM dd, h:mm tt")</small>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center py-3">No AI usage yet</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('limits-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                tenantId: parseInt(document.getElementById('tenantId').value),
+                maxAIRequests: parseInt(document.getElementById('maxAIRequests').value),
+                maxPopups: parseInt(document.getElementById('maxPopups').value),
+                maxForms: parseInt(document.getElementById('maxForms').value)
+            };
+
+            try {
+                const response = await fetch('/Admin/UpdateUsageLimits', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Usage limits updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to update limits');
+            }
+        });
+    </script>
+}

@@ -1,17 +1,66 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using Notification_Application.Models
+@using Notification_Application.Data
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject ApplicationDbContext DbContext
+
+@{
+    // Get tenant analytics configuration for logged-in users
+    string? tenantGTM = null;
+    string? tenantGA4 = null;
+    
+    if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser != null)
+        {
+            var tenant = await DbContext.Tenants.FindAsync(currentUser.TenantId);
+            if (tenant != null)
+            {
+                tenantGTM = tenant.GoogleTagManagerId;
+                tenantGA4 = tenant.GoogleAnalytics4Id;
+            }
+        }
+    }
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Popup Manager Pro</title>
 
-    <!-- Google Tag Manager -->
+    <!-- Google Tag Manager (Site-wide) -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-WHQDRT72');</script>
     <!-- End Google Tag Manager -->
+
+    @if (!string.IsNullOrEmpty(tenantGTM))
+    {
+        <!-- Tenant-specific Google Tag Manager -->
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','@tenantGTM');</script>
+    }
+
+    @if (!string.IsNullOrEmpty(tenantGA4))
+    {
+        <!-- Tenant-specific Google Analytics 4 -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@tenantGA4"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '@tenantGA4');
+        </script>
+    }
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -61,8 +110,12 @@
                                 <a asp-controller="Form" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
                                     Forms
                                 </a>
-                                <a asp-controller="Template" asp-action="SelectTemplate" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                    Templates
+                                <a asp-controller="LandingPage" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                                    Landing Pages
+                                </a>
+                                <!-- Numbers (Call Tracking) -->
+                                <a asp-controller="Numbers" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
+                                    Numbers
                                 </a>
                                 <!-- Analytics -->
                                 <a asp-controller="UserDashboard" asp-action="Analytics" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
@@ -121,9 +174,6 @@
                                 <a asp-controller="Popup" asp-action="Index" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
                                     Popups
                                 </a>
-                                <a asp-controller="Template" asp-action="SelectTemplate" class="text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                    Templates
-                                </a>
                                 <div class="dropdown inline-flex items-center px-1 pt-1">
                                     <button class="text-gray-500 hover:text-gray-700 text-sm font-medium dropdown-toggle" type="button" id="adminMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                         Management
@@ -135,15 +185,34 @@
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Users">
                                             <i class="bi bi-people me-2"></i>Team Members
                                         </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="PixelInstallation">
+                                            <i class="bi bi-code-square me-2"></i>Install Pixel
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Blog">
                                             <i class="bi bi-file-text me-2"></i>Blog Posts
                                         </a></li>
-                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Templates">
-                                            <i class="bi bi-collection me-2"></i>Popup Templates
+                                        <li><a class="dropdown-item" asp-controller="WebsitePage" asp-action="Index">
+                                            <i class="bi bi-file-earmark-text me-2"></i>Website Pages
                                         </a></li>
-                                        @if (User.IsInRole("SuperAdmin"))
+                                        <li><a class="dropdown-item" asp-controller="Form" asp-action="Index">
+                                            <i class="bi bi-ui-checks me-2"></i>Forms
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="LandingPage" asp-action="Index">
+                                            <i class="bi bi-window me-2"></i>Landing Pages
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Crm" asp-action="Settings">
+                                            <i class="bi bi-sliders me-2"></i>CRM Settings
+                                        </a></li>
+                                        <li><a class="dropdown-item" asp-controller="Integration" asp-action="Index">
+                                            <i class="bi bi-plug me-2"></i>Integrations
+                                        </a></li>
+                                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("MasterAdmin") || User.IsInRole("MasterAdmin"))
                                         {
                                             <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="UsageLimits">
+                                                <i class="bi bi-speedometer2 me-2"></i>Usage Limits & AI
+                                            </a></li>
                                             <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="AllTenants">
                                                 <i class="bi bi-building me-2"></i>All Tenants
                                             </a></li>
@@ -152,6 +221,16 @@
                                             </a></li>
                                         }
                                         <li><hr class="dropdown-divider"></li>
+                                        @if (User.Identity?.IsAuthenticated == true && User.Identity.Name == "joe.whyte@gmail.com")
+                                        {
+                                            <li><a class="dropdown-item text-primary fw-bold" href="#" onclick="event.preventDefault(); document.getElementById('role-form-admin').submit();">
+                                                <i class="bi bi-shield-check me-2"></i>Switch to @(User.IsInRole("Admin") ? "User" : "Admin") View
+                                            </a></li>
+                                            <form id="role-form-admin" asp-controller="Account" asp-action="SwitchRole" method="post" class="d-none">
+                                                <input type="hidden" name="role" value="@(User.IsInRole("Admin") ? "User" : "Admin")" />
+                                            </form>
+                                            <li><hr class="dropdown-divider"></li>
+                                        }
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Settings">
                                             <i class="bi bi-gear me-2"></i>Tenant Settings
                                         </a></li>
@@ -185,10 +264,6 @@
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <div class="flex items-center space-x-4">
-                            <a asp-controller="Popup" asp-action="Create" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                                <i class="fas fa-plus mr-2"></i>New Popup
-                            </a>
-
                             <!-- User Profile Dropdown -->
                             <div class="dropdown">
                                 <button class="btn btn-link p-0 dropdown-toggle d-flex align-items-center text-decoration-none" 
@@ -209,16 +284,22 @@
                                     <li class="px-3 py-2 border-bottom">
                                         <p class="mb-1 fw-medium text-dark small">@User.Identity.Name</p>
                                         <p class="mb-0 text-muted" style="font-size: 0.75rem;">
-                                            @if (User.IsInRole("SuperAdmin"))
+                                            @if (User.IsInRole("MasterAdmin"))
+                                            {
+                                                <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                                    <i class="fas fa-crown me-1"></i>Master Admin
+                                                </span>
+                                            }
+                                            else if (User.IsInRole("SuperAdmin"))
                                             {
                                                 <span class="badge bg-purple text-white">
-                                                    <i class="fas fa-crown me-1"></i>Super Admin
+                                                    <i class="fas fa-user-shield me-1"></i>Super Admin
                                                 </span>
                                             }
                                             else if (User.IsInRole("Admin"))
                                             {
                                                 <span class="badge bg-primary">
-                                                    <i class="fas fa-user-shield me-1"></i>Admin
+                                                    <i class="fas fa-user-cog me-1"></i>Admin
                                                 </span>
                                             }
                                             else
@@ -229,6 +310,30 @@
                                             }
                                         </p>
                                     </li>
+
+                                    @if ((User.IsInRole("Admin") || User.IsInRole("SuperAdmin") || User.IsInRole("MasterAdmin")))
+                                    {
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li class="px-3 py-2">
+                                            <p class="mb-1 text-muted" style="font-size: 0.7rem;">SWITCH VIEW</p>
+                                            <div class="d-flex gap-2">
+                                                <a class="btn btn-sm @(User.IsInRole("User") ? "btn-primary" : "btn-outline-primary") flex-fill" 
+                                                   href="#" 
+                                                   onclick="event.preventDefault(); switchToView('User');">
+                                                    <i class="bi bi-speedometer2 me-1"></i>User Panel
+                                                </a>
+                                                <a class="btn btn-sm @((User.IsInRole("Admin") || User.IsInRole("SuperAdmin") || User.IsInRole("MasterAdmin")) && !User.IsInRole("User") ? "btn-primary" : "btn-outline-primary") flex-fill" 
+                                                   href="#" 
+                                                   onclick="event.preventDefault(); switchToView('Admin');">
+                                                    <i class="bi bi-shield-lock me-1"></i>Admin Panel
+                                                </a>
+                                            </div>
+                                        </li>
+                                        <form id="role-switch-form" asp-controller="Account" asp-action="SwitchRole" method="post" class="d-none">
+                                            <input type="hidden" name="role" id="target-role" value="" />
+                                        </form>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
 
                                     <!-- Menu Items -->
                                     <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">
@@ -363,6 +468,12 @@
                 setTimeout(() => errorMsg.remove(), 500);
             }
         }, 5000);
+
+        // Role switcher function
+        function switchToView(role) {
+            document.getElementById('target-role').value = role;
+            document.getElementById('role-switch-form').submit();
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

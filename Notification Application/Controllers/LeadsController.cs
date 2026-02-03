@@ -21,7 +21,17 @@ public class LeadsController : Controller
     }
 
     // GET: Leads
-    public async Task<IActionResult> Index(int? popupId, string? status, string? searchTerm, int page = 1)
+    public async Task<IActionResult> Index(
+        int? popupId, 
+        string? status, 
+        string? disposition,
+        string? source,
+        string? utmSource,
+        string? utmCampaign,
+        DateTime? startDate,
+        DateTime? endDate,
+        string? searchTerm, 
+        int page = 1)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
@@ -41,6 +51,40 @@ public class LeadsController : Controller
         if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeadStatus>(status, out var leadStatus))
         {
             baseQuery = baseQuery.Where(l => l.Status == leadStatus);
+        }
+        
+        // Filter by disposition
+        if (!string.IsNullOrEmpty(disposition) && Enum.TryParse<LeadDisposition>(disposition, out var leadDisposition))
+        {
+            baseQuery = baseQuery.Where(l => l.Disposition == leadDisposition);
+        }
+        
+        // Filter by source
+        if (!string.IsNullOrEmpty(source))
+        {
+            baseQuery = baseQuery.Where(l => l.Source != null && l.Source.Contains(source));
+        }
+        
+        // Filter by UTM source
+        if (!string.IsNullOrEmpty(utmSource))
+        {
+            baseQuery = baseQuery.Where(l => l.UtmSource == utmSource);
+        }
+        
+        // Filter by UTM campaign
+        if (!string.IsNullOrEmpty(utmCampaign))
+        {
+            baseQuery = baseQuery.Where(l => l.UtmCampaign == utmCampaign);
+        }
+        
+        // Filter by date range
+        if (startDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(l => l.CapturedAt >= startDate.Value);
+        }
+        if (endDate.HasValue)
+        {
+            baseQuery = baseQuery.Where(l => l.CapturedAt <= endDate.Value.AddDays(1));
         }
 
         // Search
@@ -64,8 +108,30 @@ public class LeadsController : Controller
         ViewBag.Popups = popups;
         ViewBag.CurrentPopupId = popupId;
         ViewBag.CurrentStatus = status;
+        ViewBag.CurrentDisposition = disposition;
+        ViewBag.CurrentSource = source;
+        ViewBag.CurrentUtmSource = utmSource;
+        ViewBag.CurrentUtmCampaign = utmCampaign;
+        ViewBag.StartDate = startDate;
+        ViewBag.EndDate = endDate;
         ViewBag.SearchTerm = searchTerm;
         ViewBag.CurrentPage = page;
+        
+        // Get unique values for filters
+        var allLeads = await _context.Leads.Where(l => l.TenantId == user.TenantId).ToListAsync();
+        ViewBag.UtmSources = allLeads.Where(l => !string.IsNullOrEmpty(l.UtmSource)).Select(l => l.UtmSource).Distinct().OrderBy(s => s).ToList();
+        ViewBag.UtmCampaigns = allLeads.Where(l => !string.IsNullOrEmpty(l.UtmCampaign)).Select(l => l.UtmCampaign).Distinct().OrderBy(s => s).ToList();
+        
+        // Calculate stats for summary cards
+        var allTenantLeads = await _context.Leads.Where(l => l.TenantId == user.TenantId).ToListAsync();
+        ViewBag.Stats = new
+        {
+            Total = allTenantLeads.Count,
+            New = allTenantLeads.Count(l => l.Status == LeadStatus.New),
+            Contacted = allTenantLeads.Count(l => l.Status == LeadStatus.Contacted),
+            Qualified = allTenantLeads.Count(l => l.Status == LeadStatus.Qualified),
+            Converted = allTenantLeads.Count(l => l.Status == LeadStatus.Converted)
+        };
 
         // Pagination
         int pageSize = 50;

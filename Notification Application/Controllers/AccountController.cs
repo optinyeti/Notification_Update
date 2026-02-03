@@ -261,4 +261,47 @@ public class AccountController : Controller
         
         return domain;
     }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> SwitchRole(string role)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null || user.Email != "joe.whyte@gmail.com")
+        {
+            return Forbid();
+        }
+
+        // Only joe.whyte@gmail.com can switch between Admin and User roles
+        if (role == "Admin" || role == "User")
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);
+            
+            // User must have both Admin and User roles to switch
+            if (!userRoles.Contains("Admin") || !userRoles.Contains("User"))
+            {
+                return BadRequest("You don't have access to role switching");
+            }
+
+            // Update the user's current role
+            if (role == "Admin")
+            {
+                user.Role = UserRole.Admin;
+            }
+            else
+            {
+                user.Role = UserRole.User;
+            }
+
+            await _userManager.UpdateAsync(user);
+            
+            // Re-sign in to update claims
+            await _signInManager.RefreshSignInAsync(user);
+
+            TempData["Success"] = $"Switched to {role} role successfully";
+            return RedirectToAction("Index", role == "Admin" ? "Admin" : "UserDashboard");
+        }
+
+        return BadRequest("Invalid role");
+    }
 }

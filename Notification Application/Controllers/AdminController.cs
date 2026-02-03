@@ -15,7 +15,7 @@ namespace Notification_Application.Controllers;
 /// User-specific dashboards are in UserDashboardController.
 /// </summary>
 [Authorize(Roles = "Admin,SuperAdmin")]
-public class AdminController : Controller
+public partial class AdminController : Controller
 {
     private readonly ITenantService _tenantService;
     private readonly IBillingService _billingService;
@@ -552,5 +552,47 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("BlogCategories");
+    }
+
+    public async Task<IActionResult> PixelInstallation()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(t => t.Id == user.TenantId);
+
+        if (tenant == null) return NotFound();
+
+        return View(tenant);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> TestPixelInstallation()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        // Check if we have any popup views or analytics data for this tenant
+        var hasViews = await _context.PopupAnalytics
+            .AnyAsync(pa => pa.Popup!.TenantId == user.TenantId && pa.Date >= DateTime.UtcNow.AddDays(-7));
+
+        var totalEvents = await _context.PopupAnalytics
+            .Where(pa => pa.Popup!.TenantId == user.TenantId)
+            .SumAsync(pa => pa.Views);
+
+        var lastEvent = await _context.PopupAnalytics
+            .Where(pa => pa.Popup!.TenantId == user.TenantId)
+            .OrderByDescending(pa => pa.Date)
+            .Select(pa => pa.Date)
+            .FirstOrDefaultAsync();
+
+        return Json(new
+        {
+            success = true,
+            isInstalled = hasViews,
+            totalEvents = totalEvents,
+            lastEventTime = lastEvent != default ? lastEvent.ToString("MMM dd, yyyy h:mm tt") : null
+        });
     }
 }

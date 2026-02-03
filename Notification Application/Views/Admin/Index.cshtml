@@ -59,116 +59,254 @@
     </div>
 
     <!-- Admin Navigation -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <a asp-action="Analytics" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-purple-100 p-3 rounded-lg">
-                    <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">Analytics</h3>
-                    <p class="text-sm text-gray-600">View detailed analytics</p>
-                </div>
-            </div>
-        </a>
-        
-        <a asp-action="Users" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-blue-100 p-3 rounded-lg">
-                    <i class="fas fa-users text-blue-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">User Management</h3>
-                    <p class="text-sm text-gray-600">Manage your team</p>
-                </div>
-            </div>
-        </a>
-        
-        <a asp-action="Settings" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-green-100 p-3 rounded-lg">
-                    <i class="fas fa-cog text-green-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">Tenant Settings</h3>
-                    <p class="text-sm text-gray-600">Configure your tenant</p>
-                </div>
-            </div>
-        </a>
-        
-        <a asp-action="Subscription" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-yellow-100 p-3 rounded-lg">
-                    <i class="fas fa-credit-card text-yellow-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">Subscription</h3>
-                    <p class="text-sm text-gray-600">Manage your plan</p>
-                </div>
-            </div>
-        </a>
-        
-        <a asp-action="Support" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-orange-100 p-3 rounded-lg">
-                    <i class="fas fa-life-ring text-orange-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">Support Tickets</h3>
-                    <p class="text-sm text-gray-600">View and manage tickets</p>
-                </div>
-            </div>
-        </a>
-        
-        <a asp-action="Templates" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-indigo-100 p-3 rounded-lg">
-                    <i class="fas fa-layer-group text-indigo-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">Templates</h3>
-                    <p class="text-sm text-gray-600">Manage popup templates</p>
-                </div>
-            </div>
-        </a>
-
-        <a asp-action="Blog" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-pink-100 p-3 rounded-lg">
-                    <i class="fas fa-newspaper text-pink-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">Blog Posts</h3>
-                    <p class="text-sm text-gray-600">Manage blog content</p>
-                </div>
-            </div>
-        </a>
-        
-        @if (User.IsInRole("SuperAdmin"))
-        {
-            <a asp-action="Plans" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Marketing & Campaigns</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a asp-controller="Popup" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
                 <div class="flex items-center">
-                    <div class="bg-teal-100 p-3 rounded-lg">
-                        <i class="fas fa-box text-teal-600 text-xl"></i>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-window-maximize text-blue-600 text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <h3 class="font-semibold text-gray-900">Packages/Plans</h3>
-                        <p class="text-sm text-gray-600">Manage subscription packages</p>
+                        <h3 class="font-semibold text-gray-900">Popups</h3>
+                        <p class="text-sm text-gray-600">Manage popup campaigns</p>
                     </div>
                 </div>
             </a>
-        }
-        
-        <a asp-controller="Home" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
-            <div class="flex items-center">
-                <div class="bg-gray-100 p-3 rounded-lg">
-                    <i class="fas fa-arrow-left text-gray-600 text-xl"></i>
+
+            <a asp-controller="Form" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-edit text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Forms</h3>
+                        <p class="text-sm text-gray-600">Create & manage forms</p>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="font-semibold text-gray-900">Back to Dashboard</h3>
-                    <p class="text-sm text-gray-600">Return to main dashboard</p>
+            </a>
+
+            <a asp-controller="LandingPage" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-file-alt text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Landing Pages</h3>
+                        <p class="text-sm text-gray-600">Build landing pages</p>
+                    </div>
                 </div>
-            </div>
-        </a>
+            </a>
+
+            <a asp-controller="WebsitePages" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-indigo-100 p-3 rounded-lg">
+                        <i class="fas fa-globe text-indigo-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Website Pages</h3>
+                        <p class="text-sm text-gray-600">Edit Home, Pricing, Features</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Contacts & CRM</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a asp-controller="Leads" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-teal-100 p-3 rounded-lg">
+                        <i class="fas fa-address-book text-teal-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Contacts/Leads</h3>
+                        <p class="text-sm text-gray-600">Manage your contacts</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-controller="Crm" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-cyan-100 p-3 rounded-lg">
+                        <i class="fas fa-briefcase text-cyan-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">CRM Pipelines</h3>
+                        <p class="text-sm text-gray-600">Manage deals & pipelines</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-controller="Numbers" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-phone text-red-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Phone Numbers</h3>
+                        <p class="text-sm text-gray-600">Manage phone tracking</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-controller="Integration" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-orange-100 p-3 rounded-lg">
+                        <i class="fas fa-code text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Pixel Tracking</h3>
+                        <p class="text-sm text-gray-600">Install tracking pixel</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Content & Media</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a asp-action="Blog" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-pink-100 p-3 rounded-lg">
+                        <i class="fas fa-newspaper text-pink-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Blog Posts</h3>
+                        <p class="text-sm text-gray-600">Manage blog content</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-controller="Media" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-images text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Media Library</h3>
+                        <p class="text-sm text-gray-600">Images & media files</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-action="Templates" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-indigo-100 p-3 rounded-lg">
+                        <i class="fas fa-layer-group text-indigo-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Templates</h3>
+                        <p class="text-sm text-gray-600">Popup & email templates</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Administration</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a asp-action="Analytics" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Analytics</h3>
+                        <p class="text-sm text-gray-600">View detailed analytics</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-action="Users" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Team Members</h3>
+                        <p class="text-sm text-gray-600">Manage your team</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-action="Settings" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-cog text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Settings</h3>
+                        <p class="text-sm text-gray-600">Tenant configuration</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-action="Subscription" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-credit-card text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Billing & Plan</h3>
+                        <p class="text-sm text-gray-600">Manage subscription</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-action="Support" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-orange-100 p-3 rounded-lg">
+                        <i class="fas fa-life-ring text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Support</h3>
+                        <p class="text-sm text-gray-600">Get help & support</p>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-action="UsageLimits" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-tachometer-alt text-red-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Usage Limits</h3>
+                        <p class="text-sm text-gray-600">Track plan usage</p>
+                    </div>
+                </div>
+            </a>
+
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("UltraAdmin"))
+            {
+                <a asp-action="Plans" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                    <div class="flex items-center">
+                        <div class="bg-teal-100 p-3 rounded-lg">
+                            <i class="fas fa-box text-teal-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-gray-900">Plans</h3>
+                            <p class="text-sm text-gray-600">Manage packages</p>
+                        </div>
+                    </div>
+                </a>
+            }
+
+            <a asp-controller="Home" asp-action="Index" class="block bg-white p-6 rounded-lg shadow border hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <div class="bg-gray-100 p-3 rounded-lg">
+                        <i class="fas fa-arrow-left text-gray-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="font-semibold text-gray-900">Main Dashboard</h3>
+                        <p class="text-sm text-gray-600">Return to dashboard</p>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
 </div>

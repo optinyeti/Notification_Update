@@ -5,8 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Notification_Application.Data;
 using Notification_Application.Models;
 using Notification_Application.Services;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 
 namespace Notification_Application.Controllers
 {
@@ -84,13 +83,19 @@ namespace Notification_Application.Controllers
 
                 // Get image dimensions
                 int width = 0, height = 0;
-                using (var image = await Image.LoadAsync(file.OpenReadStream()))
+                using (var stream = file.OpenReadStream())
+                using (var bitmap = SKBitmap.Decode(stream))
                 {
-                    width = image.Width;
-                    height = image.Height;
+                    width = bitmap.Width;
+                    height = bitmap.Height;
                     
                     // Save optimized image
-                    await image.SaveAsync(filePath);
+                    using (var image = SKImage.FromBitmap(bitmap))
+                    using (var data = image.Encode(SKEncodedImageFormat.Jpeg, 85))
+                    using (var fileStream = System.IO.File.OpenWrite(filePath))
+                    {
+                        data.SaveTo(fileStream);
+                    }
                 }
 
                 // Save to database

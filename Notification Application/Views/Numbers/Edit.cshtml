@@ -1,0 +1,87 @@
+@model Notification_Application.Models.PhoneNumber
+
+@{
+    ViewData["Title"] = "Edit Phone Number";
+}
+
+<div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <a asp-action="Details" asp-route-id="@Model.Id" class="text-blue-600 hover:text-blue-800 text-sm font-medium mb-4 inline-block">
+            <i class="fas fa-arrow-left me-2"></i>Back to Details
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900">Edit Phone Number</h1>
+        <p class="text-gray-600 mt-2">Update settings for @Model.Number</p>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            @TempData["Error"]
+        </div>
+    }
+
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="bg-white rounded-lg shadow border p-6">
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <p class="text-2xl font-bold text-blue-600">@Model.Number</p>
+            <p class="text-xs text-gray-500 mt-1">Number cannot be changed</p>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Friendly Name *</label>
+            <input type="text" name="friendlyName" value="@Model.FriendlyName" required 
+                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Forward Calls To *</label>
+            <input type="tel" name="forwardToNumber" value="@Model.ForwardToNumber" required 
+                   pattern="^\+?[1-9]\d{1,14}$"
+                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            <p class="text-xs text-gray-500 mt-1">Enter the phone number where calls should be forwarded</p>
+        </div>
+
+        <div class="border-t pt-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-chart-line text-blue-600 me-2"></i>Tracking Parameters (Optional)
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">UTM Source</label>
+                    <input type="text" name="utmSource" value="@Model.UtmSource" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">UTM Medium</label>
+                    <input type="text" name="utmMedium" value="@Model.UtmMedium" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">UTM Campaign</label>
+                    <input type="text" name="utmCampaign" value="@Model.UtmCampaign" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">UTM Term</label>
+                    <input type="text" name="utmTerm" value="@Model.UtmTerm" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">UTM Content</label>
+                    <input type="text" name="utmContent" value="@Model.UtmContent" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
+                <i class="fas fa-save me-2"></i>Save Changes
+            </button>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-center px-6 py-3 rounded-lg font-medium">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>

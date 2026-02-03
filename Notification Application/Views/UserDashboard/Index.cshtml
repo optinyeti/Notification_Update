@@ -86,111 +86,304 @@
         <p class="text-gray-600 mt-2">Welcome back! Here's an overview of your account.</p>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <a asp-controller="Popup" asp-action="CreateCampaign" class="block bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
-            <div class="flex items-center gap-4">
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-plus text-2xl"></i>
+    <!-- Onboarding Checklist Widget -->
+    @{
+        var progress = ViewBag.OnboardingProgress as OnboardingProgress;
+        var showOnboarding = progress != null && !progress.HasDismissed && !progress.IsComplete;
+    }
+    @if (showOnboarding)
+    {
+        <div id="onboardingWidget" class="mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 p-6 shadow-lg relative">
+            <button onclick="dismissOnboarding()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <div class="flex items-start gap-4 mb-6">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 shadow-lg">
+                    <i class="fas fa-rocket text-white text-2xl"></i>
                 </div>
-                <div>
-                    <h3 class="font-semibold text-lg">Create Campaign</h3>
-                    <p class="text-blue-100 text-sm">Start a new popup campaign</p>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-gray-900">Get Started with OptinYeti</h2>
+                    <p class="text-gray-600 mt-1">Complete these steps to unlock the full power of your account</p>
                 </div>
             </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold text-gray-700">Overall Progress</span>
+                    <span class="text-sm font-bold text-blue-600">@progress.CompletionPercentage%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-full transition-all duration-500 ease-out"
+                         style="width: @progress.CompletionPercentage%"></div>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Step 1: Add Website -->
+                <div class="flex items-center gap-3 p-4 bg-white rounded-lg @(progress.HasAddedWebsite ? "border-2 border-green-300" : "border border-gray-200")">
+                    <div class="flex-shrink-0">
+                        @if (progress.HasAddedWebsite)
+                        {
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-lg"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-globe text-gray-400"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">Add Your Website</h3>
+                        <p class="text-sm text-gray-600">Connect your domain to start tracking</p>
+                    </div>
+                    @if (!progress.HasAddedWebsite)
+                    {
+                        <a asp-controller="Integration" asp-action="Index" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            Start
+                        </a>
+                    }
+                </div>
+
+                <!-- Step 2: Create Popup -->
+                <div class="flex items-center gap-3 p-4 bg-white rounded-lg @(progress.HasCreatedPopup ? "border-2 border-green-300" : "border border-gray-200")">
+                    <div class="flex-shrink-0">
+                        @if (progress.HasCreatedPopup)
+                        {
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-lg"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-window-maximize text-gray-400"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">Create Your First Popup</h3>
+                        <p class="text-sm text-gray-600">Design and launch a popup campaign</p>
+                    </div>
+                    @if (!progress.HasCreatedPopup)
+                    {
+                        <a asp-controller="Popup" asp-action="CreateCampaign" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            Start
+                        </a>
+                    }
+                </div>
+
+                <!-- Step 3: Install Pixel -->
+                <div class="flex items-center gap-3 p-4 bg-white rounded-lg @(progress.HasInstalledPixel ? "border-2 border-green-300" : "border border-gray-200")">
+                    <div class="flex-shrink-0">
+                        @if (progress.HasInstalledPixel)
+                        {
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-lg"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-code text-gray-400"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">Install Tracking Pixel</h3>
+                        <p class="text-sm text-gray-600">Add tracking code to your website</p>
+                    </div>
+                    @if (!progress.HasInstalledPixel)
+                    {
+                        <a asp-controller="Integration" asp-action="Index" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            Start
+                        </a>
+                    }
+                </div>
+
+                <!-- Step 4: Connect Integration -->
+                <div class="flex items-center gap-3 p-4 bg-white rounded-lg @(progress.HasConnectedIntegration ? "border-2 border-green-300" : "border border-gray-200")">
+                    <div class="flex-shrink-0">
+                        @if (progress.HasConnectedIntegration)
+                        {
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-lg"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-plug text-gray-400"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">Connect an Integration</h3>
+                        <p class="text-sm text-gray-600">Sync leads to your favorite tools</p>
+                    </div>
+                    @if (!progress.HasConnectedIntegration)
+                    {
+                        <a asp-controller="Integration" asp-action="Index" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            Start
+                        </a>
+                    }
+                </div>
+
+                <!-- Step 5: Configure Targeting -->
+                <div class="flex items-center gap-3 p-4 bg-white rounded-lg @(progress.HasConfiguredTargeting ? "border-2 border-green-300" : "border border-gray-200")">
+                    <div class="flex-shrink-0">
+                        @if (progress.HasConfiguredTargeting)
+                        {
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-lg"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-bullseye text-gray-400"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">Set Up Targeting</h3>
+                        <p class="text-sm text-gray-600">Target the right audience</p>
+                    </div>
+                    @if (!progress.HasConfiguredTargeting)
+                    {
+                        <a asp-controller="Popup" asp-action="Index" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            Start
+                        </a>
+                    }
+                </div>
+
+                <!-- Step 6: View Analytics -->
+                <div class="flex items-center gap-3 p-4 bg-white rounded-lg @(progress.HasViewedAnalytics ? "border-2 border-green-300" : "border border-gray-200")">
+                    <div class="flex-shrink-0">
+                        @if (progress.HasViewedAnalytics)
+                        {
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-lg"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-line text-gray-400"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">Check Your Analytics</h3>
+                        <p class="text-sm text-gray-600">Monitor performance metrics</p>
+                    </div>
+                    @if (!progress.HasViewedAnalytics)
+                    {
+                        <a asp-controller="Popup" asp-action="Analytics" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                            Start
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @section Scripts {
+            <script>
+                async function dismissOnboarding() {
+                    if (!confirm('Are you sure you want to dismiss this checklist? You can always access help from the navigation menu.')) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/UserDashboard/DismissOnboarding', {
+                            method: 'POST'
+                        });
+
+                        if (response.ok) {
+                            document.getElementById('onboardingWidget').style.display = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Error dismissing onboarding:', error);
+                    }
+                }
+            </script>
+        }
+    }
+
+    <!-- Quick Action Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Create Popup -->
+        <a asp-controller="Popup" asp-action="CreateCampaign" class="block bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200">
+            <div class="flex items-center justify-between mb-4">
+                <i class="fas fa-window-maximize text-3xl"></i>
+                <i class="fas fa-arrow-right text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Create Popup</h3>
+            <p class="text-blue-100 text-sm">Launch a new popup campaign to capture leads and engage visitors</p>
         </a>
 
-        <a asp-controller="Popup" asp-action="Index" class="block bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
-            <div class="flex items-center gap-4">
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-window-restore text-2xl"></i>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg">My Popups</h3>
-                    <p class="text-purple-100 text-sm">View and manage campaigns</p>
-                </div>
+        <!-- Create Landing Page -->
+        <a asp-controller="LandingPage" asp-action="Create" class="block bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white hover:from-green-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200">
+            <div class="flex items-center justify-between mb-4">
+                <i class="fas fa-file-alt text-3xl"></i>
+                <i class="fas fa-arrow-right text-2xl"></i>
             </div>
+            <h3 class="text-xl font-bold mb-2">Create Landing Page</h3>
+            <p class="text-green-100 text-sm">Build high-converting landing pages with our drag-and-drop builder</p>
         </a>
 
-        <a asp-controller="Template" asp-action="SelectTemplate" class="block bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
-            <div class="flex items-center gap-4">
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-palette text-2xl"></i>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg">Templates</h3>
-                    <p class="text-green-100 text-sm">Browse popup templates</p>
-                </div>
+        <!-- Create Number (Call Tracking) -->
+        <a asp-controller="Numbers" asp-action="Search" class="block bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white hover:from-purple-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-200">
+            <div class="flex items-center justify-between mb-4">
+                <i class="fas fa-phone text-3xl"></i>
+                <i class="fas fa-arrow-right text-2xl"></i>
             </div>
+            <h3 class="text-xl font-bold mb-2">Get Number</h3>
+            <p class="text-purple-100 text-sm">Purchase a tracking number to monitor calls and conversions</p>
         </a>
     </div>
 
-    <!-- Stats Overview -->
+    <!-- Performance Metrics Overview -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white p-6 rounded-lg shadow border">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Total Campaigns</h3>
-                <i class="fas fa-chart-line text-blue-500"></i>
+                <h3 class="text-sm font-medium text-gray-600">Total Leads</h3>
+                <i class="fas fa-users text-blue-500"></i>
             </div>
-            <p class="text-3xl font-bold text-gray-900">0</p>
-            <p class="text-xs text-gray-500 mt-2">All time</p>
+            <p class="text-3xl font-bold text-gray-900">@(Model?.TotalLeads ?? 0)</p>
+            <p class="text-xs text-gray-500 mt-2">All time captures</p>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow border">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Active Popups</h3>
-                <i class="fas fa-toggle-on text-green-500"></i>
+                <h3 class="text-sm font-medium text-gray-600">New This Week</h3>
+                <i class="fas fa-calendar-week text-green-500"></i>
             </div>
-            <p class="text-3xl font-bold text-gray-900">0</p>
-            <p class="text-xs text-gray-500 mt-2">Currently live</p>
+            <p class="text-3xl font-bold text-gray-900">@(Model?.NewLeadsThisWeek ?? 0)</p>
+            <p class="text-xs text-gray-500 mt-2">Recent activity</p>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow border">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Total Views</h3>
-                <i class="fas fa-eye text-purple-500"></i>
+                <h3 class="text-sm font-medium text-gray-600">Form Submissions</h3>
+                <i class="fas fa-file-alt text-purple-500"></i>
             </div>
-            <p class="text-3xl font-bold text-gray-900">0</p>
-            <p class="text-xs text-gray-500 mt-2">Last 30 days</p>
+            <p class="text-3xl font-bold text-gray-900">@(Model?.TotalFormSubmissions ?? 0)</p>
+            <p class="text-xs text-gray-500 mt-2">Total captures</p>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow border">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Conversions</h3>
-                <i class="fas fa-check-circle text-orange-500"></i>
+                <h3 class="text-sm font-medium text-gray-600">Pipeline Value</h3>
+                <i class="fas fa-dollar-sign text-orange-500"></i>
             </div>
-            <p class="text-3xl font-bold text-gray-900">0</p>
-            <p class="text-xs text-gray-500 mt-2">Last 30 days</p>
-        </div>
-    </div>
-
-    <!-- Quick Links -->
-    <div class="bg-white rounded-lg shadow border p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Links</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a asp-controller="UserDashboard" asp-action="Usage" class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 transition">
-                <i class="fas fa-chart-bar text-blue-500 text-xl"></i>
-                <div>
-                    <div class="font-medium text-gray-900">Usage & Limits</div>
-                    <div class="text-sm text-gray-500">View your plan usage</div>
-                </div>
-            </a>
-
-            <a asp-controller="UserDashboard" asp-action="Analytics" class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 transition">
-                <i class="fas fa-chart-line text-purple-500 text-xl"></i>
-                <div>
-                    <div class="font-medium text-gray-900">Analytics</div>
-                    <div class="text-sm text-gray-500">View campaign performance</div>
-                </div>
-            </a>
-
-            <a asp-controller="UserDashboard" asp-action="Support" class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 transition">
-                <i class="fas fa-life-ring text-orange-500 text-xl"></i>
-                <div>
-                    <div class="font-medium text-gray-900">Support</div>
-                    <div class="text-sm text-gray-500">Get help and support</div>
-                </div>
-            </a>
+            <p class="text-3xl font-bold text-gray-900">@((Model?.TotalPipelineValue ?? 0).ToString("C0"))</p>
+            <p class="text-xs text-gray-500 mt-2">Total potential</p>
         </div>
     </div>
 
@@ -456,17 +649,108 @@
 
     @if (Model?.HasCrmAccess == true)
     {
+        <!-- Sales Pipeline Visual Widget (Pro+ Only) -->
+        <div class="bg-white rounded-lg shadow border p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-chart-line me-2 text-indigo-600"></i>Sales Pipeline
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Visual overview of your active pipelines</p>
+                </div>
+                <a asp-controller="Crm" asp-action="Pipelines" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    Manage Pipelines <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            @if (Model?.Pipelines != null && Model.Pipelines.Any())
+            {
+                <div class="space-y-6">
+                    @foreach (var pipeline in Model.Pipelines.Take(3))
+                    {
+                        // Filter deals where the Lead belongs to this pipeline
+                        var pipelineDeals = Model.RecentDeals?
+                            .Where(d => d.Lead != null && d.Lead.PipelineId == pipeline.Id)
+                            .ToList() ?? new List<Deal>();
+                        var pipelineValue = pipelineDeals.Sum(d => d.Amount);
+                        
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">@pipeline.Name</h3>
+                                    <p class="text-sm text-gray-500">@pipelineDeals.Count deals • @pipelineValue.ToString("C0") total value</p>
+                                </div>
+                            </div>
+                            
+                            @if (pipeline.Stages != null && pipeline.Stages.Any())
+                            {
+                                <!-- Pipeline Stage Flow -->
+                                <div class="grid gap-2" style="grid-template-columns: repeat(@pipeline.Stages.Count, 1fr);">
+                                    @foreach (var stage in pipeline.Stages.OrderBy(s => s.Order))
+                                    {
+                                        var stageDeals = pipelineDeals.Where(d => d.Lead != null && d.Lead.StageId == stage.Id).ToList();
+                                        var stageValue = stageDeals.Sum(d => d.Amount);
+                                        var stageColor = stage.Color ?? "#6366f1";
+                                        
+                                        <div class="relative">
+                                            <div class="bg-gray-50 rounded-lg p-3 border-2 hover:shadow-md transition cursor-pointer" 
+                                                 style="border-color: @stageColor;"
+                                                 title="@stage.Name: @stageDeals.Count deals">
+                                                <div class="text-xs font-medium text-gray-700 mb-1 truncate">@stage.Name</div>
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-lg font-bold" style="color: @stageColor;">@stageDeals.Count</span>
+                                                    <span class="text-xs text-gray-500">@stageValue.ToString("C0")</span>
+                                                </div>
+                                                @if (stageDeals.Any())
+                                                {
+                                                    <div class="mt-2 pt-2 border-t">
+                                                        <div class="space-y-1">
+                                                            @foreach (var deal in stageDeals.Take(2))
+                                                            {
+                                                                <div class="text-xs text-gray-600 truncate">
+                                                                    <i class="fas fa-circle text-xs me-1" style="color: @stageColor; font-size: 6px;"></i>
+                                                                    @deal.Name
+                                                                </div>
+                                                            }
+                                                            @if (stageDeals.Count > 2)
+                                                            {
+                                                                <div class="text-xs text-gray-400">+@(stageDeals.Count - 2) more</div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-funnel-dollar text-4xl text-gray-300 mb-3"></i>
+                    <p>No pipelines configured yet</p>
+                    <a asp-controller="Crm" asp-action="Pipelines" class="text-indigo-600 hover:text-indigo-800 text-sm mt-2 inline-block">
+                        Create your first pipeline <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            }
+        </div>
+
         <!-- Pipeline & Deals Section (Pro+ Only) -->
         <div class="bg-white rounded-lg shadow border p-6 mb-8">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-900">
-                        <i class="fas fa-funnel-dollar me-2 text-indigo-600"></i>Pipelines & Deals
+                        <i class="fas fa-funnel-dollar me-2 text-indigo-600"></i>Deals Overview
                     </h2>
-                    <p class="text-sm text-gray-500 mt-1">Track your sales pipeline and deals</p>
+                    <p class="text-sm text-gray-500 mt-1">Performance metrics for your deals</p>
                 </div>
-                <a asp-controller="Crm" asp-action="Pipelines" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                    Manage Pipelines <i class="fas fa-arrow-right ms-1"></i>
+                <a asp-controller="Crm" asp-action="Deals" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    View All Deals <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
 
@@ -501,34 +785,6 @@
                     <p class="text-2xl font-bold text-green-900">@((Model?.WonDealValue ?? 0).ToString("C0"))</p>
                 </div>
             </div>
-
-            <!-- Pipeline Overview -->
-            @if (Model?.Pipelines != null && Model.Pipelines.Any())
-            {
-                <div class="border-t pt-4 mb-4">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Pipeline Overview</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach (var pipeline in Model.Pipelines.Take(3))
-                        {
-                            <div class="border rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h4 class="font-medium text-gray-900">@pipeline.Name</h4>
-                                    <span class="text-xs text-gray-500">@pipeline.Stages?.Count stages</span>
-                                </div>
-                                @if (pipeline.Stages != null && pipeline.Stages.Any())
-                                {
-                                    <div class="flex gap-1">
-                                        @foreach (var stage in pipeline.Stages.OrderBy(s => s.Order).Take(5))
-                                        {
-                                            <div class="flex-1 h-2 rounded-full" style="background-color: @(stage.Color ?? "#6366f1");" title="@stage.Name"></div>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
 
             <!-- Recent Deals -->
             @if (Model?.RecentDeals != null && Model.RecentDeals.Any())
@@ -634,6 +890,85 @@
             }
         </div>
     }
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <a asp-controller="Popup" asp-action="CreateCampaign" class="block bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+            <div class="flex items-center gap-4">
+                <div class="bg-white/20 p-3 rounded-lg">
+                    <i class="fas fa-window-restore text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg">Create Popup</h3>
+                    <p class="text-blue-100 text-sm">Start a new popup campaign</p>
+                </div>
+            </div>
+        </a>
+
+        <a asp-controller="Form" asp-action="Create" class="block bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+            <div class="flex items-center gap-4">
+                <div class="bg-white/20 p-3 rounded-lg">
+                    <i class="fas fa-file-alt text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg">Create Form</h3>
+                    <p class="text-purple-100 text-sm">Build a new lead form</p>
+                </div>
+            </div>
+        </a>
+
+        <a asp-controller="Crm" asp-action="CreateDeal" class="block bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
+            <div class="flex items-center gap-4">
+                <div class="bg-white/20 p-3 rounded-lg">
+                    <i class="fas fa-handshake text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg">Create a Deal</h3>
+                    <p class="text-green-100 text-sm">Add a new deal to pipeline</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Quick Links & Support -->
+    <div class="bg-white rounded-lg shadow border p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <i class="fas fa-link me-2 text-blue-600"></i>Quick Links & Support
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <a asp-controller="UserDashboard" asp-action="Usage" class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-chart-bar text-blue-500 text-xl"></i>
+                <div>
+                    <div class="font-medium text-gray-900">Usage & Limits</div>
+                    <div class="text-sm text-gray-500">View your plan usage</div>
+                </div>
+            </a>
+
+            <a asp-controller="UserDashboard" asp-action="Analytics" class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-chart-line text-purple-500 text-xl"></i>
+                <div>
+                    <div class="font-medium text-gray-900">Analytics</div>
+                    <div class="text-sm text-gray-500">View campaign performance</div>
+                </div>
+            </a>
+
+            <a asp-controller="UserDashboard" asp-action="Subscription" class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-credit-card text-green-500 text-xl"></i>
+                <div>
+                    <div class="font-medium text-gray-900">Subscription</div>
+                    <div class="text-sm text-gray-500">Manage billing & plan</div>
+                </div>
+            </a>
+
+            <a asp-controller="UserDashboard" asp-action="Support" class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 transition">
+                <i class="fas fa-life-ring text-orange-500 text-xl"></i>
+                <div>
+                    <div class="font-medium text-gray-900">Support</div>
+                    <div class="text-sm text-gray-500">Get help and support</div>
+                </div>
+            </a>
+        </div>
+    </div>
 
     <!-- Integrations Section -->
     <div class="bg-white rounded-lg shadow border p-6">

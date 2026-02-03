@@ -1,0 +1,326 @@
+@model Notification_Application.Models.Tenant
+
+@{
+    ViewData["Title"] = "Pixel Installation";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2"><i class="bi bi-code-square me-2"></i>Install Tracking Pixel</h1>
+                    <p class="text-muted">Add this code to your website to enable popup tracking and analytics</p>
+                </div>
+                <button class="btn btn-primary" id="testPixelBtn">
+                    <i class="bi bi-check-circle me-1"></i>Test Installation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Installation Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info" id="pixelStatus">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-3" role="status">
+                        <span class="visually-hidden">Checking...</span>
+                    </div>
+                    <div>
+                        <strong>Checking pixel installation...</strong>
+                        <p class="mb-0 small">Please wait while we verify your tracking pixel</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Installation Steps -->
+    <div class="row g-4">
+        <!-- Step 1: Copy Code -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-1-circle me-2"></i>Copy Your Tracking Code</h5>
+                </div>
+                <div class="card-body">
+                    <p>Copy the code below and paste it into the <code>&lt;head&gt;</code> section of your website, just before the closing <code>&lt;/head&gt;</code> tag.</p>
+                    
+                    <div class="position-relative">
+                        <pre class="bg-dark text-light p-3 rounded" id="pixelCode" style="max-height: 400px; overflow-y: auto;"><code>&lt;!-- OptinYeti Tracking Pixel --&gt;
+&lt;script&gt;
+(function() {
+    window.OptinYeti = window.OptinYeti || {};
+    window.OptinYeti.config = {
+        tenantId: '@Model.Id',
+        apiKey: '@Model.ApiKey',
+        trackingUrl: '@(Model.PublicHostUrl ?? "http://localhost:5117")/api/tracking'
+    };
+    
+    var script = document.createElement('script');
+    script.src = '@(Model.PublicHostUrl ?? "http://localhost:5117")/js/optinyeti-tracker.js';
+    script.async = true;
+    document.head.appendChild(script);
+})();
+&lt;/script&gt;
+&lt;!-- End OptinYeti Tracking Pixel --&gt;</code></pre>
+                        <button class="btn btn-sm btn-outline-light position-absolute top-0 end-0 m-2" id="copyCodeBtn" data-bs-toggle="tooltip" title="Copy to clipboard">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                    </div>
+
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Make sure to add this code to every page where you want popups to appear.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Platform-Specific Instructions -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-2-circle me-2"></i>Platform-Specific Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="platformAccordion">
+                        <!-- WordPress -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#wordpress">
+                                    <i class="bi bi-wordpress me-2"></i>WordPress
+                                </button>
+                            </h2>
+                            <div id="wordpress" class="accordion-collapse collapse show" data-bs-parent="#platformAccordion">
+                                <div class="accordion-body">
+                                    <ol class="mb-0">
+                                        <li>Go to <strong>Appearance → Theme Editor</strong></li>
+                                        <li>Select your theme's <code>header.php</code> file</li>
+                                        <li>Find the <code>&lt;/head&gt;</code> tag</li>
+                                        <li>Paste the tracking code just before it</li>
+                                        <li>Click <strong>Update File</strong></li>
+                                    </ol>
+                                    <p class="mt-2 mb-0 small text-muted">
+                                        <strong>Alternative:</strong> Use a plugin like "Insert Headers and Footers" or "Header Footer Code Manager"
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shopify -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shopify">
+                                    <i class="bi bi-shop me-2"></i>Shopify
+                                </button>
+                            </h2>
+                            <div id="shopify" class="accordion-collapse collapse" data-bs-parent="#platformAccordion">
+                                <div class="accordion-body">
+                                    <ol class="mb-0">
+                                        <li>Go to <strong>Online Store → Themes</strong></li>
+                                        <li>Click <strong>Actions → Edit code</strong></li>
+                                        <li>Open <code>theme.liquid</code> in Layout folder</li>
+                                        <li>Find the <code>&lt;/head&gt;</code> tag</li>
+                                        <li>Paste the tracking code just before it</li>
+                                        <li>Click <strong>Save</strong></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wix -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wix">
+                                    <i class="bi bi-window me-2"></i>Wix
+                                </button>
+                            </h2>
+                            <div id="wix" class="accordion-collapse collapse" data-bs-parent="#platformAccordion">
+                                <div class="accordion-body">
+                                    <ol class="mb-0">
+                                        <li>Go to <strong>Settings → Advanced Settings → Custom Code</strong></li>
+                                        <li>Click <strong>+ Add Custom Code</strong></li>
+                                        <li>Paste the tracking code</li>
+                                        <li>Set location to <strong>Head</strong></li>
+                                        <li>Apply to <strong>All Pages</strong></li>
+                                        <li>Click <strong>Apply</strong></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Squarespace -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#squarespace">
+                                    <i class="bi bi-square me-2"></i>Squarespace
+                                </button>
+                            </h2>
+                            <div id="squarespace" class="accordion-collapse collapse" data-bs-parent="#platformAccordion">
+                                <div class="accordion-body">
+                                    <ol class="mb-0">
+                                        <li>Go to <strong>Settings → Advanced → Code Injection</strong></li>
+                                        <li>Paste the code in the <strong>Header</strong> section</li>
+                                        <li>Click <strong>Save</strong></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom HTML -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#custom">
+                                    <i class="bi bi-code-slash me-2"></i>Custom HTML Site
+                                </button>
+                            </h2>
+                            <div id="custom" class="accordion-collapse collapse" data-bs-parent="#platformAccordion">
+                                <div class="accordion-body">
+                                    <ol class="mb-0">
+                                        <li>Open your HTML file(s)</li>
+                                        <li>Find the <code>&lt;/head&gt;</code> tag</li>
+                                        <li>Paste the tracking code just before it</li>
+                                        <li>Save and upload to your server</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your Tenant Details -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Your Account Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Tenant ID:</strong>
+                            <p class="font-monospace">@Model.Id</p>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>API Key:</strong>
+                            <p class="font-monospace">@Model.ApiKey</p>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Domain:</strong>
+                            <p class="font-monospace">@Model.Domain</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Copy code functionality
+    const copyBtn = document.getElementById('copyCodeBtn');
+    const pixelCode = document.getElementById('pixelCode');
+    
+    copyBtn.addEventListener('click', function() {
+        const code = pixelCode.textContent;
+        navigator.clipboard.writeText(code).then(function() {
+            const icon = copyBtn.querySelector('i');
+            const originalContent = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            copyBtn.classList.add('btn-success');
+            copyBtn.classList.remove('btn-outline-light');
+            
+            setTimeout(function() {
+                copyBtn.innerHTML = originalContent;
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-outline-light');
+            }, 2000);
+        });
+    });
+
+    // Test pixel installation
+    const testBtn = document.getElementById('testPixelBtn');
+    const statusDiv = document.getElementById('pixelStatus');
+    
+    function updateStatus(type, title, message, showSpinner = false) {
+        const alertClass = {
+            'success': 'alert-success',
+            'error': 'alert-danger',
+            'warning': 'alert-warning',
+            'info': 'alert-info'
+        }[type];
+        
+        const icon = {
+            'success': 'bi-check-circle-fill',
+            'error': 'bi-x-circle-fill',
+            'warning': 'bi-exclamation-triangle-fill',
+            'info': 'bi-info-circle-fill'
+        }[type];
+        
+        statusDiv.className = 'alert ' + alertClass;
+        statusDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                ${showSpinner ? '<div class="spinner-border spinner-border-sm me-3" role="status"><span class="visually-hidden">Loading...</span></div>' : ''}
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi ${icon} me-2"></i>
+                        <strong>${title}</strong>
+                    </div>
+                    <p class="mb-0 small">${message}</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Initial check on page load
+    setTimeout(function() {
+        checkPixelInstallation();
+    }, 1000);
+    
+    testBtn.addEventListener('click', function() {
+        checkPixelInstallation();
+    });
+    
+    function checkPixelInstallation() {
+        updateStatus('info', 'Testing pixel installation...', 'Please wait while we verify your tracking pixel', true);
+        testBtn.disabled = true;
+        
+        fetch('/Admin/TestPixelInstallation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            testBtn.disabled = false;
+            
+            if (data.success) {
+                if (data.isInstalled) {
+                    updateStatus('success', 'Pixel is installed correctly!', 
+                        `Last tracked event: ${data.lastEventTime || 'Just now'} • Total events: ${data.totalEvents || 0}`);
+                } else {
+                    updateStatus('warning', 'Pixel not detected', 
+                        'We haven\'t detected any tracking events yet. Make sure you\'ve added the code to your website and visited a page with the pixel installed.');
+                }
+            } else {
+                updateStatus('error', 'Error checking pixel', data.message || 'Unable to verify pixel installation');
+            }
+        })
+        .catch(error => {
+            testBtn.disabled = false;
+            updateStatus('error', 'Connection error', 
+                'Unable to test pixel installation. Please check your internet connection and try again.');
+        });
+    }
+});
+</script>
+}

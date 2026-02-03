@@ -1,0 +1,187 @@
+@{
+    ViewData["Title"] = "Search Phone Numbers";
+}
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <a asp-action="Index" class="text-blue-600 hover:text-blue-800 text-sm font-medium mb-4 inline-block">
+            <i class="fas fa-arrow-left me-2"></i>Back to My Numbers
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900">Search Available Numbers</h1>
+        <p class="text-gray-600 mt-2">Find the perfect phone number for your call tracking needs</p>
+    </div>
+
+    <!-- Pricing Info -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-info-circle text-blue-600 me-2"></i>Pricing Information
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900 mb-2">
+                    <i class="fas fa-map-marker-alt text-blue-600 me-2"></i>Local Numbers
+                </h3>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• Monthly Fee: <span class="font-semibold">$1.15/month</span></li>
+                    <li>• Per Minute: <span class="font-semibold">$0.013/min</span></li>
+                    <li>• Ideal for local market targeting</li>
+                </ul>
+            </div>
+            <div class="bg-white rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900 mb-2">
+                    <i class="fas fa-phone text-green-600 me-2"></i>Toll-Free Numbers
+                </h3>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• Monthly Fee: <span class="font-semibold">$2.00/month</span></li>
+                    <li>• Per Minute: <span class="font-semibold">$0.02/min</span></li>
+                    <li>• National presence (800, 888, 877, etc.)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="bg-white rounded-lg shadow border p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Search Criteria</h2>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Number Type</label>
+            <div class="flex gap-4">
+                <label class="flex items-center">
+                    <input type="radio" name="numberType" value="local" checked class="me-2">
+                    <span class="text-gray-700">Local Numbers</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="numberType" value="tollfree" class="me-2">
+                    <span class="text-gray-700">Toll-Free Numbers</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="localSearch">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Area Code *</label>
+                    <input type="text" id="areaCode" placeholder="e.g., 415" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">City (Optional)</label>
+                    <input type="text" id="city" placeholder="e.g., San Francisco" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">State (Optional)</label>
+                    <input type="text" id="state" placeholder="e.g., CA" 
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="searchNumbers()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
+            <i class="fas fa-search me-2"></i>Search Available Numbers
+        </button>
+    </div>
+
+    <!-- Results -->
+    <div id="searchResults" class="hidden">
+        <div class="bg-white rounded-lg shadow border p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Available Numbers</h2>
+            <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingState" class="hidden bg-white rounded-lg shadow border p-12 text-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+        <p class="text-gray-600">Searching available numbers...</p>
+    </div>
+</div>
+
+<script>
+function searchNumbers() {
+    const numberType = document.querySelector('input[name="numberType"]:checked').value;
+    const areaCode = document.getElementById('areaCode').value;
+    const city = document.getElementById('city').value;
+    const state = document.getElementById('state').value;
+
+    if (numberType === 'local' && !areaCode) {
+        alert('Please enter an area code');
+        return;
+    }
+
+    document.getElementById('searchResults').classList.add('hidden');
+    document.getElementById('loadingState').classList.remove('hidden');
+
+    fetch('/Numbers/SearchAvailable', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+        },
+        body: new URLSearchParams({
+            areaCode: areaCode,
+            city: city,
+            state: state,
+            type: numberType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loadingState').classList.add('hidden');
+        
+        if (data.success) {
+            displayResults(data.numbers, numberType);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        document.getElementById('loadingState').classList.add('hidden');
+        alert('Error searching numbers: ' + error);
+    });
+}
+
+function displayResults(numbers, type) {
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = '';
+
+    if (numbers.length === 0) {
+        container.innerHTML = '<div class="col-span-2 text-center py-8 text-gray-500">No numbers found. Try different search criteria.</div>';
+    } else {
+        numbers.forEach(number => {
+            const card = document.createElement('div');
+            card.className = 'border rounded-lg p-4 hover:bg-gray-50 transition';
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-semibold text-gray-900">${number.phoneNumber}</h3>
+                    <span class="text-xs px-2 py-1 rounded ${type === 'tollfree' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
+                        ${type === 'tollfree' ? 'Toll-Free' : 'Local'}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">
+                    <i class="fas fa-map-marker-alt me-1"></i>${number.locality || 'N/A'}, ${number.region || 'N/A'}
+                </p>
+                <a href="/Numbers/Order?phoneNumber=${encodeURIComponent(number.phoneNumber)}&type=${type}" 
+                   class="block bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-2 rounded font-medium">
+                    Select This Number
+                </a>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    document.getElementById('searchResults').classList.remove('hidden');
+}
+
+document.querySelectorAll('input[name="numberType"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const localSearch = document.getElementById('localSearch');
+        if (this.value === 'local') {
+            localSearch.style.display = 'block';
+        } else {
+            localSearch.style.display = 'none';
+        }
+    });
+});
+</script>
